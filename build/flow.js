@@ -99,8 +99,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   `);
   await sleep(300);
   const ticket = await ev(`(async()=>{
-    const {store}=await import('/js/store.js');
-    const {buildTicket, whatsappLink}=await import('/js/ticket.js');
+    const {store}=await import(new URL('js/store.js', location.href).href);
+    const {buildTicket, whatsappLink}=await import(new URL('js/ticket.js', location.href).href);
     return {txt:buildTicket(store), link:whatsappLink(store), sub:store.subtotal, count:store.count};
   })()`);
   check('el ticket lleva sede, servicio, datos, líneas y total',
