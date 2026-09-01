@@ -507,6 +507,7 @@ h1, h2, h3 { margin: 0; }
   transform: translate(-50%, 130%); cursor: pointer;
   display: flex; align-items: center; gap: .85rem;
   padding: .68rem .78rem .68rem 1.1rem; border-radius: 100px;
+  max-width: calc(100vw - 1.6rem); white-space: nowrap;
   background: rgba(19, 16, 16, .9); border: 1px solid rgba(239,230,214,.2);
   backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
   box-shadow: var(--shadow-lift);
@@ -521,8 +522,8 @@ h1, h2, h3 { margin: 0; }
   background: var(--ember); color: #191207; display: grid; place-items: center;
   font-family: var(--mono); font-size: .7rem; font-weight: 500;
 }
-.cart-pill__txt { font-size: .78rem; letter-spacing: .05em; font-weight: 600; }
-.cart-pill__total { font-family: var(--display); font-size: 1.02rem; font-weight: 600; }
+.cart-pill__txt { font-size: .78rem; letter-spacing: .05em; font-weight: 600; white-space: nowrap; }
+.cart-pill__total { font-family: var(--display); font-size: 1.02rem; font-weight: 600; white-space: nowrap; }
 .cart-pill__go { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
   background: rgba(239,230,214,.08); }
 .cart-pill__go svg { width: 13px; }
@@ -759,6 +760,10 @@ h1, h2, h3 { margin: 0; }
 
 /* ============================================ ajustes de pantalla pequeña */
 @media (max-width: 640px) {
+  /* la pastilla del carrito debe caber en una sola línea */
+  .cart-pill { gap: .6rem; padding: .6rem .6rem .6rem .85rem; }
+  .cart-pill__txt { font-size: .72rem; }
+
   /* la barra superior no cabe con el CTA a tamaño completo */
   .logo__seal { width: 30px; height: 30px; }
   .logo__word { font-size: 1rem; letter-spacing: .24em; text-indent: .24em; }
@@ -774,6 +779,10 @@ h1, h2, h3 { margin: 0; }
   .cat__kanji { display: none; }
 
   .hero__meta { gap: .4rem 1rem; font-size: .62rem; }
+}
+
+@media (max-width: 400px) {
+  .cart-pill__txt { display: none; }
 }
 
 @media (max-width: 380px) {
