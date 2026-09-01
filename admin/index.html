@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es-VE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ZHUBA · Panel de cocina</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0B0908">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230B0908'/%3E%3Ccircle cx='32' cy='32' r='23' fill='none' stroke='%23D6A050' stroke-width='2.4'/%3E%3Cpath d='M22 23h20L23 41h20' fill='none' stroke='%23D6A050' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400..700&family=DM+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/app.css">
+<style>
+  body { padding-bottom: 4rem; }
+  .adm-head {
+    position: sticky; top: 0; z-index: 20;
+    background: rgba(11,9,8,.88); backdrop-filter: blur(16px);
+    border-bottom: var(--hair); padding-block: .9rem;
+  }
+  .adm-head__row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .adm-title { font-family: var(--display); font-size: 1.35rem; font-weight: 500; letter-spacing: -.01em; }
+  .adm-title span { font-family: var(--mono); font-size: .56rem; letter-spacing: .24em;
+    text-transform: uppercase; color: var(--ember); display: block; margin-bottom: .2rem; }
+
+  .seg { display: flex; gap: .3rem; flex-wrap: wrap; }
+  .seg button {
+    padding: .42rem .85rem; border-radius: 100px; border: var(--hair); cursor: pointer;
+    background: transparent; color: var(--travertine-3);
+    font-size: .72rem; font-weight: 600; letter-spacing: .03em;
+    transition: color .2s, background .2s, border-color .2s;
+  }
+  .seg button:hover { color: var(--travertine); border-color: rgba(239,230,214,.3); }
+  .seg button.is-on { background: var(--ember); border-color: var(--ember); color: #191207; }
+
+  .cols { display: grid; gap: 2.4rem; align-items: start; }
+  @media (min-width: 1000px) { .cols { grid-template-columns: 1.15fr .85fr; } }
+
+  h2.adm { font-family: var(--mono); font-size: .62rem; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--travertine-3); font-weight: 400; margin: 0 0 1rem; display: flex; justify-content: space-between; gap: 1rem; }
+
+  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px;
+    background: rgba(239,230,214,.1); border: var(--hair); margin-bottom: 2rem; }
+  @media (min-width: 620px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+  .stat { background: var(--void); padding: 1rem .95rem; display: grid; gap: .3rem; }
+  .stat span { font-family: var(--mono); font-size: .56rem; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--travertine-3); }
+  .stat b { font-family: var(--display); font-size: 1.6rem; font-weight: 600; letter-spacing: -.02em; }
+
+  .kds { border: var(--hair); border-left: 3px solid var(--st); border-radius: 4px;
+    padding: .95rem 1rem; margin-bottom: .8rem; background: var(--stone-900); }
+  .kds__head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+  .kds__id { font-family: var(--mono); font-size: .82rem; color: var(--travertine); }
+  .kds__meta { display: block; font-family: var(--mono); font-size: .58rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--travertine-3); margin-top: .15rem; }
+  .kds__state { font-family: var(--mono); font-size: .58rem; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--st); }
+  .kds__who { margin: .6rem 0 0; font-size: .76rem; color: var(--travertine-2); }
+  .kds__who b { font-family: var(--mono); font-size: .58rem; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--travertine-3); font-weight: 400; }
+  .kds__lines { list-style: none; margin: .7rem 0 0; padding: 0; display: grid; gap: .45rem; font-size: .85rem; }
+  .kds__lines b { font-family: var(--mono); color: var(--ember); font-weight: 400; }
+  .kds__lines em { color: var(--travertine-3); font-style: normal; }
+  .kds__mods { display: block; font-family: var(--mono); font-size: .6rem; color: var(--travertine-3); margin-top: .1rem; }
+  .kds__note { display: block; font-size: .72rem; font-style: italic; color: var(--ember-hi); margin: .25rem 0 0; }
+  .kds__foot { display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+    flex-wrap: wrap; margin-top: .9rem; padding-top: .7rem; border-top: var(--hair-soft); }
+  .kds__total { font-family: var(--display); font-size: 1.05rem; font-weight: 600; }
+  .kds__steps { display: flex; gap: .25rem; flex-wrap: wrap; }
+  .kds__steps button { padding: .34rem .7rem; border-radius: 100px; border: var(--hair);
+    background: transparent; color: var(--travertine-3); cursor: pointer;
+    font-family: var(--mono); font-size: .58rem; letter-spacing: .1em; text-transform: uppercase;
+    transition: color .2s, border-color .2s, background .2s; }
+  .kds__steps button:hover { color: var(--travertine); border-color: rgba(239,230,214,.32); }
+  .kds__steps button.is-on { background: var(--st); border-color: var(--st); color: #14100c; }
+
+  .toplist { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; }
+  .toplist li { display: flex; align-items: center; gap: .7rem; font-size: .86rem;
+    padding-bottom: .55rem; border-bottom: var(--hair-soft); }
+  .toplist li b { margin-left: auto; font-family: var(--mono); color: var(--ember); font-weight: 400; }
+  .rank { font-family: var(--mono); font-size: .6rem; color: var(--travertine-3); width: 1.1rem; }
+
+  table { width: 100%; border-collapse: collapse; }
+  td { padding: .6rem .5rem; border-bottom: var(--hair-soft); vertical-align: middle; }
+  td:first-child { padding-left: 0; }
+  td.num { text-align: right; white-space: nowrap; width: 1%; }
+  td b { font-weight: 600; font-size: .88rem; display: block; }
+  .muted { color: var(--travertine-3); font-family: var(--mono); font-size: .58rem;
+    letter-spacing: .1em; text-transform: uppercase; }
+  tr.is-out b { text-decoration: line-through; color: var(--travertine-3); }
+  input[type=number] { width: 82px; padding: .35rem .5rem; border-radius: 3px; border: var(--hair);
+    background: rgba(239,230,214,.05); color: var(--travertine); font-family: var(--mono); font-size: .8rem; text-align: right; }
+  input[type=number]:focus { outline: none; border-color: var(--ember); }
+  .reset { background: none; border: 0; color: var(--travertine-3); cursor: pointer; font-size: .9rem; padding: 0 .2rem; }
+  .reset:hover { color: var(--ember); }
+
+  .toggle { display: inline-flex; align-items: center; gap: .5rem; cursor: pointer;
+    background: transparent; border: var(--hair); border-radius: 100px; padding: .3rem .7rem .3rem .35rem;
+    font-family: var(--mono); font-size: .58rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--travertine-3); transition: border-color .2s, color .2s; }
+  .toggle i { width: 26px; height: 14px; border-radius: 100px; background: rgba(239,230,214,.16);
+    position: relative; transition: background .25s; flex: none; }
+  .toggle i::after { content: ''; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px;
+    border-radius: 50%; background: var(--travertine-3); transition: transform .25s var(--ease), background .25s; }
+  .toggle.is-on { color: var(--jade); border-color: color-mix(in srgb, var(--jade) 40%, transparent); }
+  .toggle.is-on i { background: color-mix(in srgb, var(--jade) 45%, transparent); }
+  .toggle.is-on i::after { transform: translateX(12px); background: var(--jade); }
+
+  .gate { min-height: 100svh; display: grid; place-items: center; padding: var(--pad); }
+  .gate form { width: min(340px, 100%); display: grid; gap: 1rem; text-align: center; }
+  .gate input { text-align: center; font-family: var(--mono); font-size: 1.5rem; letter-spacing: .4em;
+    padding: .8rem; border-radius: 4px; border: var(--hair); background: rgba(239,230,214,.05); color: var(--travertine); }
+  .gate input:focus { outline: none; border-color: var(--ember); }
+  .gate .err { color: var(--vermillion); font-family: var(--mono); font-size: .66rem;
+    letter-spacing: .1em; text-transform: uppercase; min-height: 1em; }
+  .adm-note { font-size: .74rem; color: var(--travertine-3); line-height: 1.6; margin-top: 2.4rem;
+    padding-top: 1.2rem; border-top: var(--hair-soft); }
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<style>:root{--grain-url:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E")}</style>
+
+<!-- ------------------------------------------------------------- acceso -->
+<section class="gate" id="gate" hidden>
+  <form id="gateForm">
+    <svg viewBox="0 0 64 64" width="46" height="46" style="margin:0 auto" aria-hidden="true">
+      <circle cx="32" cy="32" r="27" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".4"/>
+      <circle cx="32" cy="32" r="22.5" fill="none" stroke="#D6A050" stroke-width="2"/>
+      <path d="M22 23.5h20L23 40.5h20" fill="none" stroke="#D6A050" stroke-width="3.2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <h1 class="display" style="font-size:1.7rem">Panel de cocina</h1>
+    <p class="muted" style="letter-spacing:.16em">Acceso restringido</p>
+    <label class="sr-only" for="pin">Código de acceso</label>
+    <input id="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="••••">
+    <p class="err" id="gateError"></p>
+    <button class="btn btn--solid" type="submit">Entrar</button>
+    <p style="font-size:.7rem;color:var(--travertine-3)">Demostración · código por defecto <b style="color:var(--ember)">1108</b></p>
+  </form>
+</section>
+
+<!-- -------------------------------------------------------------- panel -->
+<div id="panel" hidden>
+  <header class="adm-head">
+    <div class="wrap adm-head__row">
+      <h1 class="adm-title"><span>ZHUBA</span>Panel de cocina</h1>
+      <div class="seg" id="filters" style="margin-left:auto"></div>
+      <button class="btn btn--sm btn--ghost" id="logout">Salir</button>
+    </div>
+  </header>
+
+  <main class="wrap" style="padding-top:2rem">
+    <div class="stats" id="metrics"></div>
+
+    <div class="cols">
+      <section>
+        <h2 class="adm">
+          <span>Comandas entrantes</span>
+          <button class="btn btn--sm btn--ghost" id="clearOrders">Vaciar historial</button>
+        </h2>
+        <div id="orders"></div>
+      </section>
+
+      <aside>
+        <h2 class="adm">Más vendidos hoy</h2>
+        <ul class="toplist" id="top"></ul>
+
+        <h2 class="adm" style="margin-top:2.4rem">
+          <span>Carta e inventario</span>
+          <span id="stockCount" class="muted"></span>
+        </h2>
+        <div class="field" style="margin-top:0">
+          <label class="sr-only" for="search">Buscar plato</label>
+          <input id="search" type="search" placeholder="Buscar plato…">
+        </div>
+        <div style="max-height:60vh;overflow:auto;margin-top:.8rem">
+          <table><tbody id="stock"></tbody></table>
+        </div>
+      </aside>
+    </div>
+
+    <p class="adm-note">
+      Las comandas, el inventario y los precios editados se guardan en el almacenamiento local de
+      <strong style="color:var(--travertine-2)">este dispositivo y este navegador</strong>: es un panel de
+      demostración, sin servidor. Lo que apagues aquí se ve agotado en la carta pública abierta en este mismo
+      equipo. El precio original del menú oficial se recupera con el botón ↺.
+      <a href="../" style="color:var(--ember)">Volver a la web</a>
+    </p>
+  </main>
+</div>
+
+<script type="module" src="../js/admin.js"></script>
+</body>
+</html>
