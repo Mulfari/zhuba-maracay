@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin
 
-Sitemap: https://mulfari.github.io/zhuba-maracay/sitemap.xml
+Sitemap: https://zhuba-maracay.vercel.app/sitemap.xml
