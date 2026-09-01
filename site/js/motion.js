@@ -11,8 +11,16 @@ const layers = [];
 let ticking = false;
 
 /** speed: fracción del scroll que recorre la capa (negativo = más lenta). */
+/** Descarta capas cuyo elemento ya no está en el documento. */
+export function pruneParallax() {
+  for (let i = layers.length - 1; i >= 0; i--) {
+    if (!layers[i].el.isConnected) layers.splice(i, 1);
+  }
+}
+
 export function addParallax(el, speed, opts = {}) {
   if (!el) return;
+  pruneParallax();
   layers.push({ el, speed, scale: opts.scale || 0, max: opts.max ?? 90, fade: opts.fade || 0 });
 }
 

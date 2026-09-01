@@ -14,6 +14,14 @@ export const BRANCHES = [
     short: 'Restaurante',
     kicker: 'Cocina asiática · Nikkei · Thai',
     tagline: 'Donde cada plato cuenta una historia y cada detalle refleja nuestro buen gusto.',
+    // Titular del héroe: cada línea puede abrir con una palabra en cursiva dorada.
+    heroTitle: [{ text: 'Sushi bar, wok' }, { em: 'y', text: 'barra fría' }],
+    heroSub: 'Cocina asiática con acento nikkei y tailandés. Salmón noruego, atún saku, escolar y anguila en la barra fría; fuego vivo en el wok.',
+    // La vitrina del héroe: fotos reales de la casa, en dos columnas.
+    heroPhotos: [
+      ['sashimi-especial-zhuba', 'moscow-mule', 'volcan-okanoba', 'coquitos-de-salmon'],
+      ['unadon-kabayaki', 'tartar-zhuba', 'degustacion-de-nigiris', 'osaka-roll']
+    ],
     menu: 'restaurante',
     phone: '+58 412-4554207',
     phoneHref: 'tel:+584124554207',
@@ -42,6 +50,12 @@ export const BRANCHES = [
     short: 'Café',
     kicker: 'Pastelería de autor · Gelato · Paninis',
     tagline: 'Donde cada aroma cuenta una historia y cada atención refleja nuestro buen gusto.',
+    heroTitle: [{ text: 'Gelato, vitrina' }, { em: 'y', text: 'café de altura' }],
+    heroSub: 'Waffle hongkonesa hecha al momento, brioche siciliana rellena, alta pastelería con ingredientes italianos y paninis prensados al instante.',
+    heroPhotos: [
+      ['bubble-waffle-al-gelato', 'cafe-latte', 'barquillon', 'crispy-al-caesar'],
+      ['alta-pasteleria', 'brownie-con-gelato', 'cafes-frios', 'roast-beef-schiacciata']
+    ],
     menu: 'cafe',
     phone: '+58 412-4554207',
     phoneHref: 'tel:+584124554207',

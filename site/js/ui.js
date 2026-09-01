@@ -113,6 +113,63 @@ function mountVenueSwitcher() {
   }
 }
 
+/* ================================================================ héroe */
+/* La vitrina se redibuja al cambiar de sede: el restaurante enseña barra
+   fría y wok; el café, gelato y vitrina. */
+function renderHero() {
+  const b = store.branch;
+
+  const title = $('#heroTitle');
+  if (title && b.heroTitle) {
+    title.innerHTML = b.heroTitle
+      .map((l) => (l.em ? `<em>${esc(l.em)}</em> ${esc(l.text)}` : esc(l.text)))
+      .join('<br>');
+  }
+  const sub = $('#heroSub');
+  if (sub) sub.textContent = b.heroSub || '';
+  const maps = $('#heroMaps');
+  if (maps) maps.href = b.maps;
+
+  const mosaic = $('#heroMosaic');
+  if (!mosaic || !b.heroPhotos) return;
+  const duraciones = [66, 82];
+  mosaic.innerHTML = b.heroPhotos.map((col, i) => `
+    <div class="hero__col" data-col="${i}">
+      <div class="hero__track" style="--dur:${duraciones[i] || 72}s">
+        ${col.concat(col).map((n, j) => `
+          <figure><img src="img/${esc(n)}.webp" alt=""${j >= col.length ? ' loading="lazy"' : ''}
+            decoding="async" width="520" height="520"></figure>`).join('')}
+      </div>
+    </div>`).join('') + '<div class="hero__blend"></div>';
+
+  // el scroll añade su propio desplazamiento sobre la deriva continua
+  $$('.hero__col', mosaic).forEach((col, i) => addParallax(col, i === 0 ? 11 : 26, { max: 70 }));
+}
+
+/* Estado real del local en hora de Venezuela: abre a las 12:00 m. y cierra a
+   medianoche, salvo de jueves a sábado, que estira hasta la 1:00 a.m. */
+function estadoLocal() {
+  const partes = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'America/Caracas', hour12: false, weekday: 'short', hour: '2-digit'
+  }).formatToParts(new Date());
+  const val = (t) => partes.find((x) => x.type === t).value;
+  const dias = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  const dia = dias[val('weekday')];
+  const hora = +val('hour');
+  const alarga = (d) => d >= 4 && d <= 6;             // jueves, viernes, sábado
+  if (hora >= 12) return { abierto: true, nota: alarga(dia) ? 'cierra a la 1:00 a.m.' : 'cierra a las 12:00 a.m.' };
+  if (hora < 1 && alarga((dia + 6) % 7)) return { abierto: true, nota: 'cierra a la 1:00 a.m.' };
+  return { abierto: false, nota: 'abre a las 12:00 m.' };
+}
+
+function pintarEstado() {
+  const el = $('#heroLive');
+  if (!el) return;
+  const e = estadoLocal();
+  el.classList.toggle('is-closed', !e.abierto);
+  el.innerHTML = `<i></i><b>${e.abierto ? 'Abierto ahora' : 'Cerrado'}</b> · ${esc(e.nota)}`;
+}
+
 /* =================================================================== carta */
 function itemCard(item) {
   const out = store.isOut(item.id);
@@ -679,6 +736,9 @@ function renderVenues() {
 /* ================================================================= arranque */
 export function mountApp() {
   mountVenueSwitcher();
+  renderHero();
+  pintarEstado();
+  setInterval(pintarEstado, 60000);
   renderVenues();
   renderMenu();
   paintBranchChrome();
@@ -697,6 +757,7 @@ export function mountApp() {
   store.on((what) => {
     if (what === 'branch') {
       renderMenu();
+      renderHero();
       paintBranchChrome();
       renderVenues();
       renderPill();
@@ -720,9 +781,7 @@ export function mountApp() {
     }
   });
 
-  // parallax del héroe: tres profundidades
-  addParallax($('#heroMedia'), 26, { scale: 0.04, max: 90 });
-  addParallax($('#heroScrim'), 12, { max: 45 });
+  // el bloque de texto se rezaga un poco frente a la vitrina
   addParallax($('#heroGrid'), -14, { max: 55 });
   addParallax($('#storyMedia'), 16, { max: 60 });
   revealAll();

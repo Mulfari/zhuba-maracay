@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es-VE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ZHUBA — propuesta de héroe B</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=DM+Mono:wght@300;400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../site/css/app.css">
+<style>
+  :root { --grain-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E"); }
+
+/* ================================= héroe B: la vitrina partida ========== */
+.heroB { position: relative; height: 100svh; min-height: 38rem; overflow: hidden; isolation: isolate;
+  display: grid; grid-template-columns: 1fr; align-items: center; }
+@media (min-width: 900px) { .heroB { grid-template-columns: minmax(0,1fr) minmax(0,1fr); } }
+
+/* --- panel izquierdo: tipografia sobre piedra ---------------------------- */
+.heroB__panel { position: relative; z-index: 2;
+  padding-block: calc(var(--header-h) + 1.4rem) 1.6rem;
+  padding-inline: var(--pad); }
+@media (min-width: 900px) {
+  .heroB__panel { padding-left: max(var(--pad), calc((100vw - var(--maxw)) / 2 + var(--pad)));
+    padding-right: clamp(1.6rem,3.4vw,3.2rem); }
+}
+.heroB__grid { display: grid; gap: clamp(1.1rem,2.2vw,1.7rem); max-width: 31rem; will-change: transform; }
+
+.heroB h1 { font-size: clamp(2.5rem, 5.4vw, 4.4rem); }
+.heroB h1 em { font-style: italic; font-weight: 400; color: var(--ember-hi); }
+
+.heroB__rule { display: flex; align-items: center; gap: 1rem; margin: 0; }
+.heroB__rule::after { content: ''; height: 1px; flex: 1;
+  background: linear-gradient(90deg, rgba(239,230,214,.3), transparent); }
+.heroB__rule span { font-family: var(--mono); font-size: .62rem; letter-spacing: .26em;
+  text-transform: uppercase; color: var(--travertine-3); white-space: nowrap; }
+
+.heroB__sub { margin: 0; max-width: 40ch; color: var(--travertine-2);
+  font-size: clamp(.96rem,.42vw + .86rem,1.06rem); line-height: 1.6; }
+.heroB__sub b { color: var(--travertine); font-weight: 500; }
+.heroB__cta { display: flex; flex-wrap: wrap; gap: .7rem; }
+.heroB__meta { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.2rem;
+  padding-top: 1.1rem; border-top: var(--hair-soft);
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--travertine-3); }
+.heroB__meta b { color: var(--travertine); font-weight: 500; }
+
+/* --- panel derecho: el mosaico de platos reales -------------------------- */
+.heroB__mosaic { position: relative; z-index: 0; align-self: stretch; height: 100%; min-height: 0;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(6px,.6vw,10px);
+  overflow: hidden; }
+/* en movil no hay division: banda de fotos arriba y texto limpio debajo,
+   que superponer texto sobre fotos brillantes lo vuelve ilegible */
+@media (max-width: 899px) {
+  .heroB { height: auto; min-height: 100svh; grid-template-rows: 38svh 1fr; align-items: start; }
+  .heroB__mosaic { grid-row: 1; grid-column: 1; align-self: stretch; }
+  .heroB__panel { grid-row: 2; grid-column: 1; align-self: center;
+    padding-block: clamp(2rem,5vh,3rem) clamp(2.5rem,7vh,4rem); }
+  .heroB__col:nth-child(2) { margin-top: -18%; }
+}
+.heroB__col { min-height: 0; will-change: transform; overflow: hidden; }
+.heroB__col:nth-child(2) { margin-top: -11%; }
+
+/* la pista se desplaza sola y sin fin: las fichas van duplicadas, asi que
+   al llegar a -50% el fotograma es identico al de partida y no se ve el corte */
+.heroB__track { display: flow-root; animation: deriva var(--dur, 72s) linear infinite;
+  will-change: transform; }
+.heroB__track figure { margin: 0 0 clamp(6px,.6vw,10px); }
+.heroB__col:nth-child(2) .heroB__track { animation-direction: reverse; }
+@keyframes deriva { from { transform: translate3d(0,0,0); } to { transform: translate3d(0,-50%,0); } }
+.heroB:hover .heroB__track { animation-play-state: running; }
+.heroB__track figure { overflow: hidden; }
+.heroB__track img { width: 100%; height: auto; display: block; object-fit: cover;
+  aspect-ratio: 4/5; filter: saturate(.96) contrast(1.03) brightness(.88); }
+.heroB__track figure:nth-child(even) img { aspect-ratio: 1; }
+
+/* el borde izquierdo del mosaico se funde con el panel oscuro */
+.heroB__blend { position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    linear-gradient(90deg, var(--void) 0%, rgba(11,9,8,.66) 10%, transparent 30%),
+    linear-gradient(180deg, rgba(11,9,8,.6), transparent 20%, transparent 76%, rgba(11,9,8,.8)); }
+@media (max-width: 899px) {
+  .heroB__blend { background:
+      linear-gradient(180deg, rgba(11,9,8,.55) 0%, transparent 22%, transparent 58%, var(--void) 97%); }
+}
+
+.heroB__credit { position: absolute; right: var(--pad); bottom: 1.1rem; z-index: 3;
+  font-family: var(--mono); font-size: .55rem; letter-spacing: .2em;
+  text-transform: uppercase; color: rgba(239,230,214,.34); }
+
+/* --- señal de vida con sentido: abierto o cerrado, calculado de verdad -- */
+.heroB__live { display: inline-flex; align-items: center; gap: .5rem; }
+.heroB__live i { width: 7px; height: 7px; border-radius: 50%; background: var(--jade);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--jade) 70%, transparent);
+  animation: latido 2.6s ease-out infinite; flex: none; }
+.heroB__live.is-closed i { background: var(--travertine-3); animation: none; }
+.heroB__live b { color: var(--travertine); font-weight: 500; }
+@keyframes latido {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--jade) 60%, transparent); }
+  70%  { box-shadow: 0 0 0 7px rgba(123,154,127,0); }
+  100% { box-shadow: 0 0 0 0 rgba(123,154,127,0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroB__col, .heroB__grid { transform: none !important; }
+  .heroB__track { animation: none !important; }
+  .heroB__live i { animation: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="header is-stuck" id="header">
+  <div class="wrap header__inner">
+    <a class="logo" href="#top" aria-label="ZHUBA, inicio">
+      <svg class="logo__seal" viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="27" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".45"/>
+        <circle cx="32" cy="32" r="22.5" fill="none" stroke="var(--ember)" stroke-width="2"/>
+        <path d="M22 23.5h20L23 40.5h20" fill="none" stroke="var(--ember)" stroke-width="3.2"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span><span class="logo__word display">ZHUBA</span>
+        <span class="logo__sub">Maracay · Venezuela</span></span>
+    </a>
+    <nav class="header__nav" aria-label="Principal">
+      <a href="#historia">Historia</a><a href="#carta">Carta</a>
+      <a href="#resenas">Reseñas</a><a href="#sedes">Sedes</a>
+    </nav>
+    <div class="header__actions">
+      <div class="venue" id="venue">
+        <button class="venue__btn" id="venueBtn" aria-expanded="false">
+          <span class="venue__dot" aria-hidden="true"></span>
+          <span class="venue__name">Restaurante</span>
+          <svg class="venue__caret" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.4"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1.5L5 5l4-3.5"/></svg>
+        </button>
+      </div>
+      <a class="btn btn--sm btn--solid" href="#">Reservar</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+<section class="heroB">
+  <div class="heroB__panel">
+    <div class="heroB__grid" id="heroGrid">
+      <p class="heroB__rule"><span>Maracay · La Floresta</span></p>
+
+      <h1 class="display">Sushi bar, wok<br><em>y</em> barra fría</h1>
+
+      <p class="heroB__sub">
+        Cocina asiática con acento nikkei y tailandés. Salmón noruego, atún saku, escolar y anguila
+        en la barra fría; fuego vivo en el wok. <b>Donde cada plato cuenta una historia.</b>
+      </p>
+
+      <div class="venue-pills" role="group" aria-label="Elegir sede">
+        <button class="venue-pill" aria-pressed="true"><strong>ZHUBA Restaurant</strong><span>Restaurante</span></button>
+        <button class="venue-pill" aria-pressed="false"><strong>ZHUBA Café</strong><span>Café</span></button>
+      </div>
+
+      <div class="heroB__cta">
+        <a class="btn btn--solid" href="#carta">Ver la carta</a>
+        <a class="btn" href="#">Cómo llegar</a>
+      </div>
+
+      <div class="heroB__meta">
+        <span class="heroB__live" id="live"><i></i><b>—</b></span>
+        <span><b class="stars">★★★★★</b> 4,8 · 768 reseñas</span>
+        <span>Delivery · Pick-up · Mesa</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="heroB__mosaic" aria-hidden="true">
+    <div class="heroB__col" data-speed="11">
+      <div class="heroB__track" style="--dur:66s">
+        <figure><img src="../site/img/sashimi-especial-zhuba.webp" alt="" width="520" height="520" decoding="async"></figure>
+        <figure><img src="../site/img/moscow-mule.webp" alt="" width="520" height="520" decoding="async"></figure>
+        <figure><img src="../site/img/volcan-okanoba.webp" alt="" width="520" height="520" decoding="async"></figure>
+        <figure><img src="../site/img/coquitos-de-salmon.webp" alt="" width="520" height="520" decoding="async"></figure>
+        <figure><img src="../site/img/sashimi-especial-zhuba.webp" alt="" width="520" height="520" loading="lazy" decoding="async"></figure>
+        <figure><img src="../site/img/moscow-mule.webp" alt="" width="520" height="520" loading="lazy" decoding="async"></figure>
+        <figure><img src="../site/img/volcan-okanoba.webp" alt="" width="520" height="520" loading="lazy" decoding="async"></figure>
+        <figure><img src="../site/img/coquitos-de-salmon.webp" alt="" width="520" height="520" loading="lazy" decoding="async"></figure>
+      </div>
+    </div>
+    <div class="heroB__col" data-speed="26">
+      <div class="heroB__track" style="--dur:82s">
+        <figure><img src="../site/img/unadon-kabayaki.webp" alt="" width="520" height="520" decoding="async"></figure>
+        <figure><img src="../site/img/tartar-zhuba.webp" alt="" width="520" height="520" decoding="async"></figure>
+        <figure><img src="../site/img/degustacion-de-nigiris.webp" alt="" width="520" height="520" decoding="async"></figure>
+        <figure><img src="../site/img/osaka-roll.webp" alt="" width="520" height="520" decoding="async"></figure>
+        <figure><img src="../site/img/unadon-kabayaki.webp" alt="" width="520" height="520" loading="lazy" decoding="async"></figure>
+        <figure><img src="../site/img/tartar-zhuba.webp" alt="" width="520" height="520" loading="lazy" decoding="async"></figure>
+        <figure><img src="../site/img/degustacion-de-nigiris.webp" alt="" width="520" height="520" loading="lazy" decoding="async"></figure>
+        <figure><img src="../site/img/osaka-roll.webp" alt="" width="520" height="520" loading="lazy" decoding="async"></figure>
+      </div>
+    </div>
+    <div class="heroB__blend"></div>
+  </div>
+
+  <p class="heroB__credit">Fotografías reales de la casa</p>
+</section>
+
+<section class="section"><div class="wrap">
+  <div class="section-head"><p class="eyebrow">La casa</p>
+    <h2 class="display">Piedra, brasa<br>y barra fría</h2></div>
+</div></section>
+</main>
+
+<script>
+/* Estado real del local, en hora de Venezuela: abre a las 12:00 m. y cierra
+   a medianoche, salvo de jueves a sábado que estira hasta la 1:00 a.m. */
+function estado() {
+  const p = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'America/Caracas', hour12: false,
+    weekday: 'short', hour: '2-digit', minute: '2-digit'
+  }).formatToParts(new Date());
+  const get = (t) => p.find((x) => x.type === t).value;
+  const dias = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  const d = dias[get('weekday')];
+  const h = +get('hour');
+  const alarga = (dia) => dia >= 4 && dia <= 6;          // jue, vie, sáb
+  const ayer = (d + 6) % 7;
+  if (h >= 12) return { abierto: true, txt: alarga(d) ? 'cierra a la 1:00 a.m.' : 'cierra a las 12:00 a.m.' };
+  if (h < 1 && alarga(ayer)) return { abierto: true, txt: 'cierra a la 1:00 a.m.' };
+  return { abierto: false, txt: 'abre a las 12:00 m.' };
+}
+function pintarEstado() {
+  const el = document.getElementById('live');
+  if (!el) return;
+  const e = estado();
+  el.classList.toggle('is-closed', !e.abierto);
+  el.querySelector('b').textContent = e.abierto ? 'Abierto ahora' : 'Cerrado';
+  el.innerHTML = el.innerHTML.replace(/<\/b>.*$/, '</b> · ' + e.txt);
+}
+pintarEstado();
+setInterval(pintarEstado, 60000);
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const cols = [...document.querySelectorAll('[data-speed]')].map(el => ({ el, s: +el.dataset.speed }));
+const grid = document.getElementById('heroGrid');
+let tick = false;
+function frame() {
+  tick = false;
+  const vh = innerHeight;
+  if (reduce || vh < 240 || vh > 3000) return;
+  const p = Math.min(1, scrollY / vh);
+  cols.forEach(({ el, s }) => { el.style.transform = `translate3d(0,${(-p * s).toFixed(2)}%,0)`; });
+  grid.style.transform = `translate3d(0,${(p * 26).toFixed(1)}px,0)`;
+}
+addEventListener('scroll', () => { if (!tick) { tick = true; requestAnimationFrame(frame); } }, { passive: true });
+frame();
+</script>
+</body>
+</html>
