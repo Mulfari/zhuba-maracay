@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400..700&family=DM+Mono:wght@400&family=Manrope:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { width: 1200px; height: 630px; overflow: hidden; background: #0B0908; position: relative;
+         font-family: Manrope, sans-serif; color: #EFE6D6; }
+  .bg { position: absolute; inset: 0; background: url('../site/assets/hero-poster.jpg') center/cover no-repeat;
+        filter: saturate(.9) brightness(.6); }
+  .scrim { position: absolute; inset: 0;
+    background:
+      radial-gradient(90% 70% at 72% 20%, rgba(214,160,80,.28), transparent 60%),
+      linear-gradient(100deg, rgba(11,9,8,.96) 22%, rgba(11,9,8,.7) 58%, rgba(11,9,8,.42) 100%); }
+  .frame { position: absolute; inset: 26px; border: 1px solid rgba(239,230,214,.16); }
+  .content { position: absolute; left: 74px; top: 76px; width: 700px; }
+  .kick { font-family: 'DM Mono', monospace; font-size: 15px; letter-spacing: .34em;
+    text-transform: uppercase; color: #C9BCA6; display: flex; align-items: center; gap: 14px; white-space: nowrap; }
+  .kick::before { content: ''; width: 44px; height: 1px; background: linear-gradient(90deg,#D6A050,transparent); }
+  h1 { font-family: 'Bodoni Moda', serif; font-size: 80px; line-height: .95; font-weight: 500;
+       letter-spacing: -.025em; margin: 24px 0 20px; font-variation-settings: 'opsz' 96; }
+  h1 em { font-style: italic; font-weight: 400; color: #F2C97F; }
+  p { font-size: 19px; line-height: 1.5; color: #C9BCA6; max-width: 34ch; }
+  .meta { position: absolute; left: 74px; bottom: 62px; display: flex; gap: 34px; align-items: center;
+    font-family: 'DM Mono', monospace; font-size: 15px; letter-spacing: .16em; text-transform: uppercase; color: #8E8375; }
+  .meta b { color: #EFE6D6; font-weight: 400; }
+  .seal { position: absolute; right: 84px; top: 50%; transform: translateY(-50%); text-align: center; }
+  .seal svg { width: 190px; height: 190px; display: block; margin: 0 auto 22px; }
+  .word { font-family: 'Bodoni Moda', serif; font-size: 46px; letter-spacing: .34em;
+    text-indent: .34em; font-weight: 600; }
+  .sub { font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: .3em;
+    text-transform: uppercase; color: #8E8375; margin-top: 12px; }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="scrim"></div>
+  <div class="frame"></div>
+
+  <div class="content">
+    <p class="kick">Maracay · La Floresta</p>
+    <h1>Cada plato<br><em>cuenta</em> una historia</h1>
+    <p>Cocina asiática, nikkei y thai. Sushi bar, wok, coctelería y pastelería de autor.</p>
+  </div>
+
+  <div class="meta">
+    <span><b>★ 4,8</b> · 768 reseñas</span>
+    <span>12:00 m. – 12:00 a.m.</span>
+    <span>Pide por <b>WhatsApp</b></span>
+  </div>
+
+  <div class="seal">
+    <svg viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="27" fill="none" stroke="#EFE6D6" stroke-width="1.1" opacity=".38"/>
+      <circle cx="32" cy="32" r="22.5" fill="none" stroke="#D6A050" stroke-width="1.7"/>
+      <path d="M22 23.5h20L23 40.5h20" fill="none" stroke="#D6A050" stroke-width="2.9"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="word">ZHUBA</div>
+    <div class="sub">Restaurant &amp; Café</div>
+  </div>
+</body>
+</html>

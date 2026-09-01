@@ -1,0 +1,7 @@
+node_modules/
+build/cdp/
+build/chrome-og/
+build/cand-*.mp4
+build/*.png
+build/serve.log
+build/img-map.json

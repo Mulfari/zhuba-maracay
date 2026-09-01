@@ -1,0 +1,166 @@
+/**
+ * Estado de la aplicación. Nada de esto sabe cómo se dibuja la interfaz:
+ * guarda, calcula y avisa. La vista se suscribe con `store.on()`.
+ */
+import { BRANCHES, getBranch, CONTACT } from '../data/branches.js';
+import * as REST from '../data/menu-restaurante.js';
+import * as CAFE from '../data/menu-cafe.js';
+
+const MENUS = { restaurante: REST, cafe: CAFE };
+
+const K = {
+  branch: 'zhuba.branch.v1',
+  cart: 'zhuba.cart.v1',
+  service: 'zhuba.service.v1',
+  stock: 'zhuba.stock.v1',
+  prices: 'zhuba.prices.v1',
+  orders: 'zhuba.orders.v1'
+};
+
+const read = (key, fallback) => {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw === null ? fallback : JSON.parse(raw);
+  } catch { return fallback; }
+};
+const write = (key, value) => {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* modo privado */ }
+};
+
+export const money = (n) =>
+  `${Number(n).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${CONTACT.currency}`;
+
+const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
+
+class Store {
+  constructor() {
+    const saved = read(K.branch, BRANCHES[0].id);
+    this.branchId = BRANCHES.some((b) => b.id === saved) ? saved : BRANCHES[0].id;
+    this.carts = read(K.cart, {});
+    this.service = read(K.service, { mode: 'mesa', fields: {} });
+    this.stock = read(K.stock, {});     // { itemId: false }  → agotado
+    this.prices = read(K.prices, {});   // { itemId: number } → precio sobrescrito
+    this.orders = read(K.orders, []);
+    this.listeners = new Set();
+  }
+
+  /* ------------------------------------------------------------- eventos */
+  on(fn) { this.listeners.add(fn); return () => this.listeners.delete(fn); }
+  emit(what = 'all') { this.listeners.forEach((fn) => fn(what, this)); }
+
+  /* -------------------------------------------------------------- sedes */
+  get branch() { return getBranch(this.branchId); }
+  get menu() { return MENUS[this.branch.menu]; }
+  get categories() { return this.menu.CATEGORIES; }
+  get items() { return this.menu.ITEMS; }
+
+  setBranch(id) {
+    if (id === this.branchId || !BRANCHES.some((b) => b.id === id)) return;
+    this.branchId = id;
+    write(K.branch, id);
+    this.emit('branch');
+  }
+
+  item(id) {
+    for (const key of Object.keys(MENUS)) {
+      const found = MENUS[key].ITEMS.find((i) => i.id === id);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  /* ------------------------------------------- inventario y precio base */
+  isOut(id) { return this.stock[id] === false; }
+  setStock(id, available) {
+    if (available) delete this.stock[id]; else this.stock[id] = false;
+    write(K.stock, this.stock);
+    this.emit('stock');
+  }
+
+  /** Precio base efectivo: override del panel > precio del menú oficial. */
+  basePrice(item) {
+    if (this.prices[item.id] != null) return this.prices[item.id];
+    if (item.price != null) return item.price;
+    if (item.variants?.length) return Math.min(...item.variants.map((v) => v.price));
+    return null;
+  }
+  setPrice(id, value) {
+    if (value == null || value === '' || Number.isNaN(Number(value))) delete this.prices[id];
+    else this.prices[id] = Number(value);
+    write(K.prices, this.prices);
+    this.emit('prices');
+  }
+
+  /**
+   * Precio de una variante. Si el panel sobrescribió el precio base, se
+   * aplica el mismo delta a la variante para no romper la relación.
+   */
+  variantPrice(item, variant) {
+    if (!variant) return this.basePrice(item);
+    const override = this.prices[item.id];
+    if (override == null) return variant.price;
+    const original = item.price != null ? item.price : Math.min(...item.variants.map((v) => v.price));
+    return Math.max(0, Number((variant.price + (override - original)).toFixed(2)));
+  }
+
+  /* ------------------------------------------------------------ carrito */
+  get cart() { return this.carts[this.branchId] || []; }
+  set cart(lines) { this.carts[this.branchId] = lines; write(K.cart, this.carts); }
+
+  get count() { return this.cart.reduce((n, l) => n + l.qty, 0); }
+  get subtotal() { return this.cart.reduce((n, l) => n + l.unit * l.qty, 0); }
+
+  add(line) {
+    const lines = this.cart.slice();
+    const key = (l) => [l.itemId, l.variant || '', (l.adjustments || []).join('|'), (l.note || '').trim()].join('¬');
+    const twin = lines.find((l) => key(l) === key(line));
+    if (twin) twin.qty += line.qty;
+    else lines.push({ ...line, uid: uid() });
+    this.cart = lines;
+    this.emit('cart');
+  }
+
+  setQty(lineId, qty) {
+    let lines = this.cart.slice();
+    const line = lines.find((l) => l.uid === lineId);
+    if (!line) return;
+    line.qty = qty;
+    if (line.qty <= 0) lines = lines.filter((l) => l.uid !== lineId);
+    this.cart = lines;
+    this.emit('cart');
+  }
+
+  remove(lineId) {
+    this.cart = this.cart.filter((l) => l.uid !== lineId);
+    this.emit('cart');
+  }
+
+  clearCart() { this.cart = []; this.emit('cart'); }
+
+  /* ----------------------------------------------------------- servicio */
+  setService(patch) {
+    this.service = { ...this.service, ...patch, fields: { ...this.service.fields, ...(patch.fields || {}) } };
+    write(K.service, this.service);
+    this.emit('service');
+  }
+
+  /* ------------------------------------------------------------ pedidos */
+  /** Se registra al confirmar por WhatsApp; alimenta el panel de cocina. */
+  recordOrder(order) {
+    this.orders = [{ ...order, id: uid().toUpperCase().slice(0, 6), at: Date.now(), state: 'nuevo' }, ...this.orders].slice(0, 200);
+    write(K.orders, this.orders);
+    this.emit('orders');
+    return this.orders[0];
+  }
+  setOrderState(id, state) {
+    const o = this.orders.find((x) => x.id === id);
+    if (!o) return;
+    o.state = state;
+    write(K.orders, this.orders);
+    this.emit('orders');
+  }
+  clearOrders() { this.orders = []; write(K.orders, this.orders); this.emit('orders'); }
+}
+
+export const store = new Store();
+export { MENUS, BRANCHES, CONTACT };

@@ -1,0 +1,21 @@
+sessionStorage.setItem('zhuba.admin.ok','1');
+const now=Date.now();
+const o=[
+ {id:'A7K2QP',at:now-4*60000,state:'nuevo',branch:'restaurante',branchName:'ZHUBA Restaurant',mode:'mesa',fields:{mesa:'14'},count:3,subtotal:71.5,
+  lines:[{name:'Fukkatsu ZHUBA Roll',variant:null,qty:1,unit:25.5,adjustments:['Salsa spicy aparte'],note:'Alergia al sésamo'},
+         {name:'Sashimi',variant:'Atún Saku',qty:1,unit:15.5,adjustments:[],note:''},
+         {name:'Yorokobi',variant:'Tres sabores (lomito, pollo y camarones)',qty:1,unit:21.5,adjustments:['Sin picante'],note:''}]},
+ {id:'B3M9XT',at:now-13*60000,state:'cocina',branch:'restaurante',branchName:'ZHUBA Restaurant',mode:'delivery',fields:{nombre:'Andrea',zona:'Las Delicias',direccion:'Av. Bolívar, Res. Aragua, piso 4',_note:'Sin cubiertos'},count:2,subtotal:48,
+  lines:[{name:'Volcán Okanoba',variant:null,qty:1,unit:23.5,adjustments:['Sin cebollín'],note:''},
+         {name:'Osaka Roll',variant:null,qty:1,unit:26,adjustments:[],note:''}]},
+ {id:'C1F5RD',at:now-26*60000,state:'listo',branch:'cafe',branchName:'ZHUBA Café',mode:'pickup',fields:{nombre:'Luis',hora:'19:30'},count:3,subtotal:27,
+  lines:[{name:'Bubble Waffle al Gelato',variant:null,qty:1,unit:11.5,adjustments:['Extra topping'],note:''},
+         {name:'Café Latte',variant:'Al pistacchio grande',qty:1,unit:7,adjustments:['Leche sin lactosa'],note:''},
+         {name:'Crispy al Caesar',variant:null,qty:1,unit:14,adjustments:[],note:''}]},
+ {id:'D8H4ZV',at:now-52*60000,state:'completado',branch:'restaurante',branchName:'ZHUBA Restaurant',mode:'mesa',fields:{mesa:'7'},count:2,subtotal:44,
+  lines:[{name:'Tartar ZHUBA',variant:null,qty:1,unit:21.5,adjustments:[],note:''},
+         {name:'Fukkatsu ZHUBA Roll',variant:null,qty:1,unit:25.5,adjustments:[],note:''}]}
+];
+localStorage.setItem('zhuba.orders.v1',JSON.stringify(o));
+localStorage.setItem('zhuba.stock.v1',JSON.stringify({'r-unadon':false}));
+location.reload();
