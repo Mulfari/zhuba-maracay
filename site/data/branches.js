@@ -98,7 +98,7 @@ export const CONTACT = {
   facebook: 'https://www.facebook.com/zhubarestaurant/',
   fullMenuRestaurant: 'https://app-menuqr.web.app/?id=zhuba1108',
   fullMenuCafe: 'https://app-menuqr.web.app/?id=zhubacafe',
-  currency: '€'
+  currency: '$'   // la carta está anclada al dólar; se cobra en bolívares a la tasa oficial
 };
 
 /** Reseñas verificadas en el perfil público de Google (extracto textual). */

@@ -1154,3 +1154,117 @@ h1, h2, h3 { margin: 0; }
    compartir línea con el nombre lo estrangula: se apilan. */
 .card--nota .card__title { flex-direction: column; align-items: flex-start; gap: .3rem; }
 .card--nota .card__price { font-size: .95rem; text-align: left; }
+
+/* =========================================================================
+   COBRO EN BOLÍVARES, ENTREGA POR DISTANCIA
+   La carta manda en dólares y el cobro se hace en bolívares: las dos cifras
+   van siempre juntas, con la grande en dólares y la de bolívares debajo.
+   ========================================================================= */
+
+/* --- pasos del cajón ----------------------------------------------------- */
+.pasos { display: flex; gap: 0; list-style: none; margin: 0 0 1.2rem; padding: 0 0 .8rem;
+  border-bottom: var(--hair-soft); }
+.pasos li { display: flex; align-items: center; gap: .4rem; padding-right: 1.1rem;
+  font-family: var(--mono); font-size: .58rem; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--travertine-3); }
+.pasos li span { color: rgba(239,230,214,.25); }
+.pasos li.is-now { color: var(--travertine); }
+.pasos li.is-now span { color: var(--ember); }
+.pasos li.is-done span { color: var(--jade); }
+
+.paso-titulo { font-family: var(--mono); font-size: .6rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--travertine-3); font-weight: 400; margin: 1.4rem 0 .6rem; }
+.paso-cuerpo > .paso-titulo:first-child { margin-top: 0; }
+.opt__nota { font-size: .72rem; color: var(--travertine-3); }
+.opcional { font-family: var(--mono); font-size: .52rem; letter-spacing: .1em; color: var(--travertine-3); }
+
+/* --- la doble cifra ------------------------------------------------------ */
+.totals b small, .cobro__total small {
+  display: block; font-family: var(--mono); font-size: .58rem; font-weight: 400;
+  letter-spacing: .06em; color: var(--travertine-3); margin-top: .1rem;
+}
+.totals .grand b { text-align: right; }
+
+.cobro { border: var(--hair); border-left: 3px solid var(--ember); padding: 1rem 1.1rem;
+  background: linear-gradient(100deg, rgba(214,160,80,.07), transparent 70%); }
+.cobro__fila { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.cobro__fila > span { font-family: var(--mono); font-size: .6rem; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--travertine-3); }
+.cobro__total { font-family: var(--display); font-size: 1.9rem; font-weight: 600; text-align: right; }
+.cobro__nota { margin: .7rem 0 0; font-size: .74rem; line-height: 1.55; color: var(--travertine-3); }
+.tasa { display: block; margin-top: .2rem; font-family: var(--mono); font-size: .6rem;
+  letter-spacing: .05em; color: var(--travertine-2); }
+
+.pago-vacio { margin: 1.2rem 0 0; padding: .85rem 1rem; border: 1px dashed rgba(239,230,214,.22);
+  border-radius: 2px; font-size: .8rem; line-height: 1.55; color: var(--travertine-2); }
+
+/* --- los datos a los que se paga ---------------------------------------- */
+.datos-pago { margin-top: 1.4rem; border: var(--hair); padding: 1rem 1.1rem; background: rgba(239,230,214,.03); }
+.datos-pago dl { margin: 0 0 .9rem; display: grid; gap: .5rem; }
+.datos-pago dl > div { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline;
+  padding-bottom: .5rem; border-bottom: var(--hair-soft); }
+.datos-pago dl > div:last-child { border-bottom: 0; padding-bottom: 0; }
+.datos-pago dt { font-family: var(--mono); font-size: .56rem; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--travertine-3); }
+.datos-pago dd { margin: 0; font-size: .95rem; font-weight: 600; text-align: right;
+  user-select: all; word-break: break-word; }
+
+/* --- ubicación de entrega ------------------------------------------------ */
+.geo { margin-top: 1.2rem; border: var(--hair); padding: 1rem 1.1rem; }
+.geo.is-fuera { border-color: color-mix(in srgb, var(--vermillion) 45%, transparent); }
+.geo__intro { margin: 0 0 .9rem; font-size: .8rem; line-height: 1.55; color: var(--travertine-3); }
+.geo__acciones { display: flex; flex-wrap: wrap; gap: .5rem; }
+.geo__aviso { margin: .8rem 0 0; font-family: var(--mono); font-size: .62rem;
+  letter-spacing: .08em; color: var(--travertine-3); }
+.geo__mapa { height: 190px; margin-top: .9rem; border: var(--hair-soft); background: var(--stone-900); }
+.geo__mapa .leaflet-container { background: var(--stone-900); font-family: var(--sans); }
+
+.geo__datos { display: flex; flex-wrap: wrap; gap: .6rem 1.6rem; margin: .9rem 0 0; }
+.geo__datos > div { display: grid; gap: .15rem; }
+.geo__datos dt { font-family: var(--mono); font-size: .55rem; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--travertine-3); }
+.geo__datos dd { margin: 0; font-size: .95rem; font-weight: 600; }
+.geo__dir { margin: .7rem 0 0; font-size: .78rem; color: var(--travertine-2); }
+.geo__nota { margin: .7rem 0 0; font-size: .76rem; color: var(--travertine-3); }
+.geo__error { margin: .8rem 0 0; padding: .7rem .85rem; font-size: .8rem; line-height: 1.55;
+  border-left: 2px solid var(--vermillion); color: var(--travertine-2); }
+.geo .btn { margin-top: .9rem; }
+
+/* --- lo que falta para seguir -------------------------------------------- */
+.falta { margin: 0; font-family: var(--mono); font-size: .62rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--ember); text-align: center; }
+.drawer__foot .link-x { justify-self: center; }
+
+/* --- referencia en bolívares dentro de la carta -------------------------- */
+.row__bs, .card__bs {
+  display: block; font-family: var(--mono); font-size: .55rem; letter-spacing: .04em;
+  color: var(--travertine-3); margin-top: .12rem; white-space: nowrap;
+}
+.card__bs { text-align: right; }
+.ped-tasa { margin: 0; padding: .55rem 0 0; font-family: var(--mono); font-size: .58rem;
+  letter-spacing: .08em; color: var(--travertine-3); }
+
+/* --- el mapa, a tono con la página ---------------------------------------
+   Las teselas de OpenStreetMap vienen claras; se oscurecen con un filtro
+   sobre el panel de teselas para que no deslumbren dentro de la comanda.
+   Los marcadores quedan fuera del filtro y conservan el color de la casa. */
+.geo__mapa .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(.78) contrast(.86) saturate(.5);
+}
+.geo__mapa .leaflet-container { outline: none; }
+.geo__mapa .leaflet-control-attribution {
+  background: rgba(11,11,11,.72); color: var(--travertine-3);
+  font-family: var(--mono); font-size: .5rem; letter-spacing: .04em; padding: .1rem .35rem;
+}
+.geo__mapa .leaflet-control-attribution a { color: var(--travertine-2); }
+.geo__mapa .leaflet-control-zoom a {
+  background: rgba(11,11,11,.82); color: var(--travertine); border-color: rgba(239,230,214,.16);
+}
+.geo__mapa .leaflet-control-zoom a:hover { background: rgba(11,11,11,.95); color: var(--ember); }
+
+.pin { display: grid; place-items: center; }
+.pin i {
+  display: block; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--vermillion); border: 2px solid var(--travertine);
+  box-shadow: 0 0 0 6px rgba(192,68,44,.22);
+}

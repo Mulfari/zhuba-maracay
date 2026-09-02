@@ -3,7 +3,7 @@
  * Comparte el mismo store y el mismo localStorage que la web pública:
  * lo que se apaga aquí desaparece de la carta al instante.
  */
-import { store, money, BRANCHES, MENUS } from './store.js';
+import { store, money, bolivares, BRANCHES, MENUS, METODOS_PAGO } from './store.js';
 import { ORDER_STATES, SERVICE_MODES } from '../data/modifiers.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -70,7 +70,11 @@ function orderCard(o) {
         <span class="kds__id">#${esc(o.id)}</span>
         <span class="kds__meta">${timeOf(o.at)} · ${esc(branchName(o.branch))} · ${esc(SERVICE_MODES.find((m) => m.id === o.mode)?.label || o.mode)}</span>
       </div>
-      <span class="kds__state">${esc(state.label)}</span>
+      <div class="kds__marcas">
+        ${o.pago ? `<span class="kds__cobro${o.pago.metodoId === 'efectivo' ? ' is-pendiente' : ' is-cobrado'}">${
+          o.pago.metodoId === 'efectivo' ? 'Cobrar al entregar' : 'Pagado'}</span>` : ''}
+        <span class="kds__state">${esc(state.label)}</span>
+      </div>
     </header>
     ${who ? `<p class="kds__who">${who}</p>` : ''}
     <ul class="kds__lines">
@@ -82,8 +86,16 @@ function orderCard(o) {
         </li>`).join('')}
     </ul>
     ${o.fields?._note ? `<p class="kds__note">▸ ${esc(o.fields._note)}</p>` : ''}
+    ${o.pago ? `<p class="kds__pago">
+      <b>${esc(o.pago.metodo)}</b>${o.pago.referencia ? ` · ref. ${esc(o.pago.referencia)}` : ''}${
+        o.pago.telefono ? ` · ${esc(o.pago.telefono)}` : ''}${
+        o.pago.conComprobante ? ' · con comprobante' : ''}</p>` : ''}
+    ${o.entrega ? `<p class="kds__geo"><a href="https://www.google.com/maps?q=${o.entrega.lat},${o.entrega.lng}"
+       target="_blank" rel="noopener">${o.entrega.km.toFixed(1)} km · ver en el mapa</a>${
+       o.envio ? ` · envío ${money(o.envio)}` : ''}</p>` : ''}
     <footer class="kds__foot">
-      <span class="kds__total">${money(o.subtotal)}</span>
+      <span class="kds__total">${money(o.total ?? o.subtotal)}${
+        o.pago?.enBs != null ? `<small>${bolivares(o.pago.enBs)}</small>` : ''}</span>
       <div class="kds__steps">
         ${ORDER_STATES.map((s) => `
           <button data-state="${s.id}" class="${s.id === o.state ? 'is-on' : ''}">${esc(s.label)}</button>`).join('')}
@@ -104,9 +116,22 @@ function renderOrders() {
 }
 
 /* --------------------------------------------------------------- métricas */
+/** La cifra en bolívares debajo de la de dólares, o nada si no hay tasa. */
+const enBs = (usd) => {
+  const v = store.aBs(usd);
+  return v == null ? '' : `<small>${bolivares(v)}</small>`;
+};
+
 function renderMetrics() {
   const today = visibleOrders().filter((o) => isToday(o.at));
-  const revenue = today.reduce((n, o) => n + o.subtotal, 0);
+  const totalDe = (o) => o.total ?? o.subtotal;
+  // Cobrado es lo que ya entró por pago móvil, transferencia, Zelle o Binance.
+  // El efectivo y lo que llegó sin pago se cuentan aparte: todavía no está.
+  const cobrado = today.filter((o) => o.pago && o.pago.metodoId !== 'efectivo');
+  const porCobrar = today.filter((o) => !o.pago || o.pago.metodoId === 'efectivo');
+  const suma = (lista, fn) => lista.reduce((n, o) => n + (fn(o) || 0), 0);
+  const revenue = suma(today, totalDe);
+  const envios = suma(today, (o) => o.envio);
   const items = today.reduce((n, o) => n + o.lines.reduce((m, l) => m + l.qty, 0), 0);
 
   const tally = {};
@@ -116,7 +141,13 @@ function renderMetrics() {
   $('#metrics').innerHTML = `
     <div class="stat"><span>Comandas hoy</span><b>${today.length}</b></div>
     <div class="stat"><span>Ítems hoy</span><b>${items}</b></div>
-    <div class="stat"><span>Estimado hoy</span><b>${money(revenue)}</b></div>
+    <div class="stat"><span>Facturado hoy</span><b>${money(revenue)}${enBs(revenue)}</b></div>
+    <div class="stat"><span>Ya cobrado</span><b>${money(suma(cobrado, totalDe))}${
+      enBs(suma(cobrado, totalDe))}</b></div>
+    <div class="stat"><span>Por cobrar</span><b>${money(suma(porCobrar, totalDe))}${
+      enBs(suma(porCobrar, totalDe))}</b></div>
+    <div class="stat"><span>Envíos hoy</span><b>${money(envios)}</b></div>
+    <div class="stat"><span>Ticket medio</span><b>${money(today.length ? revenue / today.length : 0)}</b></div>
     <div class="stat"><span>Pendientes</span><b>${visibleOrders().filter((o) => o.state !== 'completado').length}</b></div>`;
 
   $('#top').innerHTML = top.length
@@ -178,10 +209,13 @@ function renderAll() {
   renderOrders();
   renderMetrics();
   renderStock();
+  renderCobro();
 }
 
 function boot() {
+  store.cargarTasa().then(renderCobro);
   renderAll();
+  bindCobro();
 
   $('#filters').addEventListener('click', (e) => {
     const b = e.target.closest('[data-filter]');
@@ -218,6 +252,7 @@ function boot() {
   store.on((what) => {
     if (what === 'orders') { renderOrders(); renderMetrics(); }
     if (what === 'stock' || what === 'prices') { renderStock(); }
+    if (what === 'tasa') { renderCobro(); renderMetrics(); }
   });
 
   // otra pestaña envió una comanda
@@ -232,3 +267,77 @@ function boot() {
 
 bindGate();
 gate();
+
+/* ------------------------------------------------------- cobro y envío */
+/* Lo que el restaurante configura y la web no puede inventar: a dónde se
+   paga, cuánto cuesta llevarlo y a quién avisar cuando alguien paga. */
+function renderCobro() {
+  const c = store.config;
+  const t = store.tasa;
+
+  $('#tasaEstado').innerHTML = t
+    ? `<b>${money(1)} = ${bolivares(t.valor)}</b><span class="muted">${esc(t.fuente)} · ${
+        new Date(t.fecha).toLocaleDateString('es-VE')}</span>`
+    : '<b>Sin tasa</b><span class="muted">no se pudo consultar</span>';
+  $('#tasaManual').value = c.tasaManual ?? '';
+
+  $('#metodos').innerHTML = METODOS_PAGO.filter((m) => m.campos.length).map((m) => {
+    const d = c.pagos[m.id] || {};
+    const listo = m.campos.every((x) => String(d[x.id] || '').trim());
+    return `
+    <fieldset class="metodo${listo ? ' is-listo' : ''}">
+      <legend>${esc(m.nombre)} <span>${listo ? 'publicado' : 'sin publicar'}</span></legend>
+      ${m.campos.map((x) => `
+        <label><span>${esc(x.label)}</span>
+          <input data-pago-metodo="${m.id}" data-pago-campo="${x.id}"
+                 value="${esc(d[x.id] || '')}" placeholder="${esc(x.placeholder || '')}"></label>`).join('')}
+    </fieldset>`;
+  }).join('');
+
+  $('#anillos').innerHTML = store.anillos.map((a) => `
+    <label class="anillo"><span>${esc(a.etiqueta)}</span>
+      <input type="number" step="0.5" min="0" data-anillo="${a.id}"
+             value="${a.precio ?? ''}" placeholder="sin precio"></label>`).join('');
+  $('#maxKm').value = c.maxKm ?? '';
+  $('#aviso').value = c.aviso ?? '';
+}
+
+function bindCobro() {
+  const guarda = (fn) => { fn(); store.setConfig(store.config); renderCobro(); };
+
+  $('#cobro').addEventListener('change', (e) => {
+    const m = e.target.closest('[data-pago-metodo]');
+    if (m) return guarda(() => {
+      const id = m.dataset.pagoMetodo;
+      store.config.pagos[id] = { ...(store.config.pagos[id] || {}), [m.dataset.pagoCampo]: m.value.trim() };
+    });
+    const a = e.target.closest('[data-anillo]');
+    if (a) return guarda(() => {
+      const v = a.value.trim();
+      if (v === '') delete store.config.anillos[a.dataset.anillo];
+      else store.config.anillos[a.dataset.anillo] = Number(v);
+    });
+    if (e.target.id === 'maxKm') return guarda(() => { store.config.maxKm = Number(e.target.value) || null; });
+    if (e.target.id === 'aviso') return guarda(() => { store.config.aviso = e.target.value.trim(); });
+    if (e.target.id === 'tasaManual') return guarda(() => {
+      const v = e.target.value.trim();
+      store.config.tasaManual = v === '' ? null : Number(v);
+      store.cargarTasa();
+    });
+  });
+
+  $('#tasaRefrescar').addEventListener('click', async () => {
+    store.config.tasaManual = null;
+    store.setConfig(store.config);
+    store.tasa = null;
+    await store.cargarTasa();
+    renderCobro();
+  });
+
+  $('#avisoProbar').addEventListener('click', async () => {
+    const r = await store.avisar({ prueba: true, en: new Date().toISOString(), sede: store.branch.name });
+    alert(r.enviado
+      ? 'Aviso de prueba enviado. Revisa que haya llegado a tu destino.'
+      : 'No se envió: ' + (r.motivo === 'sin-webhook' ? 'falta la dirección del aviso (https://…)' : r.motivo));
+  });
+}

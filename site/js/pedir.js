@@ -6,7 +6,7 @@
  * todo desde el móvil, así que manda la rapidez: buscador, lista compacta con
  * miniatura y un botón de añadir siempre a la vista.
  */
-import { store, money, BRANCHES, CONTACT } from './store.js';
+import { store, money, bolivares, BRANCHES, CONTACT, METODOS_PAGO, ENVIO } from './store.js';
 import { TAGS, ADJUSTMENTS, ADJUSTMENT_MAP, ADJUSTMENT_NOTE, SERVICE_MODES } from '../data/modifiers.js';
 import { whatsappLink, orderSnapshot } from './ticket.js';
 
@@ -305,6 +305,251 @@ function lineRow(l) {
   </div>`;
 }
 
+
+/* ============================================================ el pago, por pasos */
+/* La comanda se arma, se dice cómo se entrega y se paga antes de salir. El
+   orden importa: el aviso al restaurante se dispara en cuanto alguien marca
+   que pagó, no al final, porque el punto flojo es justo ese —pagar y no
+   terminar de mandar el mensaje. */
+
+let paso = 'comanda';
+let mapa = null, marcador = null;
+
+const PASOS = [
+  { id: 'comanda', label: 'Comanda' },
+  { id: 'entrega', label: 'Entrega' },
+  { id: 'pago', label: 'Pago' }
+];
+
+function lineaTasa() {
+  if (!store.tasa?.valor) return '';
+  const f = new Date(store.tasa.fecha);
+  const dia = `${String(f.getDate()).padStart(2, '0')}/${String(f.getMonth() + 1).padStart(2, '0')}`;
+  return `<span class="tasa">${esc(store.tasa.fuente)} · ${bolivares(store.tasa.valor)} por dólar · ${dia}</span>`;
+}
+
+function dobleImporte(usd, clase = '') {
+  const enBs = store.aBs(usd);
+  return `<b class="${clase}">${money(usd)}${enBs != null ? `<small>${bolivares(enBs)}</small>` : ''}</b>`;
+}
+
+function pasosBarra() {
+  const i = PASOS.findIndex((p) => p.id === paso);
+  return `<ol class="pasos">${PASOS.map((p, n) => `
+    <li class="${n === i ? 'is-now' : n < i ? 'is-done' : ''}">
+      <span>${String(n + 1).padStart(2, '0')}</span>${esc(p.label)}
+    </li>`).join('')}</ol>`;
+}
+
+/* -------------------------------------------------------------- entrega */
+function bloqueUbicacion() {
+  const e = store.entrega;
+  const tope = store.maxKm;
+
+  if (!e) {
+    return `
+    <div class="geo">
+      <p class="geo__intro">Para calcular el envío necesitamos saber a dónde va.
+        Se mide en línea recta desde el restaurante; llegamos hasta ${tope} km.</p>
+      <div class="geo__acciones">
+        <button class="btn btn--solid btn--sm" data-geo>Usar mi ubicación</button>
+        <button class="btn btn--sm btn--ghost" data-mapa>Marcar en el mapa</button>
+      </div>
+      <p class="geo__aviso" id="geoAviso" hidden></p>
+      <div class="geo__mapa" id="geoMapa" hidden></div>
+    </div>`;
+  }
+
+  const precio = e.precio;
+  return `
+  <div class="geo${e.fuera ? ' is-fuera' : ''}">
+    <div class="geo__mapa" id="geoMapa"></div>
+    <dl class="geo__datos">
+      <div><dt>Distancia</dt><dd>${e.km.toFixed(1)} km</dd></div>
+      <div><dt>Zona</dt><dd>${e.fuera ? 'Fuera de cobertura' : esc(e.etiqueta)}</dd></div>
+      <div><dt>Envío</dt><dd>${e.fuera ? '—'
+        : precio == null ? 'Por confirmar' : money(precio)}</dd></div>
+    </dl>
+    ${e.direccion ? `<p class="geo__dir">${esc(e.direccion)}</p>` : ''}
+    ${e.fuera
+      ? `<p class="geo__error">Esa dirección queda a ${e.km.toFixed(1)} km y solo llevamos hasta ${tope} km.
+         Puedes pedirlo para <b>pick-up</b> o escribirnos por WhatsApp.</p>`
+      : precio == null
+        ? '<p class="geo__nota">El restaurante confirma el costo del envío al recibir tu pedido.</p>' : ''}
+    <button class="btn btn--sm btn--ghost" data-geo-reset>Cambiar ubicación</button>
+  </div>`;
+}
+
+async function cargarMapa() {
+  if (window.L) return window.L;
+  await new Promise((ok, err) => {
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+    document.head.appendChild(css);
+    const js = document.createElement('script');
+    js.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+    js.onload = ok; js.onerror = err;
+    document.head.appendChild(js);
+  });
+  return window.L;
+}
+
+async function pintarMapa(lat, lng) {
+  const cont = $('#geoMapa');
+  if (!cont) return;
+  cont.hidden = false;
+  let L;
+  try { L = await cargarMapa(); } catch { cont.innerHTML = '<p class="geo__nota">No se pudo cargar el mapa. Escríbenos la dirección por WhatsApp.</p>'; return; }
+
+  if (mapa) { mapa.remove(); mapa = null; }
+  mapa = L.map(cont, { attributionControl: true, zoomControl: true }).setView([lat, lng], 15);
+  // Teselas de OpenStreetMap, que no piden clave. El tono oscuro lo pone el CSS
+  // sobre las teselas, no sobre los marcadores, para que el mapa no cante
+  // dentro de una página negra.
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, attribution: '© OpenStreetMap'
+  }).addTo(mapa);
+  mapa.attributionControl.setPrefix('');
+  L.circleMarker([ENVIO.origen.lat, ENVIO.origen.lng], {
+    radius: 6, color: '#D6A050', fillColor: '#D6A050', fillOpacity: .9, weight: 1
+  }).addTo(mapa).bindTooltip('ZHUBA');
+  marcador = L.marker([lat, lng], {
+    draggable: true,
+    icon: L.divIcon({ className: 'pin', html: '<i></i>', iconSize: [22, 22], iconAnchor: [11, 11] })
+  }).addTo(mapa);
+  marcador.on('dragend', () => {
+    const p = marcador.getLatLng();
+    fijarUbicacion(p.lat, p.lng, true);
+  });
+  setTimeout(() => mapa.invalidateSize(), 60);
+}
+
+async function direccionDe(lat, lng) {
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=17`);
+    if (!r.ok) return '';
+    const d = await r.json();
+    return d.display_name ? String(d.display_name).split(',').slice(0, 4).join(',') : '';
+  } catch { return ''; }
+}
+
+async function fijarUbicacion(lat, lng, mantenerMapa = false) {
+  store.setEntrega(lat, lng, '');
+  renderCart();
+  if (!mantenerMapa) await pintarMapa(lat, lng);
+  else setTimeout(() => pintarMapa(lat, lng), 0);
+  const dir = await direccionDe(lat, lng);
+  if (dir && store.entrega) { store.entrega.direccion = dir; renderCart(); pintarMapa(lat, lng); }
+}
+
+function pedirUbicacion() {
+  const aviso = $('#geoAviso');
+  if (!navigator.geolocation) {
+    if (aviso) { aviso.hidden = false; aviso.textContent = 'Tu navegador no comparte ubicación. Márcala en el mapa.'; }
+    return;
+  }
+  if (aviso) { aviso.hidden = false; aviso.textContent = 'Buscando tu ubicación…'; }
+  navigator.geolocation.getCurrentPosition(
+    (pos) => fijarUbicacion(pos.coords.latitude, pos.coords.longitude),
+    () => { if (aviso) aviso.textContent = 'No pudimos leer tu ubicación. Márcala tú en el mapa.'; },
+    { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
+  );
+}
+
+/* ------------------------------------------------------------- servicio */
+function bloqueEntrega() {
+  const b = store.branch;
+  const modo = SERVICE_MODES.find((m) => m.id === store.service.mode) || SERVICE_MODES[0];
+  const f = store.service.fields || {};
+
+  const campo = (fl) => {
+    return `<div class="field" data-field="${fl.id}">
+      <label for="f-${fl.id}">${esc(fl.label)}</label>
+      <input id="f-${fl.id}" data-input="${fl.id}" type="${fl.type}"
+             placeholder="${esc(fl.placeholder || '')}" value="${esc(f[fl.id] || '')}"></div>`;
+  };
+
+  return `
+  <div class="paso-cuerpo">
+    <h4 class="paso-titulo">¿Cómo lo quieres?</h4>
+    <div class="svc">
+      ${SERVICE_MODES.map((m) => `
+        <button data-mode="${m.id}" aria-pressed="${m.id === modo.id}">${ICON[m.icon]}${esc(m.label)}</button>`).join('')}
+    </div>
+    <p class="svc-hint">${esc(modo.hint)}</p>
+    ${modo.fields.map(campo).join('')}
+    ${store.service.mode === 'delivery' ? bloqueUbicacion() : ''}
+    <div class="field">
+      <label for="orderNote">Nota general del pedido</label>
+      <textarea id="orderNote" data-input="_note" placeholder="Cumpleaños, alergias, hora de llegada…">${esc(f._note || '')}</textarea>
+    </div>
+  </div>`;
+}
+
+/* ----------------------------------------------------------------- pago */
+function bloquePago() {
+  const metodos = store.metodosDisponibles();
+  const elegido = store.pago.metodo;
+  const m = METODOS_PAGO.find((x) => x.id === elegido);
+  const datos = elegido ? store.datosPago(elegido) : {};
+  const total = store.total;
+  const enBs = store.aBs(total);
+
+  const soloEfectivo = metodos.length === 1 && metodos[0].id === 'efectivo';
+
+  return `
+  <div class="paso-cuerpo">
+    <div class="cobro">
+      <div class="cobro__fila"><span>Total a pagar</span>${dobleImporte(total, 'cobro__total')}</div>
+      ${enBs != null
+        ? `<p class="cobro__nota">Se cobra en bolívares. ${lineaTasa()}</p>`
+        : '<p class="cobro__nota">No pudimos leer la tasa oficial ahora mismo; el restaurante te confirma el monto en bolívares.</p>'}
+    </div>
+
+    ${soloEfectivo ? `
+      <p class="pago-vacio">Todavía no hay datos de pago publicados en la web.
+        Envía tu pedido y el restaurante te pasa los datos por WhatsApp.</p>` : ''}
+
+    <h4 class="paso-titulo">¿Cómo vas a pagar?</h4>
+    <div class="opts" role="radiogroup" aria-label="Método de pago">
+      ${metodos.map((x) => `
+        <button class="opt" role="radio" data-metodo="${x.id}" aria-checked="${x.id === elegido}">
+          <span class="opt__mark"><i></i></span>
+          <span class="opt__label">${esc(x.nombre)}<br><span class="opt__nota">${esc(x.nota)}</span></span>
+        </button>`).join('')}
+    </div>
+
+    ${m && m.campos.length ? `
+      <div class="datos-pago">
+        <h4 class="paso-titulo">Paga a estos datos</h4>
+        <dl>
+          ${m.campos.map((c) => `<div><dt>${esc(c.label)}</dt><dd>${esc(datos[c.id] || '')}</dd></div>`).join('')}
+          <div><dt>Monto</dt><dd>${m.enDolares ? money(total) : (enBs != null ? bolivares(enBs) : 'a confirmar')}</dd></div>
+        </dl>
+        <button class="btn btn--sm btn--ghost" data-copiar>Copiar los datos</button>
+      </div>
+
+      <h4 class="paso-titulo">Cuando ya pagaste</h4>
+      <div class="field" data-field="referencia">
+        <label for="p-ref">Referencia del pago</label>
+        <input id="p-ref" data-pago="referencia" type="text" inputmode="numeric"
+               placeholder="Últimos dígitos o referencia completa" value="${esc(store.pago.referencia)}">
+      </div>
+      <div class="field" data-field="telefono">
+        <label for="p-tel">Teléfono de quien paga</label>
+        <input id="p-tel" data-pago="telefono" type="tel" placeholder="Ej. 0412-0000000"
+               value="${esc(store.pago.telefono)}">
+      </div>
+      <div class="field">
+        <label for="p-comp">Comprobante <span class="opcional">opcional</span></label>
+        <input id="p-comp" data-pago="comprobante" type="file" accept="image/*">
+        ${store.pago.comprobante ? `<p class="svc-hint">Adjuntado: ${esc(store.pago.comprobante.nombre)}</p>` : ''}
+      </div>` : ''}
+  </div>`;
+}
+
+/* --------------------------------------------------------------- cajón */
 function upsellPicks() {
   const inCart = new Set(store.cart.map((l) => l.itemId));
   const favour = ['barra', 'frias', 'calientes', 'gelato', 'aperitivos', 'hojaldre'];
@@ -317,95 +562,101 @@ function upsellPicks() {
     .slice(0, 8);
 }
 
-function serviceBlock() {
-  const b = store.branch;
-  const mode = SERVICE_MODES.find((m) => m.id === store.service.mode) || SERVICE_MODES[0];
-  const f = store.service.fields || {};
-
-  const fieldHtml = (fl) => {
-    if (fl.type === 'zone') {
-      return `<div class="field" data-field="${fl.id}">
-        <label for="f-${fl.id}">${esc(fl.label)}</label>
-        <select id="f-${fl.id}" data-input="${fl.id}">
-          <option value="">Selecciona tu zona</option>
-          ${b.deliveryZones.map((z) => `<option ${f[fl.id] === z ? 'selected' : ''}>${esc(z)}</option>`).join('')}
-        </select></div>`;
+/** Qué falta para poder seguir. Cadena vacía = se puede. */
+function loQueFalta() {
+  if (paso === 'comanda') return store.cart.length ? '' : 'Añade algo a la comanda';
+  if (paso === 'entrega') {
+    const modo = SERVICE_MODES.find((m) => m.id === store.service.mode);
+    const f = store.service.fields || {};
+    for (const fl of modo.fields) {
+      if (fl.required && !String(f[fl.id] || '').trim()) return `Falta ${fl.label.toLowerCase()}`;
     }
-    return `<div class="field" data-field="${fl.id}">
-      <label for="f-${fl.id}">${esc(fl.label)}</label>
-      <input id="f-${fl.id}" data-input="${fl.id}" type="${fl.type}"
-             placeholder="${esc(fl.placeholder || '')}" value="${esc(f[fl.id] || '')}"></div>`;
-  };
-
-  return `
-  <div class="upsell" style="margin-top:1.8rem">
-    <h4 style="font-family:var(--mono);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--travertine-3);margin:0 0 .2rem;font-weight:400">¿Cómo lo quieres?</h4>
-    <div class="svc">
-      ${SERVICE_MODES.map((m) => `
-        <button data-mode="${m.id}" aria-pressed="${m.id === mode.id}">${ICON[m.icon]}${esc(m.label)}</button>`).join('')}
-    </div>
-    <p class="svc-hint">${esc(mode.hint)}</p>
-    ${mode.fields.map(fieldHtml).join('')}
-    <div class="field">
-      <label for="orderNote">Nota general del pedido</label>
-      <textarea id="orderNote" data-input="_note" placeholder="Cumpleaños, alergias, hora de llegada…">${esc(f._note || '')}</textarea>
-    </div>
-  </div>`;
+    if (store.service.mode === 'delivery') {
+      if (!store.entrega) return 'Marca a dónde lo llevamos';
+      if (store.entrega.fuera) return 'Esa zona queda fuera de cobertura';
+    }
+    return '';
+  }
+  const m = METODOS_PAGO.find((x) => x.id === store.pago.metodo);
+  if (!m) return 'Elige cómo vas a pagar';
+  if (m.campos.length) {
+    if (!store.pago.referencia.trim()) return 'Falta la referencia del pago';
+    if (!store.pago.telefono.trim()) return 'Falta el teléfono de quien paga';
+  }
+  return '';
 }
 
 function renderCart() {
   const body = $('#drawerBody');
   const foot = $('#drawerFoot');
-  const sub = $('#drawerSub');
   const b = store.branch;
   if (!body) return;
-
-  sub.textContent = b.name;
+  $('#drawerSub').textContent = b.name;
 
   if (!store.cart.length) {
+    paso = 'comanda';
     body.innerHTML = `
       <div class="empty">
         <span aria-hidden="true">乙</span>
-        <p>Tu comanda está vacía. Arma tu mesa desde la carta y la enviamos por WhatsApp.</p>
+        <p>Tu comanda está vacía. Añade platos de la carta y los enviamos al restaurante.</p>
         <button class="btn btn--ghost btn--sm" data-close-drawer>Ver la carta</button>
       </div>`;
     foot.innerHTML = '';
     return;
   }
 
-  const picks = upsellPicks();
-  body.innerHTML = `
-    ${store.cart.map(lineRow).join('')}
-    ${picks.length ? `
-    <div class="upsell">
-      <h4 style="font-family:var(--mono);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--travertine-3);margin:0 0 .6rem;font-weight:400">Completa la mesa</h4>
-      <div class="upsell__rail">
-        ${picks.map((i) => `
-          <button class="upsell__card" data-quick="${i.id}">
-            ${i.img ? `<img src="img/${esc(i.img)}" alt="" loading="lazy" width="128" height="128">` : '<div class="ph" aria-hidden="true">乙</div>'}
-            <b>${esc(i.name)}</b><span>${esc(priceLabel(i).main)}</span>
-          </button>`).join('')}
-      </div>
-    </div>` : ''}
-    ${serviceBlock()}`;
+  const picks = paso === 'comanda' ? upsellPicks() : [];
+  body.innerHTML = pasosBarra() + (
+    paso === 'comanda' ? `
+      ${store.cart.map(lineRow).join('')}
+      ${picks.length ? `
+      <div class="upsell">
+        <h4 class="paso-titulo">Completa la mesa</h4>
+        <div class="upsell__rail">
+          ${picks.map((i) => `
+            <button class="upsell__card" data-quick="${i.id}">
+              ${i.img ? `<img src="img/${esc(i.img)}" alt="" loading="lazy" width="128" height="128">` : '<div class="ph" aria-hidden="true">乙</div>'}
+              <b>${esc(i.name)}</b><span>${esc(priceLabel(i).main)}</span>
+            </button>`).join('')}
+        </div>
+      </div>` : ''}`
+    : paso === 'entrega' ? bloqueEntrega()
+    : bloquePago()
+  );
 
-  const fee = store.service.mode === 'delivery' ? b.deliveryFee : null;
+  const falta = loQueFalta();
+  const envio = store.costeEnvio;
+  const esDelivery = store.service.mode === 'delivery';
+
   foot.innerHTML = `
     <div class="totals">
       <div><span>Subtotal · ${store.count} ${store.count === 1 ? 'ítem' : 'ítems'}</span><b>${money(store.subtotal)}</b></div>
-      ${store.service.mode === 'delivery'
-        ? `<div><span>Envío</span><b>${fee == null ? 'A coordinar' : money(fee)}</b></div>` : ''}
-      <div class="grand"><span>Total</span><b class="price">${money(store.subtotal + (fee || 0))}</b></div>
+      ${esDelivery ? `<div><span>Envío${store.entrega ? ` · ${store.entrega.km.toFixed(1)} km` : ''}</span><b>${
+        store.entrega?.fuera ? 'Fuera de zona'
+        : store.entrega?.precio == null ? 'Por confirmar' : money(store.entrega.precio)}</b></div>` : ''}
+      <div class="grand"><span>Total</span>${dobleImporte(store.total, 'price')}</div>
     </div>
-    <button class="btn btn--wa" data-checkout>${ICON.wa} Completar pedido por WhatsApp</button>
-    <p class="fineprint">Se abre WhatsApp con la comanda escrita, lista para enviar a <b>${esc(b.phone)}</b>.
-    ${store.service.mode === 'delivery' ? esc(b.deliveryFeeNote) : ''}</p>`;
+    ${falta ? `<p class="falta">${esc(falta)}</p>` : ''}
+    ${paso === 'pago'
+      ? `<button class="btn btn--wa" data-enviar ${falta ? 'disabled' : ''}>${ICON.wa} ${
+          store.pago.metodo === 'efectivo' ? 'Enviar pedido por WhatsApp' : 'Ya pagué · enviar por WhatsApp'}</button>`
+      : `<button class="btn btn--solid" data-siguiente ${falta ? 'disabled' : ''}>
+           ${paso === 'comanda' ? 'Continuar' : 'Continuar al pago'}</button>`}
+    ${paso !== 'comanda' ? '<button class="link-x" data-atras>Volver</button>' : ''}
+    ${paso === 'pago'
+      ? `<p class="fineprint">Al enviar se abre WhatsApp con la comanda escrita hacia <b>${esc(b.phone)}</b>.
+           El restaurante confirma y sigue contigo por ahí.</p>`
+      : ''}`;
+
+  if (paso === 'entrega' && store.service.mode === 'delivery' && store.entrega) {
+    pintarMapa(store.entrega.lat, store.entrega.lng);
+  }
 }
 
 function bindDrawer() {
   const drawer = $('#drawer');
 
-  drawer.addEventListener('click', (e) => {
+  drawer.addEventListener('click', async (e) => {
     if (e.target.closest('[data-close-drawer]')) return closeDrawer();
 
     const inc = e.target.closest('[data-inc]');
@@ -420,57 +671,138 @@ function bindDrawer() {
       const i = store.item(quick.dataset.quick);
       const v = i.variants?.length ? i.variants[0] : null;
       store.add({
-        itemId: i.id, name: i.name, img: i.img,
-        variant: v ? v.name : null,
-        unit: v ? store.variantPrice(i, v) : store.basePrice(i),
-        qty: 1, adjustments: [], note: ''
+        itemId: i.id, name: i.name, img: i.img, variant: v ? v.name : null,
+        unit: v ? store.variantPrice(i, v) : store.basePrice(i), qty: 1, adjustments: [], note: ''
       });
       toast(`${i.name} · añadido`);
       return;
     }
 
-    const mode = e.target.closest('[data-mode]');
-    if (mode) return store.setService({ mode: mode.dataset.mode });
+    const modo = e.target.closest('[data-mode]');
+    if (modo) { store.setService({ mode: modo.dataset.mode }); return; }
 
-    if (e.target.closest('[data-checkout]')) return checkout();
+    if (e.target.closest('[data-geo]')) return pedirUbicacion();
+    if (e.target.closest('[data-mapa]')) return pintarMapa(ENVIO.origen.lat, ENVIO.origen.lng);
+    if (e.target.closest('[data-geo-reset]')) { store.limpiarEntrega(); return renderCart(); }
+
+    const met = e.target.closest('[data-metodo]');
+    if (met) { store.pago.metodo = met.dataset.metodo; return renderCart(); }
+
+    if (e.target.closest('[data-copiar]')) {
+      const m = METODOS_PAGO.find((x) => x.id === store.pago.metodo);
+      const d = store.datosPago(store.pago.metodo);
+      const txt = m.campos.map((c) => `${c.label}: ${d[c.id] || ''}`).join('\n');
+      try { await navigator.clipboard.writeText(txt); toast('Datos copiados'); }
+      catch { toast('Cópialos a mano'); }
+      return;
+    }
+
+    if (e.target.closest('[data-siguiente]')) {
+      paso = paso === 'comanda' ? 'entrega' : 'pago';
+      $('#drawerBody').scrollTop = 0;
+      return renderCart();
+    }
+    if (e.target.closest('[data-atras]')) {
+      paso = paso === 'pago' ? 'entrega' : 'comanda';
+      $('#drawerBody').scrollTop = 0;
+      return renderCart();
+    }
+    if (e.target.closest('[data-enviar]')) return enviar();
   });
 
   drawer.addEventListener('input', (e) => {
-    const input = e.target.closest('[data-input]');
-    if (!input) return;
-    store.service.fields[input.dataset.input] = input.value;
-    try { localStorage.setItem('zhuba.service.v1', JSON.stringify(store.service)); } catch { /* noop */ }
-    input.closest('.field')?.classList.remove('is-bad');
+    const campo = e.target.closest('[data-input]');
+    if (campo) {
+      store.service.fields[campo.dataset.input] = campo.value;
+      try { localStorage.setItem('zhuba.service.v1', JSON.stringify(store.service)); } catch { /* noop */ }
+      campo.closest('.field')?.classList.remove('is-bad');
+      return actualizarPie();
+    }
+    const pago = e.target.closest('[data-pago]');
+    if (pago && pago.type !== 'file') {
+      store.pago[pago.dataset.pago] = pago.value;
+      return actualizarPie();
+    }
+  });
+
+  drawer.addEventListener('change', (e) => {
+    const f = e.target.closest('input[type="file"][data-pago]');
+    if (!f || !f.files?.[0]) return;
+    const file = f.files[0];
+    if (file.size > 3 * 1024 * 1024) { toast('El comprobante pesa más de 3 MB'); f.value = ''; return; }
+    const lector = new FileReader();
+    lector.onload = () => {
+      store.pago.comprobante = { nombre: file.name, tipo: file.type, datos: lector.result };
+      renderCart();
+    };
+    lector.readAsDataURL(file);
   });
 }
 
-function checkout() {
-  const mode = SERVICE_MODES.find((m) => m.id === store.service.mode);
-  const f = store.service.fields || {};
-  let bad = null;
-  mode.fields.forEach((fl) => {
-    const el = $(`[data-field="${fl.id}"]`);
-    const ok = !fl.required || (f[fl.id] || '').trim();
-    el?.classList.toggle('is-bad', !ok);
-    if (!ok && !bad) bad = el;
-  });
-  if (bad) {
-    bad.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    bad.querySelector('input, select')?.focus();
-    toast('Faltan datos del servicio');
-    return;
-  }
+/** Refresca solo el pie, para no perder el foco mientras se escribe. */
+function actualizarPie() {
+  const foot = $('#drawerFoot');
+  const falta = loQueFalta();
+  const btn = foot.querySelector('[data-siguiente], [data-enviar]');
+  if (btn) btn.disabled = !!falta;
+  const aviso = foot.querySelector('.falta');
+  if (falta && !aviso) {
+    const p = document.createElement('p');
+    p.className = 'falta'; p.textContent = falta;
+    foot.insertBefore(p, btn);
+  } else if (falta && aviso) { aviso.textContent = falta; }
+  else if (!falta && aviso) { aviso.remove(); }
+}
 
-  const snapshot = orderSnapshot(store);
-  const link = whatsappLink(store);
-  store.recordOrder(snapshot);
-  window.open(link, '_blank', 'noopener');
+async function enviar() {
+  const falta = loQueFalta();
+  if (falta) { toast(falta); return; }
+
+  const m = METODOS_PAGO.find((x) => x.id === store.pago.metodo);
+  const pedido = orderSnapshot(store);
+  pedido.pago = {
+    metodo: m.nombre,
+    metodoId: m.id,
+    referencia: store.pago.referencia,
+    telefono: store.pago.telefono,
+    conComprobante: !!store.pago.comprobante,
+    enBs: store.aBs(store.total),
+    tasa: store.tasa ? { valor: store.tasa.valor, fecha: store.tasa.fecha, fuente: store.tasa.fuente } : null
+  };
+  pedido.entrega = store.entrega;
+  pedido.envio = store.costeEnvio;
+  pedido.total = store.total;
+
+  // Primero se registra y se avisa; después WhatsApp. Si alguien paga y no
+  // llega a mandar el mensaje, el restaurante ya tiene la comanda.
+  // El estado es el de cocina (nuevo → en cocina → listo). Si está cobrado o
+  // no es otra cosa, y va en `pago`: el panel lo enseña aparte.
+  const guardado = store.recordOrder(pedido);
+
+  // El aviso sale ya, pero no se espera aquí: entre el clic y `window.open`
+  // no puede haber un `await`, o el navegador móvil da la pestaña por no
+  // pedida y la bloquea. El enlace se arma antes de vaciar la comanda.
+  const avisando = store.avisar({
+    ...pedido, id: guardado.id, en: new Date().toISOString(),
+    comprobante: store.pago.comprobante ? store.pago.comprobante.datos : null
+  });
+  const link = whatsappLink(store, { pago: pedido.pago, entrega: store.entrega, envio: store.costeEnvio, id: guardado.id });
+
   store.clearCart();
+  store.pago = { metodo: null, referencia: '', telefono: '', comprobante: null };
+  store.limpiarEntrega();
+  paso = 'comanda';
   closeDrawer();
-  toast('Comanda enviada a WhatsApp');
+
+  const pestana = window.open(link, '_blank');
+  if (!pestana) { location.href = link; return; }   // si aun así la bloquean
+
+  const aviso = await avisando;
+  toast(aviso.enviado ? 'Pedido enviado y avisado al local' : 'Pedido enviado a WhatsApp');
 }
 
 function openDrawer() {
+  paso = 'comanda';
   renderCart();
   $('#drawer').classList.add('is-open');
   $('#drawer').setAttribute('aria-hidden', 'false');
@@ -485,7 +817,9 @@ function closeDrawer() {
     $('#scrim').classList.remove('is-open');
     document.body.classList.remove('is-locked');
   }
+  if (mapa) { mapa.remove(); mapa = null; }
 }
+
 
 /* ============================================================= pill + toast */
 function renderPill() {
@@ -544,13 +878,21 @@ function fila(item) {
       </div>
     </div>
     <div class="row__end">
-      <span class="row__price price">${sub ? `<small>${sub}</small>` : ''}${esc(main)}</span>
+      <span class="row__price price">${sub ? `<small>${sub}</small>` : ''}${esc(main)}
+        ${refBs(item)}</span>
       ${vitrina
         ? '<span class="row__case">En vitrina</span>'
         : `<button class="row__add" data-open="${item.id}" ${out ? 'disabled' : ''}
              aria-label="Anadir ${esc(item.name)}">${ICON.plus}</button>`}
     </div>
   </article>`;
+}
+
+/** Referencia en bolívares. Vacía mientras no haya tasa: no se estima. */
+function refBs(item) {
+  const p = store.basePrice(item);
+  const enBs = p == null ? null : store.aBs(p);
+  return enBs == null ? '' : `<span class="row__bs">${bolivares(enBs)}</span>`;
 }
 
 function platosVisibles() {
@@ -656,6 +998,7 @@ function montarSedes() {
 export function mountPedidos() {
   montarSedes();
   renderLista();
+  store.cargarTasa();
   pintarSede();
   pintarEstado();
   setInterval(pintarEstado, 60000);
@@ -709,6 +1052,12 @@ export function mountPedidos() {
       if ($('#drawer').classList.contains('is-open')) renderCart();
     }
     if (que === 'stock' || que === 'prices') renderLista();
+    if (que === 'tasa') { renderLista(); if ($('#drawer').classList.contains('is-open')) renderCart(); }
+    // La ubicación y lo que el restaurante configure cambian el precio del
+    // envío, y con él lo que falta para poder seguir.
+    if (que === 'entrega' || que === 'config') {
+      if ($('#drawer').classList.contains('is-open')) renderCart();
+    }
   });
 
   // Enlace directo desde la portada: /pedir?plato=r-fukkatsu. Los identificadores

@@ -5,6 +5,7 @@
 import { BRANCHES, getBranch, CONTACT } from '../data/branches.js';
 import * as REST from '../data/menu-restaurante.js';
 import * as CAFE from '../data/menu-cafe.js';
+import { TASA, METODOS_PAGO, ENVIO } from '../data/pagos.js';
 
 const MENUS = { restaurante: REST, cafe: CAFE };
 
@@ -14,7 +15,9 @@ const K = {
   service: 'zhuba.service.v1',
   stock: 'zhuba.stock.v1',
   prices: 'zhuba.prices.v1',
-  orders: 'zhuba.orders.v1'
+  orders: 'zhuba.orders.v1',
+  config: 'zhuba.config.v1',
+  tasa: 'zhuba.tasa.v1'
 };
 
 const read = (key, fallback) => {
@@ -27,8 +30,24 @@ const write = (key, value) => {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* modo privado */ }
 };
 
+/* La carta está anclada al dólar; el cobro se hace en bolívares a la tasa
+   oficial. Se muestran las dos cifras: manda el dólar, informa el bolívar. */
 export const money = (n) =>
-  `${Number(n).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${CONTACT.currency}`;
+  `${CONTACT.currency}${Number(n).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+export const bolivares = (n) =>
+  `Bs ${Number(n).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+/** Distancia en línea recta, en kilómetros. */
+export function distanciaKm(a, b) {
+  const R = 6371;
+  const rad = (g) => (g * Math.PI) / 180;
+  const dLat = rad(b.lat - a.lat);
+  const dLng = rad(b.lng - a.lng);
+  const h = Math.sin(dLat / 2) ** 2 +
+    Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
 
 const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
 
@@ -41,6 +60,14 @@ class Store {
     this.stock = read(K.stock, {});     // { itemId: false }  → agotado
     this.prices = read(K.prices, {});   // { itemId: number } → precio sobrescrito
     this.orders = read(K.orders, []);
+    // Lo que el restaurante configura desde /admin y aquí no se inventa.
+    this.config = Object.assign(
+      { pagos: {}, anillos: {}, maxKm: ENVIO.maxKm, minimoPedido: ENVIO.minimoPedido, aviso: '', tasaManual: null },
+      read(K.config, {})
+    );
+    this.tasa = read(K.tasa, null);       // { valor, fecha, fuente }
+    this.entrega = null;                  // { lat, lng, km, anillo, precio, direccion }
+    this.pago = { metodo: null, referencia: '', telefono: '', comprobante: null };
     this.listeners = new Set();
   }
 
@@ -160,7 +187,119 @@ class Store {
     this.emit('orders');
   }
   clearOrders() { this.orders = []; write(K.orders, this.orders); this.emit('orders'); }
+
+  /* ------------------------------------------------- configuración del local */
+  setConfig(patch) {
+    this.config = { ...this.config, ...patch };
+    write(K.config, this.config);
+    this.emit('config');
+  }
+
+  /* ---------------------------------------------------------------- tasa */
+  /**
+   * Tasa oficial. Se consulta al cargar y se guarda; si la consulta falla se
+   * usa la última conocida. Si no hay ninguna, no se inventa: la web enseña
+   * solo el precio en dólares y lo dice.
+   */
+  async cargarTasa() {
+    if (this.config.tasaManual) {
+      this.tasa = { valor: Number(this.config.tasaManual), fecha: new Date().toISOString(), fuente: 'manual' };
+      write(K.tasa, this.tasa);
+      this.emit('tasa');
+      return this.tasa;
+    }
+    const fresca = this.tasa && Date.now() - new Date(this.tasa.fecha).getTime() < TASA.refrescarCada;
+    if (fresca) return this.tasa;
+    try {
+      const r = await fetch(TASA.fuente, { cache: 'no-store' });
+      if (!r.ok) throw new Error('http ' + r.status);
+      const d = await r.json();
+      const valor = Number(d.promedio ?? d.venta ?? d.compra);
+      if (!valor || Number.isNaN(valor)) throw new Error('sin valor');
+      this.tasa = { valor, fecha: d.fechaActualizacion || new Date().toISOString(), fuente: TASA.etiqueta };
+      write(K.tasa, this.tasa);
+    } catch {
+      /* se conserva la última conocida, si la hay */
+    }
+    this.emit('tasa');
+    return this.tasa;
+  }
+
+  /** Dólares a bolívares. `null` si todavía no hay tasa. */
+  aBs(usd) {
+    if (!this.tasa?.valor || usd == null) return null;
+    return Math.round(usd * this.tasa.valor * 100) / 100;
+  }
+
+  /* ---------------------------------------------------------------- pagos */
+  /** Solo se ofrecen los métodos con todos sus datos publicados. */
+  metodosDisponibles() {
+    return METODOS_PAGO.filter((m) => {
+      if (!m.campos.length) return true;                       // efectivo
+      const datos = this.config.pagos[m.id] || {};
+      return m.campos.every((c) => String(datos[c.id] || '').trim());
+    });
+  }
+  datosPago(id) { return this.config.pagos[id] || {}; }
+
+  /* ---------------------------------------------------------------- envío */
+  get anillos() {
+    return ENVIO.anillos.map((a) => ({ ...a, precio: this.config.anillos[a.id] ?? a.precio }));
+  }
+  get maxKm() { return Number(this.config.maxKm ?? ENVIO.maxKm); }
+
+  /** Anillo que corresponde a una distancia, o null si queda fuera de alcance. */
+  anilloPara(km) {
+    if (km > this.maxKm) return null;
+    return this.anillos.find((a) => km <= a.hasta) || null;
+  }
+
+  /** Fija la ubicación de entrega y calcula distancia, anillo y precio. */
+  setEntrega(lat, lng, direccion = '') {
+    const km = Math.round(distanciaKm(ENVIO.origen, { lat, lng }) * 100) / 100;
+    const anillo = this.anilloPara(km);
+    this.entrega = {
+      lat, lng, direccion, km,
+      anillo: anillo ? anillo.id : null,
+      etiqueta: anillo ? anillo.etiqueta : null,
+      precio: anillo ? anillo.precio : null,
+      fuera: !anillo
+    };
+    this.emit('entrega');
+    return this.entrega;
+  }
+  limpiarEntrega() { this.entrega = null; this.emit('entrega'); }
+
+  /** Coste de envío aplicable ahora mismo: 0 si no es delivery. */
+  get costeEnvio() {
+    if (this.service.mode !== 'delivery') return 0;
+    return this.entrega?.precio ?? 0;
+  }
+  get total() { return this.subtotal + this.costeEnvio; }
+
+  /* --------------------------------------------------- aviso al restaurante */
+  /**
+   * Un sitio estático no puede avisar al local por su cuenta. Si el
+   * restaurante configura un webhook, aquí se le manda la comanda en cuanto
+   * el cliente marca que pagó — antes de abrir WhatsApp, que es justo donde
+   * alguien puede abandonar el proceso con el pago ya hecho.
+   */
+  async avisar(pedido) {
+    const url = String(this.config.aviso || '').trim();
+    if (!/^https:\/\//i.test(url)) return { enviado: false, motivo: 'sin-webhook' };
+    try {
+      await fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pedido)
+      });
+      return { enviado: true };
+    } catch (e) {
+      return { enviado: false, motivo: String(e.message || e) };
+    }
+  }
 }
 
 export const store = new Store();
-export { MENUS, BRANCHES, CONTACT };
+export { MENUS, BRANCHES, CONTACT, METODOS_PAGO, ENVIO };

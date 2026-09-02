@@ -34,7 +34,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
 
   const out = [];
-  const check = (name, ok, detail = '') => { out.push({ name, ok: !!ok, detail }); };
+  const check = (name, ok, detail = '') => {
+    out.push({ name, ok: !!ok, detail });
+    console.log(`${ok ? 'OK  ' : 'FALLA'} ${name}${ok ? '' : '  -> ' + detail}`);
+  };
 
   /* ============================================================ portada */
   await ir('/');
@@ -65,6 +68,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   /* ====================================================== pedido en línea */
   await ir('/pedir.html');
+  await ev(`document.querySelector('#sedes .venue-pill[data-branch="restaurante"]')?.click()`);
+  await sleep(700);
   const lista = await ev(`({
     filas: document.querySelectorAll('.row').length,
     categorias: document.querySelectorAll('.cat').length,
@@ -114,22 +119,27 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   await ev("document.getElementById('cartPill').click()");
   await sleep(600);
-  const drawer = await ev("({lines:document.querySelectorAll('.line').length, mods:document.querySelector('.line__mods').textContent.replace(/\\s+/g,' ').trim(), note:document.querySelector('.line__note')?.textContent.trim(), upsell:document.querySelectorAll('[data-quick]').length, svc:document.querySelectorAll('[data-mode]').length})");
+  const drawer = await ev("({lines:document.querySelectorAll('.line').length, mods:document.querySelector('.line__mods').textContent.replace(/\\s+/g,' ').trim(), note:document.querySelector('.line__note')?.textContent.trim(), upsell:document.querySelectorAll('[data-quick]').length, paso:document.querySelector('.pasos li.is-now')?.textContent.trim()||''})");
   check('el cajón lleva líneas, modificadores, nota y upsell',
-    drawer.lines === 2 && drawer.mods.includes('Eel') && drawer.note.includes('sésamo') && drawer.upsell > 3 && drawer.svc === 3,
+    drawer.lines === 2 && drawer.mods.includes('Eel') && drawer.note.includes('sésamo') && drawer.upsell > 3,
     JSON.stringify(drawer));
 
+  await ev("document.querySelector('[data-siguiente]').click()");
+  await sleep(450);
+  const entrega = await ev("({svc:document.querySelectorAll('[data-mode]').length, atras:!!document.querySelector('[data-atras]'), sinEnviar:!document.querySelector('[data-enviar]')})");
+  check('el segundo paso pregunta cómo se entrega',
+    entrega.svc === 3 && entrega.atras && entrega.sinEnviar, JSON.stringify(entrega));
+
   await ev("document.querySelector('[data-mode=\"delivery\"]').click()");
-  await sleep(400);
-  await ev("document.querySelector('[data-checkout]').click()");
-  await sleep(400);
-  const blocked = await ev("({bad:document.querySelectorAll('.field.is-bad').length, orders:JSON.parse(localStorage.getItem('zhuba.orders.v1')||'[]').length})");
-  check('el envío se bloquea si faltan datos', blocked.bad >= 2 && blocked.orders === 0, JSON.stringify(blocked));
+  await sleep(450);
+  const blocked = await ev("({bloqueado:document.querySelector('[data-siguiente]').disabled, falta:document.querySelector('.falta')?.textContent||'', pedidos:JSON.parse(localStorage.getItem('zhuba.orders.v1')||'[]').length})");
+  check('sin datos de entrega no se pasa al pago',
+    blocked.bloqueado && blocked.falta.length > 0 && blocked.pedidos === 0, JSON.stringify(blocked));
 
   await ev(`
     const set=(id,v)=>{const el=document.querySelector('[data-input="'+id+'"]');
-      el.value=v; el.dispatchEvent(new Event('input',{bubbles:true}));};
-    set('nombre','Andrea'); set('zona','Las Delicias'); set('direccion','Av. Bolívar, Res. Aragua, piso 4');
+      if(el){el.value=v; el.dispatchEvent(new Event('input',{bubbles:true}));}};
+    set('nombre','Andrea'); set('direccion','Av. Bolívar, Res. Aragua, piso 4');
     set('referencia','Frente a la panadería'); set('_note','Sin cubiertos, gracias');
   `);
   await sleep(300);
@@ -140,7 +150,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   })()`);
   check('el ticket lleva sede, servicio, datos, líneas y total',
     ticket.txt.includes('ZHUBA Restaurant') && ticket.txt.includes('Delivery') &&
-    ticket.txt.includes('Andrea') && ticket.txt.includes('Las Delicias') &&
+    ticket.txt.includes('Andrea') && ticket.txt.includes('Av. Bolívar') &&
     ticket.txt.includes('Eel (anguila)') && ticket.txt.includes('Sin sésamo') && ticket.txt.includes('TOTAL'));
   check('el enlace apunta al WhatsApp de la sede y va codificado',
     ticket.link.startsWith('https://wa.me/584124554207?text=') && ticket.link.length > 300 && !/\s/.test(ticket.link),
@@ -174,6 +184,141 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   check('el enlace directo desde la portada abre el plato',
     enlace.abierto && enlace.titulo.includes('Tartar'), JSON.stringify(enlace));
 
+    /* ============================================== cobro y envío */
+  await ir('/pedir.html');
+  await ev(`(async()=>{
+    const {store}=await import(new URL('js/store.js', location.href).href);
+    localStorage.clear();
+    store.config = { pagos:{}, anillos:{}, maxKm:12, minimoPedido:null, aviso:'', tasaManual:null };
+    store.carts = {};
+    store.setBranch('restaurante');
+    return 1;
+  })()`);
+  await ir('/pedir.html');
+
+  const tasa = await ev(`(async()=>{
+    const {store}=await import(new URL('js/store.js', location.href).href);
+    await store.cargarTasa();
+    return { valor: store.tasa?.valor || 0, enBs: store.aBs(10), metodos: store.metodosDisponibles().map(m=>m.id) };
+  })()`);
+  check('la tasa oficial se consulta y convierte',
+    tasa.valor > 1 && Math.abs(tasa.enBs - tasa.valor * 10) < 0.02, JSON.stringify(tasa));
+  check('sin datos publicados solo se ofrece efectivo',
+    tasa.metodos.length === 1 && tasa.metodos[0] === 'efectivo', JSON.stringify(tasa.metodos));
+
+  const zonas = await ev(`(async()=>{
+    const {store}=await import(new URL('js/store.js', location.href).href);
+    store.setConfig({ anillos:{a1:2,a2:3.5,a3:5,a4:7}, maxKm:12,
+      pagos:{'pago-movil':{banco:'Banesco 0134',telefono:'0412-0000000',documento:'J-000000000'}} });
+    const cerca = store.setEntrega(10.2755, -67.5910);
+    const medio = store.setEntrega(10.3100, -67.6200);
+    const lejos = store.setEntrega(10.1500, -67.4000);
+    store.limpiarEntrega();
+    return { cerca:{km:cerca.km, precio:cerca.precio, fuera:cerca.fuera},
+             medio:{km:medio.km, precio:medio.precio, fuera:medio.fuera},
+             lejos:{km:lejos.km, fuera:lejos.fuera},
+             metodos: store.metodosDisponibles().map(m=>m.id) };
+  })()`);
+  check('el envío se cobra por anillo de distancia',
+    zonas.cerca.precio === 2 && zonas.medio.precio > 2 && !zonas.cerca.fuera, JSON.stringify(zonas));
+  check('fuera de cobertura no hay delivery', zonas.lejos.fuera && zonas.lejos.km > 12, JSON.stringify(zonas.lejos));
+  check('con datos publicados aparece el método de pago',
+    zonas.metodos.includes('pago-movil'), JSON.stringify(zonas.metodos));
+
+  await ev(`document.querySelector('[data-open="r-fukkatsu"]').click()`);
+  await sleep(500);
+  await ev(`document.querySelector('[data-add]').click()`);
+  await sleep(400);
+  await ev(`document.getElementById('cartPill').click()`);
+  await sleep(500);
+  const pasos = await ev(`({pasos:document.querySelectorAll('.pasos li').length,
+    siguiente:!!document.querySelector('[data-siguiente]'),
+    sinEnviar:!document.querySelector('[data-enviar]')})`);
+  check('la comanda pasa por tres pasos antes de salir',
+    pasos.pasos === 3 && pasos.siguiente && pasos.sinEnviar, JSON.stringify(pasos));
+
+  await ev(`document.querySelector('[data-siguiente]').click()`);
+  await sleep(350);
+  await ev(`document.querySelector('[data-mode="delivery"]').click()`);
+  await sleep(350);
+  const bloqueo = await ev(`(async()=>{
+    const {store}=await import(new URL('js/store.js', location.href).href);
+    const set=(id,v)=>{const el=document.querySelector('[data-input="'+id+'"]'); if(el){el.value=v; el.dispatchEvent(new Event('input',{bubbles:true}));}};
+    set('nombre','Andrea'); set('direccion','Av. Bolívar');
+    store.setEntrega(10.1500, -67.4000);
+    await new Promise(r=>setTimeout(r,350));
+    return { bloqueado: document.querySelector('[data-siguiente]').disabled,
+             aviso: document.querySelector('.falta')?.textContent || '' };
+  })()`);
+  check('una zona lejana bloquea el paso al pago',
+    bloqueo.bloqueado && /cobertura/i.test(bloqueo.aviso), JSON.stringify(bloqueo));
+
+  const cobro = await ev(`(async()=>{
+    const {store}=await import(new URL('js/store.js', location.href).href);
+    store.setEntrega(10.2755, -67.5910);
+    await new Promise(r=>setTimeout(r,400));
+    document.querySelector('[data-siguiente]').click();
+    await new Promise(r=>setTimeout(r,400));
+    const sinMetodo = document.querySelector('[data-enviar]').disabled;
+    document.querySelector('[data-metodo="pago-movil"]').click();
+    await new Promise(r=>setTimeout(r,350));
+    const sinRef = document.querySelector('[data-enviar]').disabled;
+    const datos = document.querySelectorAll('.datos-pago dd').length;
+    const ref=document.querySelector('[data-pago="referencia"]'); ref.value='012345678'; ref.dispatchEvent(new Event('input',{bubbles:true}));
+    const tel=document.querySelector('[data-pago="telefono"]'); tel.value='0412-1112233'; tel.dispatchEvent(new Event('input',{bubbles:true}));
+    await new Promise(r=>setTimeout(r,350));
+    return { sinMetodo, sinRef, datos, listo: !document.querySelector('[data-enviar]').disabled,
+             envio: store.costeEnvio, total: store.total, subtotal: store.subtotal };
+  })()`);
+  check('el pago exige método, referencia y teléfono',
+    cobro.sinMetodo && cobro.sinRef && cobro.listo, JSON.stringify(cobro));
+  check('los datos de pago publicados se muestran al cliente', cobro.datos >= 4, `${cobro.datos} campos`);
+  check('el envío entra en el total',
+    Math.abs(cobro.total - (cobro.subtotal + cobro.envio)) < 0.001 && cobro.envio === 2, JSON.stringify(cobro));
+
+  const ticketPago = await ev(`(async()=>{
+    const {store}=await import(new URL('js/store.js', location.href).href);
+    const {buildTicket}=await import(new URL('js/ticket.js', location.href).href);
+    const pago = { metodo:'Pago móvil', metodoId:'pago-movil', referencia:'012345678',
+      telefono:'0412-1112233', conComprobante:false, enBs: store.aBs(store.total), tasa: store.tasa };
+    return buildTicket(store, { pago, entrega: store.entrega, envio: store.costeEnvio, total: store.total, id:'ABC123' });
+  })()`);
+  check('el ticket lleva pago, bolívares y ubicación',
+    ticketPago.includes('*PAGO*') && ticketPago.includes('012345678') &&
+    ticketPago.includes('Bs ') && ticketPago.includes('google.com/maps?q=') &&
+    ticketPago.includes('Distancia:'), ticketPago.slice(0, 140));
+
+  const salida = await ev(`(async()=>{
+    window.__abierto = null;
+    const real = window.open;
+    window.open = (u) => { window.__abierto = u; return { closed:false }; };
+    document.querySelector('[data-enviar]').click();
+    await new Promise(r=>setTimeout(r,900));
+    window.open = real;
+    const {store}=await import(new URL('js/store.js', location.href).href);
+    const pedidos = JSON.parse(localStorage.getItem('zhuba.orders.v1')||'[]');
+    const ult = pedidos[0] || {};
+    return {
+      abierto: String(window.__abierto || '').slice(0, 24),
+      pedidos: pedidos.length,
+      estado: ult.state,
+      metodoPago: ult.pago?.metodoId,
+      referencia: ult.pago?.referencia,
+      enBs: ult.pago?.enBs,
+      envio: ult.envio,
+      conUbicacion: !!ult.entrega,
+      carroVacio: store.cart.length === 0,
+      cajonCerrado: !document.getElementById('drawer').classList.contains('is-open')
+    };
+  })()`);
+  check('enviar deja el pedido registrado antes de abrir WhatsApp',
+    salida.abierto.startsWith('https://wa.me/') && salida.pedidos === 1 &&
+    salida.estado === 'nuevo' && salida.metodoPago === 'pago-movil' &&
+    salida.referencia === '012345678' &&
+    salida.enBs > 0 && salida.envio === 2 && salida.conUbicacion,
+    JSON.stringify(salida));
+  check('tras enviar, la comanda queda limpia',
+    salida.carroVacio && salida.cajonCerrado, JSON.stringify(salida));
   console.log('\n=== RECORRIDO FUNCIONAL ===');
   out.forEach((r) => console.log(`${r.ok ? 'OK  ' : 'FALLA'} ${r.name}${r.ok ? '' : '  → ' + r.detail}`));
   const bad = out.filter((r) => !r.ok).length;

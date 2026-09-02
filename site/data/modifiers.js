@@ -69,10 +69,9 @@ export const SERVICE_MODES = [
   },
   {
     id: 'delivery', label: 'Delivery', icon: 'moped',
-    hint: 'Llevamos tu pedido. El costo de envío se acuerda por WhatsApp.',
+    hint: 'Marca en el mapa a dónde lo llevamos: el envío se calcula por distancia.',
     fields: [
       { id: 'nombre', label: 'Nombre', type: 'text', placeholder: 'Ej. Andrea', required: true },
-      { id: 'zona', label: 'Zona', type: 'zone', required: true },
       { id: 'direccion', label: 'Dirección', type: 'text', placeholder: 'Calle, edificio o quinta, piso', required: true },
       { id: 'referencia', label: 'Punto de referencia', type: 'text', placeholder: 'Opcional', required: false }
     ]

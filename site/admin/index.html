@@ -42,6 +42,8 @@
   .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px;
     background: rgba(239,230,214,.1); border: var(--hair); margin-bottom: 2rem; }
   @media (min-width: 620px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+  @media (min-width: 1180px) { .stats { grid-template-columns: repeat(8, 1fr); } }
+  @media (min-width: 1180px) { .stat b { font-size: 1.25rem; } }
   .stat { background: var(--void); padding: 1rem .95rem; display: grid; gap: .3rem; }
   .stat span { font-family: var(--mono); font-size: .56rem; letter-spacing: .16em;
     text-transform: uppercase; color: var(--travertine-3); }
@@ -55,6 +57,13 @@
     text-transform: uppercase; color: var(--travertine-3); margin-top: .15rem; }
   .kds__state { font-family: var(--mono); font-size: .58rem; letter-spacing: .16em;
     text-transform: uppercase; color: var(--st); }
+  .kds__marcas { display: grid; gap: .25rem; justify-items: end; text-align: right; }
+  /* Si el dinero ya entró o hay que cobrarlo en la puerta se ve antes que nada:
+     es lo primero que pregunta quien despacha. */
+  .kds__cobro { font-family: var(--mono); font-size: .52rem; letter-spacing: .14em;
+    text-transform: uppercase; padding: .12rem .4rem; border-radius: 2px; white-space: nowrap; }
+  .kds__cobro.is-cobrado { color: #0B0B0B; background: var(--jade); }
+  .kds__cobro.is-pendiente { color: var(--ember); border: 1px solid color-mix(in srgb, var(--ember) 45%, transparent); }
   .kds__who { margin: .6rem 0 0; font-size: .76rem; color: var(--travertine-2); }
   .kds__who b { font-family: var(--mono); font-size: .58rem; letter-spacing: .12em;
     text-transform: uppercase; color: var(--travertine-3); font-weight: 400; }
@@ -113,6 +122,58 @@
   .gate input:focus { outline: none; border-color: var(--ember); }
   .gate .err { color: var(--vermillion); font-family: var(--mono); font-size: .66rem;
     letter-spacing: .1em; text-transform: uppercase; min-height: 1em; }
+
+  /* --- cobro y envío --- */
+  .cobro-panel { margin-top: 3rem; }
+  .cobro-grid { display: grid; gap: 1px; background: rgba(239,230,214,.1); border: var(--hair); margin-bottom: 1px; }
+  @media (min-width: 860px) { .cobro-grid { grid-template-columns: 1fr 1fr; } }
+  .caja { background: var(--void); padding: 1.2rem 1.15rem; border: var(--hair); margin-top: 1px; }
+  .cobro-grid .caja { border: 0; margin: 0; }
+  .caja h3 { font-family: var(--display); font-size: 1.2rem; font-weight: 500; margin: 0 0 .8rem; }
+  .campo { display: grid; gap: .3rem; margin: .8rem 0; }
+  .campo span { font-family: var(--mono); font-size: .56rem; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--travertine-3); }
+  .campo input { padding: .55rem .7rem; border-radius: 2px; border: var(--hair);
+    background: rgba(239,230,214,.05); color: var(--travertine); font-size: .88rem; }
+  .campo input:focus { outline: none; border-color: var(--ember); }
+  /* La regla estrecha de arriba es para la rejilla de precios; aquí los
+     campos numéricos tienen que dejar leer lo que ponen. */
+  #tasaManual { width: 220px; }
+  #maxKm { width: 110px; }
+  .pista { font-size: .74rem; line-height: 1.55; color: var(--travertine-3); margin: .8rem 0 0; }
+  .pista b { color: var(--travertine-2); }
+  .tasa-estado { display: grid; gap: .2rem; margin: 0; }
+  .tasa-estado b { font-family: var(--display); font-size: 1.35rem; font-weight: 600; }
+
+  .metodos { display: grid; gap: 1rem; margin-top: 1rem; }
+  @media (min-width: 700px) { .metodos { grid-template-columns: repeat(2, 1fr); } }
+  .metodo { border: var(--hair); border-radius: 2px; padding: .9rem 1rem; margin: 0; }
+  .metodo.is-listo { border-color: color-mix(in srgb, var(--jade) 40%, transparent); }
+  .metodo legend { font-family: var(--mono); font-size: .58rem; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--travertine-2); padding-inline: .4rem; }
+  .metodo legend span { color: var(--travertine-3); }
+  .metodo.is-listo legend span { color: var(--jade); }
+  .metodo label { display: grid; gap: .25rem; margin-top: .6rem; }
+  .metodo label span { font-family: var(--mono); font-size: .54rem; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--travertine-3); }
+  .metodo input { padding: .5rem .65rem; border-radius: 2px; border: var(--hair);
+    background: rgba(239,230,214,.05); color: var(--travertine); font-size: .85rem; }
+  .metodo input:focus { outline: none; border-color: var(--ember); }
+
+  .anillo { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1rem;
+    padding: .5rem 0; border-bottom: var(--hair-soft); }
+  .anillo span { font-size: .85rem; }
+  .anillo input { width: 130px; padding: .35rem .5rem; border-radius: 2px; border: var(--hair);
+    background: rgba(239,230,214,.05); color: var(--travertine); font-family: var(--mono);
+    font-size: .8rem; text-align: right; }
+
+  .kds__pago { margin: .6rem 0 0; font-size: .76rem; color: var(--ember-hi); }
+  .kds__geo { margin: .3rem 0 0; font-size: .76rem; color: var(--travertine-3); }
+  .kds__geo a { border-bottom: 1px solid rgba(239,230,214,.25); }
+  .kds__total small { display: block; font-family: var(--mono); font-size: .58rem;
+    font-weight: 400; color: var(--travertine-3); }
+  .stat b small { display: block; font-family: var(--mono); font-size: .58rem;
+    font-weight: 400; letter-spacing: .04em; color: var(--travertine-3); margin-top: .1rem; }
   .adm-note { font-size: .74rem; color: var(--travertine-3); line-height: 1.6; margin-top: 2.4rem;
     padding-top: 1.2rem; border-top: var(--hair-soft); }
 </style>
@@ -181,6 +242,50 @@
         </div>
       </aside>
     </div>
+
+
+    <section id="cobro" class="cobro-panel">
+      <h2 class="adm"><span>Cobro y envío</span></h2>
+
+      <div class="cobro-grid">
+        <div class="caja">
+          <h3>Tasa del día</h3>
+          <p class="tasa-estado" id="tasaEstado"></p>
+          <label class="campo"><span>Fijar tasa a mano (opcional)</span>
+            <input id="tasaManual" type="number" step="0.01" min="0" placeholder="en blanco = la oficial"></label>
+          <button class="btn btn--sm btn--ghost" id="tasaRefrescar">Volver a la tasa oficial</button>
+          <p class="pista">La carta está en dólares y la web muestra el equivalente en bolívares.
+             Si la consulta falla se usa la última tasa conocida; nunca se inventa una.</p>
+        </div>
+
+        <div class="caja">
+          <h3>Envío por distancia</h3>
+          <div id="anillos"></div>
+          <label class="campo"><span>Máximo que se reparte (km)</span>
+            <input id="maxKm" type="number" step="1" min="1"></label>
+          <p class="pista">Precios en dólares. Un anillo sin precio se muestra como
+             «por confirmar»; más allá del máximo, la web no deja pedir delivery.</p>
+        </div>
+      </div>
+
+      <div class="caja">
+        <h3>Datos de pago</h3>
+        <p class="pista">Solo se le ofrecen al cliente los métodos con todos sus datos rellenos.
+           Mientras estén vacíos, la web pide los datos por WhatsApp en lugar de enseñar nada inventado.</p>
+        <div id="metodos" class="metodos"></div>
+      </div>
+
+      <div class="caja">
+        <h3>Aviso interno</h3>
+        <label class="campo"><span>Dirección donde avisar (https://…)</span>
+          <input id="aviso" type="url" placeholder="https://… webhook de Make, Zapier, Google Apps Script…"></label>
+        <button class="btn btn--sm btn--ghost" id="avisoProbar">Enviar aviso de prueba</button>
+        <p class="pista"><b>Esto importa.</b> La comanda se manda aquí en cuanto el cliente marca que
+           pagó, <em>antes</em> de abrir WhatsApp. Es la red de seguridad para quien paga y no llega a
+           enviar el mensaje. Sin esta dirección, ese caso se pierde: un sitio sin servidor no puede
+           avisar por su cuenta.</p>
+      </div>
+    </section>
 
     <p class="adm-note">
       Las comandas, el inventario y los precios editados se guardan en el almacenamiento local de
