@@ -48,7 +48,11 @@ function figure(item, cls = 'card__figure') {
 /* ============================================================ selector de sede */
 function paintBranchChrome() {
   const b = store.branch;
-  document.documentElement.style.setProperty('--accent', b.accent);
+  // la sede pinta su propia temperatura: mismos gestos, otro clima
+  const raiz = document.documentElement;
+  raiz.style.setProperty('--accent', b.accent);
+  Object.entries(b.theme || {}).forEach(([k, v]) => raiz.style.setProperty(k, v));
+  raiz.dataset.sede = b.id;
 
   const name = $('#venueName');
   if (name) name.textContent = b.short;
@@ -804,7 +808,9 @@ export function mountApp() {
   addExitProgress($('.hero'), '--p');
   // el bloque de texto se rezaga un poco frente a la vitrina
   addParallax($('#heroGrid'), -70);
-  addParallax($('#storyMedia'), 120);
+  // cada sección publica su propio progreso: de ahí beben las palabras de
+  // fondo y la vitrina de Historia
+  $$('.section').forEach((sec) => addExitProgress(sec, '--p'));
   revealAll();
 }
 

@@ -42,6 +42,13 @@ export const BRANCHES = [
     deliveryZones: ['La Floresta', 'El Bosque', 'Las Delicias', 'Base Aragua', 'San Jacinto', 'Otra zona de Maracay'],
     deliveryFee: null,
     deliveryFeeNote: 'El costo de envío se confirma por WhatsApp según tu zona.',
+    // Misma gramática visual en las dos sedes; cambia la temperatura.
+    // El restaurante es brasa: oro sobre piedra caliente.
+    theme: {
+      '--ember': '#D6A050', '--ember-hi': '#F2C97F', '--ember-deep': '#A87433',
+      '--ink-on-accent': '#191207',
+      '--amb-1': 'rgba(104, 74, 38, .17)', '--amb-2': 'rgba(74, 58, 42, .13)'
+    },
     accent: '#D6A050'
   },
   {
@@ -73,7 +80,14 @@ export const BRANCHES = [
     deliveryZones: ['La Floresta', 'El Bosque', 'Las Delicias', 'Base Aragua', 'San Jacinto', 'Otra zona de Maracay'],
     deliveryFee: null,
     deliveryFeeNote: 'El costo de envío se confirma por WhatsApp según tu zona.',
-    accent: '#C77C4A'
+    // El café es la misma piedra a otra hora: acero azulado sobre el mismo
+    // negro cálido, para que se note el cambio de sede sin cambiar de casa.
+    theme: {
+      '--ember': '#84AECB', '--ember-hi': '#BBD8EC', '--ember-deep': '#4E7690',
+      '--ink-on-accent': '#0A131A',
+      '--amb-1': 'rgba(50, 82, 108, .19)', '--amb-2': 'rgba(42, 60, 78, .15)'
+    },
+    accent: '#84AECB'
   }
 ];
 
