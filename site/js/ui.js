@@ -122,8 +122,8 @@ function renderHero() {
   const title = $('#heroTitle');
   if (title && b.heroTitle) {
     title.innerHTML = b.heroTitle
-      .map((l) => (l.em ? `<em>${esc(l.em)}</em> ${esc(l.text)}` : esc(l.text)))
-      .join('<br>');
+      .map((l) => `<span class="hero__line">${l.em ? `<em>${esc(l.em)}</em> ` : ''}${esc(l.text)}</span>`)
+      .join('');
   }
   const sub = $('#heroSub');
   if (sub) sub.textContent = b.heroSub || '';

@@ -142,7 +142,7 @@
   <div class="wrap">
     <div class="story">
       <div class="reveal">
-        <div class="section-head" style="margin-bottom:1.6rem">
+        <div class="section-head section-head--spine" style="margin-bottom:1.6rem">
           <p class="eyebrow">La casa</p>
           <h2 class="display">Piedra, brasa<br>y barra fría</h2>
         </div>
@@ -159,12 +159,18 @@
         </p>
       </div>
 
-      <div class="story__media reveal" data-d="1">
-        <video id="storyMedia" muted loop playsinline preload="none" poster="assets/cocina-poster.jpg"
-               data-src="assets/cocina"
-               aria-label="Detalle de nigiris y sashimi sobre piedra oscura"></video>
-        <span class="story__caption">Barra fría · corte del día</span>
-      </div>
+      <figure class="plate reveal" data-d="1">
+        <div class="plate__frame">
+          <video id="storyMedia" muted loop playsinline preload="none" poster="assets/cocina-poster.jpg"
+                 data-src="assets/cocina"
+                 aria-label="Detalle de nigiris y sashimi sobre piedra oscura"></video>
+        </div>
+        <figcaption class="plate__caption">
+          <span class="plate__fig">Fig. 01</span>
+          <span>Barra fría · corte del día</span>
+          <span class="plate__note">Recreación generada</span>
+        </figcaption>
+      </figure>
     </div>
 
     <div class="pillars reveal">
@@ -195,7 +201,7 @@
 <!-- =============================================================== carta -->
 <section class="section" id="carta" style="padding-top:clamp(3rem,6vw,5rem)">
   <div class="wrap">
-    <div class="section-head reveal">
+    <div class="section-head section-head--spine reveal">
       <p class="eyebrow">La carta</p>
       <h2 class="display">Arma tu mesa</h2>
       <p class="lede">
@@ -231,7 +237,7 @@
 <section class="section" id="resenas">
   <span class="kanji-mark" aria-hidden="true">声</span>
   <div class="wrap">
-    <div class="section-head reveal">
+    <div class="section-head section-head--spine reveal">
       <p class="eyebrow">Lo que dicen</p>
       <h2 class="display">En voz de la mesa</h2>
     </div>
@@ -266,7 +272,7 @@
 <section class="section" id="sedes">
   <span class="kanji-mark" aria-hidden="true">場</span>
   <div class="wrap">
-    <div class="section-head reveal">
+    <div class="section-head section-head--spine reveal">
       <p class="eyebrow">Dónde</p>
       <h2 class="display">Dos casas,<br>una dirección</h2>
       <p class="lede">
