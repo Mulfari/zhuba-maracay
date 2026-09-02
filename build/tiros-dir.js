@@ -1,5 +1,6 @@
-/* Capturas de los tres pasos del pedido, con el local ya configurado.
-   uso: node tiros-pago.js <base> <prefijo> [--mobile] */
+/* Captura el autocompletado de la dirección contra el Nominatim de verdad.
+   Hace una sola consulta a propósito: el servicio es gratuito y pide respeto.
+   uso: node tiros-dir.js <base> <prefijo> [--mobile] */
 const fs = require('fs');
 const http = require('http');
 
@@ -15,17 +16,7 @@ const get = (p) => new Promise((res, rej) => {
 });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/* Lo que el restaurante habría rellenado en /admin. Sólo vive en el navegador
-   de prueba: no se guarda nada de esto en el repositorio. */
-const CONFIG = {
-  pagos: {
-    'pago-movil': { banco: 'Banesco · 0134', telefono: '0412-455 42 07', documento: 'J-40123456-7' },
-    transferencia: { banco: 'Banesco · 0134', numero: '0134 0000 0000 0000 0000', titular: 'Inversiones ZHUBA C.A.', documento: 'J-40123456-7' }
-  },
-  anillos: { a1: 2, a2: 3.5, a3: 5, a4: 7 },
-  maxKm: 12,
-  aviso: ''
-};
+const CONFIG = { pagos: {}, anillos: { a1: 2, a2: 3.5, a3: 5, a4: 7 }, maxKm: 12, aviso: '' };
 
 (async () => {
   const page = (await get('/json/list')).find((t) => t.type === 'page');
@@ -58,64 +49,45 @@ const CONFIG = {
     : { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
 
   await send('Page.navigate', { url: `${BASE}/pedir.html` });
-  await sleep(4000);
+  await sleep(3800);
   await ev(`localStorage.clear();
     localStorage.setItem('zhuba.config.v1', ${JSON.stringify(JSON.stringify(CONFIG))});
     localStorage.setItem('zhuba.branch.v1', '"restaurante"');`);
   await send('Page.navigate', { url: `${BASE}/pedir.html` });
   await sleep(4200);
-  await ev("document.querySelectorAll('img[loading=lazy]').forEach(i=>i.loading='eager')");
-  await sleep(1200);
-  await tirar('carta');
 
   await ev("document.querySelector('[data-open=\"r-fukkatsu\"]').click()");
-  await sleep(900);
-  await tirar('plato');
+  await sleep(700);
   await ev("document.querySelector('[data-add]').click()");
   await sleep(600);
-  await ev("document.querySelector('[data-open=\"r-gyozas\"]')?.click()");
-  await sleep(800);
-  await ev("document.querySelector('[data-add]')?.click()");
-  await sleep(700);
-
   await ev("document.getElementById('cartPill').click()");
-  await sleep(1100);
-  await tirar('paso1-comanda');
-
+  await sleep(800);
   await ev("document.querySelector('[data-siguiente]').click()");
-  await sleep(600);
+  await sleep(500);
   await ev("document.querySelector('[data-mode=\"delivery\"]').click()");
   await sleep(700);
-  await ev(`const set=(i,v)=>{const el=document.querySelector('[data-input="'+i+'"]');
-    if(el){el.value=v; el.dispatchEvent(new Event('input',{bubbles:true}));}};
-    set('nombre','Andrea Pérez'); set('direccion','Av. Bolívar, Res. Aragua, piso 4');
-    set('referencia','Frente a la panadería');`);
-  await sleep(600);
-  await tirar('paso2-entrega');
+  await ev(`{ const c=document.querySelector('[data-input="nombre"]');
+    c.value='Andrea Pérez'; c.dispatchEvent(new Event('input',{bubbles:true})); }`);
+  await sleep(300);
 
-  await ev(`(async()=>{const {store}=await import(new URL('js/store.js', location.href).href);
-    store.setEntrega(10.2755, -67.5910, 'Urb. La Floresta, Maracay');})()`);
-  await sleep(2600);
+  await ev(`{ const c=document.querySelector('[data-busca-dir]');
+    c.focus(); c.value='Avenida Las Delicias';
+    c.dispatchEvent(new Event('input',{bubbles:true})); }`);
+  await sleep(3000);
+  const lista = await ev("({n:document.querySelectorAll('[data-sugerencia]').length, textos:Array.from(document.querySelectorAll('[data-sugerencia]')).slice(0,3).map(b=>b.textContent.replace(/\\s+/g,' ').trim())})");
+  console.log(JSON.stringify(lista, null, 1));
+  await tirar('sugerencias');
+
+  await ev("document.querySelector('[data-sugerencia=\"0\"]')?.click()");
+  await sleep(4000);
+  const puesto = await ev(`(async()=>{
+    const {store}=await import(new URL('js/store.js', location.href).href);
+    return { direccion: store.service.fields.direccion, km: store.entrega?.km, envio: store.costeEnvio };
+  })()`);
+  console.log(JSON.stringify(puesto));
   await ev("document.querySelector('.geo')?.scrollIntoView({block:'center'})");
   await sleep(1400);
-  await tirar('paso2-mapa');
-
-  // El mapa de cerca: es donde se ve si las teselas y los marcadores cuadran.
-  const caja = await ev("(()=>{const m=document.querySelector('.geo__mapa');if(!m)return null;const r=m.getBoundingClientRect();return {x:Math.round(r.x),y:Math.round(r.y),width:Math.round(r.width),height:Math.round(r.height)};})()");
-  if (caja) {
-    const { data } = await send('Page.captureScreenshot', { format: 'png', clip: { ...caja, scale: 3 } });
-    fs.writeFileSync(`${PREFIX}-mapa-cerca.png`, Buffer.from(data, 'base64'));
-    console.log('wrote', `${PREFIX}-mapa-cerca.png`);
-  }
-
-  await ev("document.querySelector('[data-siguiente]').click()");
-  await sleep(700);
-  await tirar('paso3-pago');
-  await ev("document.querySelector('[data-metodo=\"pago-movil\"]').click()");
-  await sleep(800);
-  await ev("document.querySelector('.datos-pago')?.scrollIntoView({block:'center'})");
-  await sleep(700);
-  await tirar('paso3-datos');
+  await tirar('elegida');
 
   ws.close(); process.exit(0);
 })().catch((e) => { console.error('ERR', e.message); process.exit(1); });

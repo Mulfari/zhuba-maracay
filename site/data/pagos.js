@@ -77,7 +77,11 @@ export const ENVIO = {
     { id: 'a4', hasta: 12, etiqueta: '7 – 12 km', precio: null }
   ],
   maxKm: 12,
-  minimoPedido: null      // dólares; null = sin mínimo
+  minimoPedido: null,     // dólares; null = sin mínimo
+  // Ventana donde busca el autocompletado de direcciones (Nominatim):
+  // el área de Maracay. Si ahí no hay nada se repregunta sin acotar, y
+  // si el resultado cae lejos lo rechaza el propio cálculo de anillos.
+  busqueda: { viewbox: '-67.78,10.43,-67.40,10.11', ciudad: 'Maracay' }
 };
 
 /** Estados por los que pasa una comanda antes de salir hacia WhatsApp. */

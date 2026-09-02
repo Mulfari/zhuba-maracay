@@ -184,7 +184,134 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   check('el enlace directo desde la portada abre el plato',
     enlace.abierto && enlace.titulo.includes('Tartar'), JSON.stringify(enlace));
 
-    /* ============================================== cobro y envío */
+    /* ======================================== la dirección, en los dos sentidos */
+  await ir('/pedir.html');
+  await ev(`(async()=>{
+    const {store}=await import(new URL('js/store.js', location.href).href);
+    localStorage.clear();
+    store.carts = {}; store.service = { mode:'delivery', fields:{} };
+    store.setConfig({ anillos:{a1:2,a2:3.5,a3:5,a4:7}, maxKm:12, pagos:{} });
+    store.setBranch('restaurante');
+    return 1;
+  })()`);
+  await ir('/pedir.html');
+
+  // Nominatim se sustituye por respuestas fijas: la prueba mira nuestro código,
+  // no el servicio de terceros, y así no se le hacen peticiones a cada rato.
+  await ev(`
+    window.__geo = [];
+    const real = window.fetch;
+    window.fetch = (u, o) => {
+      const url = String(u);
+      if (url.includes('nominatim')) {
+        window.__geo.push(url);
+        if (url.includes('/reverse')) return Promise.resolve(new Response(JSON.stringify({
+          display_name: 'Calle El Canal, La Floresta, Maracay, Girardot, Aragua',
+          address: { road:'Calle El Canal', house_number:'12', neighbourhood:'La Floresta', city:'Maracay' }
+        }), { status:200 }));
+        if (url.includes('bounded=1')) return Promise.resolve(new Response(JSON.stringify([
+          { lat:'10.2755', lon:'-67.5910', display_name:'Avenida Las Delicias, Las Delicias, Maracay, Aragua',
+            address:{ road:'Avenida Las Delicias', neighbourhood:'Las Delicias', city:'Maracay' } },
+          { lat:'10.2600', lon:'-67.6000', display_name:'Calle Bolívar, San Jacinto, Maracay, Aragua',
+            address:{ road:'Calle Bolívar', neighbourhood:'San Jacinto', city:'Maracay' } }
+        ]), { status:200 }));
+        return Promise.resolve(new Response('[]', { status:200 }));
+      }
+      return real(u, o);
+    };
+  `);
+
+  await ev("document.querySelector('[data-open=\"r-fukkatsu\"]').click()");
+  await sleep(600);
+  await ev("document.querySelector('[data-add]').click()");
+  await sleep(500);
+  await ev("document.getElementById('cartPill').click()");
+  await sleep(700);
+  await ev("document.querySelector('[data-siguiente]').click()");
+  await sleep(500);
+  await ev("document.querySelector('[data-mode=\"delivery\"]').click()");
+  await sleep(600);
+
+  const campo = await ev("({buscador:!!document.querySelector('[data-busca-dir]'), lista:!!document.getElementById('sugeDir'), pista:document.querySelectorAll('.field--busca .field__pista').length})");
+  check('la dirección del delivery trae buscador', campo.buscador && campo.lista && campo.pista >= 1, JSON.stringify(campo));
+
+  // 1) Escribir y elegir: el punto cae en el mapa solo.
+  await ev(`{ const c=document.querySelector('[data-busca-dir]');
+    c.value='Avenida Las Delicias'; c.dispatchEvent(new Event('input',{bubbles:true})); }`);
+  await sleep(1600);
+  const sugeridas = await ev("({n:document.querySelectorAll('[data-sugerencia]').length, primera:document.querySelector('[data-sugerencia]')?.textContent.replace(/\\s+/g,' ').trim()||'', abierta:!document.getElementById('sugeDir').hidden})");
+  check('al escribir aparecen direcciones de Maracay',
+    sugeridas.abierta && sugeridas.n === 2 && sugeridas.primera.includes('Avenida Las Delicias'),
+    JSON.stringify(sugeridas));
+
+  await ev("document.querySelector('[data-sugerencia=\"0\"]').click()");
+  await sleep(2200);
+  const elegida = await ev(`(async()=>{
+    const {store}=await import(new URL('js/store.js', location.href).href);
+    return { direccion: store.service.fields.direccion, km: store.entrega?.km,
+             envio: store.costeEnvio, mapa: !!document.querySelector('.geo__mapa .leaflet-marker-icon'),
+             listaCerrada: !document.getElementById('sugeDir') || document.getElementById('sugeDir').hidden };
+  })()`);
+  check('elegir una dirección la marca en el mapa y cobra el envío',
+    elegida.direccion.includes('Las Delicias') && elegida.km < 1 && elegida.envio === 2 &&
+    elegida.mapa && elegida.listaCerrada, JSON.stringify(elegida));
+
+  // 2) Usar la ubicación: la dirección se escribe sola en el formulario.
+  await ev("document.querySelector('[data-geo-reset]').click()");
+  await sleep(600);
+  const limpio = await ev(`(async()=>{
+    const {store}=await import(new URL('js/store.js', location.href).href);
+    return { direccion: store.service.fields.direccion, entrega: store.entrega };
+  })()`);
+  check('cambiar de ubicación borra la dirección que puso la web',
+    limpio.direccion === '' && limpio.entrega === null, JSON.stringify(limpio));
+
+  await ev(`navigator.geolocation.getCurrentPosition = (ok) =>
+    ok({ coords:{ latitude:10.2755, longitude:-67.5910 } });
+    document.querySelector('[data-geo]').click();`);
+  await sleep(2600);
+  const desdeGps = await ev(`(async()=>{
+    const {store}=await import(new URL('js/store.js', location.href).href);
+    return { direccion: store.service.fields.direccion, guardada: JSON.parse(localStorage.getItem('zhuba.service.v1')||'{}').fields?.direccion,
+             mostrada: document.querySelector('.geo__dir')?.textContent.trim() || '', km: store.entrega?.km };
+  })()`);
+  check('usar la ubicación escribe la dirección en el formulario',
+    desdeGps.direccion === 'Calle El Canal 12, La Floresta' &&
+    desdeGps.guardada === desdeGps.direccion && desdeGps.mostrada.includes('Maracay') &&
+    desdeGps.km < 1, JSON.stringify(desdeGps));
+
+  // 3) Lo escrito a mano no se pisa.
+  await ev("document.querySelector('[data-geo-reset]').click()");
+  await sleep(500);
+  await ev(`{ const c=document.querySelector('[data-busca-dir]');
+    c.value='Quinta Mi Casa, al lado del abasto'; c.dispatchEvent(new Event('input',{bubbles:true})); }`);
+  await sleep(1500);
+  await ev(`navigator.geolocation.getCurrentPosition = (ok) =>
+    ok({ coords:{ latitude:10.2755, longitude:-67.5910 } });
+    document.querySelector('[data-geo]')?.click();`);
+  await sleep(2600);
+  const aMano = await ev(`(async()=>{
+    const {store}=await import(new URL('js/store.js', location.href).href);
+    return { direccion: store.service.fields.direccion, km: store.entrega?.km };
+  })()`);
+  check('la dirección escrita a mano no la pisa el GPS',
+    aMano.direccion.startsWith('Quinta Mi Casa') && aMano.km < 1, JSON.stringify(aMano));
+
+  // 4) Marcar a mano: el mapa se abre centrado en el restaurante.
+  await ev("document.querySelector('[data-geo-reset]')?.click()");
+  await sleep(600);
+  const antes = await ev("({visible: !!document.querySelector('.geo__mapa:not([hidden])')})");
+  await ev("document.querySelector('[data-mapa]').click()");
+  await sleep(2600);
+  const aMapa = await ev("({visible: !!document.querySelector('.geo__mapa:not([hidden])'), chincheta: document.querySelectorAll('.geo__mapa .leaflet-marker-icon').length, teselas: document.querySelectorAll('.geo__mapa img.leaflet-tile-loaded').length})");
+  check('marcar en el mapa lo abre con la chincheta puesta',
+    !antes.visible && aMapa.visible && aMapa.chincheta === 1 && aMapa.teselas > 3,
+    JSON.stringify({ antes, aMapa }));
+
+  const consultas = await ev("window.__geo.length");
+  check('no se consulta el buscador de más', consultas <= 8, `${consultas} consultas`);
+
+  /* ============================================== cobro y envío */
   await ir('/pedir.html');
   await ev(`(async()=>{
     const {store}=await import(new URL('js/store.js', location.href).href);

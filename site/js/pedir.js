@@ -314,6 +314,8 @@ function lineRow(l) {
 
 let paso = 'comanda';
 let mapa = null, marcador = null;
+let mapaNodo = null;      // el div del mapa, que sobrevive a los repintados
+let mapaAbierto = false;  // ¿lo ha pedido el cliente aunque no haya punto?
 
 const PASOS = [
   { id: 'comanda', label: 'Comanda' },
@@ -356,14 +358,14 @@ function bloqueUbicacion() {
         <button class="btn btn--sm btn--ghost" data-mapa>Marcar en el mapa</button>
       </div>
       <p class="geo__aviso" id="geoAviso" hidden></p>
-      <div class="geo__mapa" id="geoMapa" hidden></div>
+      <div class="geo__hueco" data-mapa-hueco></div>
     </div>`;
   }
 
   const precio = e.precio;
   return `
   <div class="geo${e.fuera ? ' is-fuera' : ''}">
-    <div class="geo__mapa" id="geoMapa"></div>
+    <div class="geo__hueco" data-mapa-hueco></div>
     <dl class="geo__datos">
       <div><dt>Distancia</dt><dd>${e.km.toFixed(1)} km</dd></div>
       <div><dt>Zona</dt><dd>${e.fuera ? 'Fuera de cobertura' : esc(e.etiqueta)}</dd></div>
@@ -395,14 +397,40 @@ async function cargarMapa() {
   return window.L;
 }
 
+/* El mapa vive fuera del HTML que se repinta. Cada `renderCart` rehace el
+   cajón entero; si el mapa fuera parte de ese HTML se destruiría y volvería a
+   crearse a cada tecla, con dos construcciones pisándose y teselas a medias.
+   Así se construye una vez y sólo cambia de hueco. */
+function montarMapa() {
+  const hueco = $('[data-mapa-hueco]');
+  if (!hueco) return null;
+  if (!mapaNodo) {
+    mapaNodo = document.createElement('div');
+    mapaNodo.className = 'geo__mapa';
+  }
+  if (mapaNodo.parentElement !== hueco) hueco.appendChild(mapaNodo);
+  mapaNodo.hidden = !(store.entrega || mapaAbierto);
+  if (mapa && !mapaNodo.hidden) requestAnimationFrame(() => mapa.invalidateSize());
+  return mapaNodo;
+}
+
 async function pintarMapa(lat, lng) {
-  const cont = $('#geoMapa');
+  mapaAbierto = true;
+  const cont = montarMapa();
   if (!cont) return;
   cont.hidden = false;
   let L;
   try { L = await cargarMapa(); } catch { cont.innerHTML = '<p class="geo__nota">No se pudo cargar el mapa. Escríbenos la dirección por WhatsApp.</p>'; return; }
+  if (!document.body.contains(cont)) return;
 
-  if (mapa) { mapa.remove(); mapa = null; }
+  // Ya construido: basta con mover la vista y la chincheta.
+  if (mapa) {
+    mapa.setView([lat, lng], mapa.getZoom());
+    marcador?.setLatLng([lat, lng]);
+    requestAnimationFrame(() => mapa.invalidateSize());
+    return;
+  }
+
   mapa = L.map(cont, { attributionControl: true, zoomControl: true }).setView([lat, lng], 15);
   // Teselas de OpenStreetMap, que no piden clave. El tono oscuro lo pone el CSS
   // sobre las teselas, no sobre los marcadores, para que el mapa no cante
@@ -422,25 +450,137 @@ async function pintarMapa(lat, lng) {
     const p = marcador.getLatLng();
     fijarUbicacion(p.lat, p.lng, true);
   });
-  setTimeout(() => mapa.invalidateSize(), 60);
+  requestAnimationFrame(() => mapa.invalidateSize());
 }
 
+/* --------------------------------------------------------- direcciones
+   Dos caminos hacia el mismo punto: marcar en el mapa y saber cómo se llama
+   ese sitio, o escribir el nombre y que aparezca en el mapa. Los dos usan
+   Nominatim, el buscador de OpenStreetMap, que pide no abusar: de ahí el
+   retardo al teclear, el mínimo de letras y que se cancele lo anterior. */
+
+/** Arma una dirección corta y usable a partir del desglose de Nominatim. */
+function calleDe(a = {}) {
+  const via = [a.road, a.house_number].filter(Boolean).join(' ');
+  const zona = a.neighbourhood || a.suburb || a.quarter || a.residential
+    || a.hamlet || a.village || a.town || '';
+  return [via, zona].filter(Boolean).join(', ');
+}
+
+/** Nombre de un punto. Devuelve `{corta, larga}` o null si no se pudo. */
 async function direccionDe(lat, lng) {
   try {
-    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=17`);
-    if (!r.ok) return '';
+    const r = await fetch('https://nominatim.openstreetmap.org/reverse'
+      + `?format=jsonv2&addressdetails=1&accept-language=es&zoom=18&lat=${lat}&lon=${lng}`);
+    if (!r.ok) return null;
     const d = await r.json();
-    return d.display_name ? String(d.display_name).split(',').slice(0, 4).join(',') : '';
-  } catch { return ''; }
+    const larga = String(d.display_name || '').split(',').slice(0, 4).join(',').trim();
+    return { corta: calleDe(d.address) || larga.split(',').slice(0, 2).join(',').trim(), larga };
+  } catch { return null; }
 }
 
-async function fijarUbicacion(lat, lng, mantenerMapa = false) {
+/** Puntos que coinciden con lo escrito, primero dentro de Maracay. */
+async function buscarDirecciones(texto, señal) {
+  const base = 'https://nominatim.openstreetmap.org/search'
+    + '?format=jsonv2&addressdetails=1&accept-language=es&limit=6&countrycodes=ve';
+  const pedir = async (acotado) => {
+    const url = `${base}&viewbox=${ENVIO.busqueda.viewbox}&bounded=${acotado ? 1 : 0}`
+      + `&q=${encodeURIComponent(texto)}`;
+    const r = await fetch(url, { signal: señal });
+    return r.ok ? r.json() : [];
+  };
+  let lista = await pedir(true);
+  if (!lista.length) lista = await pedir(false);
+  return lista.map((d) => ({
+    lat: Number(d.lat), lng: Number(d.lon),
+    corta: calleDe(d.address) || String(d.name || d.display_name || '').split(',')[0],
+    larga: String(d.display_name || '').split(',').slice(0, 4).join(',').trim()
+  })).filter((d) => d.corta)
+    .filter((d, i, todas) => todas.findIndex((o) => o.corta === d.corta) === i);
+}
+
+let sugeTimer = null;
+let sugeCorte = null;         // para cancelar la consulta anterior
+let sugeLista = [];
+let dirAuto = false;          // ¿la dirección del formulario la puso la web?
+
+function guardarServicio() {
+  try { localStorage.setItem('zhuba.service.v1', JSON.stringify(store.service)); } catch { /* noop */ }
+}
+
+function cerrarSugerencias() {
+  clearTimeout(sugeTimer);
+  sugeCorte?.abort();
+  sugeCorte = null;
+  sugeLista = [];
+  const ul = $('#sugeDir');
+  if (ul) { ul.hidden = true; ul.innerHTML = ''; }
+  const est = $('#sugeEstado');
+  if (est) est.hidden = true;
+}
+
+function estadoSugerencias(txt) {
+  const est = $('#sugeEstado');
+  if (!est) return;
+  est.hidden = !txt;
+  est.textContent = txt || '';
+}
+
+function pintarSugerencias(lista) {
+  const ul = $('#sugeDir');
+  if (!ul) return;
+  sugeLista = lista;
+  if (!lista.length) { ul.hidden = true; ul.innerHTML = ''; return; }
+  const abriendo = ul.hidden;
+  ul.innerHTML = lista.map((d, i) => `
+    <li><button type="button" data-sugerencia="${i}">${esc(d.corta)}
+      <small>${esc(d.larga)}</small></button></li>`).join('');
+  ul.hidden = false;
+  // El cajón recorta lo que se sale por abajo, así que al abrirse la lista se
+  // trae el campo al centro una sola vez; en cada tecla sería mareante.
+  if (abriendo) $('.field--busca')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+}
+
+function agendarSugerencias(texto) {
+  clearTimeout(sugeTimer);
+  sugeCorte?.abort();
+  const q = texto.trim();
+  if (q.length < 4) { cerrarSugerencias(); return; }
+  estadoSugerencias('Buscando…');
+  sugeTimer = setTimeout(async () => {
+    sugeCorte = new AbortController();
+    try {
+      const lista = await buscarDirecciones(q, sugeCorte.signal);
+      pintarSugerencias(lista);
+      estadoSugerencias(lista.length ? '' : 'No encontramos esa dirección. Márcala en el mapa.');
+    } catch (e) {
+      if (e.name !== 'AbortError') estadoSugerencias('No se pudo buscar. Márcala en el mapa.');
+    }
+  }, 700);
+}
+
+/** Escribe en el formulario la dirección que dio el mapa, sin pisar la del cliente. */
+function aplicarDireccion(d) {
+  if (!d) return;
+  if (store.entrega) store.entrega.direccion = d.larga || d.corta;
+  const actual = String(store.service.fields.direccion || '').trim();
+  if (d.corta && (!actual || dirAuto)) {
+    store.service.fields.direccion = d.corta;
+    dirAuto = true;
+    guardarServicio();
+  }
+}
+
+async function fijarUbicacion(lat, lng, mantenerMapa = false, dir = null) {
+  cerrarSugerencias();
   store.setEntrega(lat, lng, '');
+  if (dir) aplicarDireccion(dir);
   renderCart();
   if (!mantenerMapa) await pintarMapa(lat, lng);
   else setTimeout(() => pintarMapa(lat, lng), 0);
-  const dir = await direccionDe(lat, lng);
-  if (dir && store.entrega) { store.entrega.direccion = dir; renderCart(); pintarMapa(lat, lng); }
+  if (dir) return;
+  const d = await direccionDe(lat, lng);
+  if (d && store.entrega) { aplicarDireccion(d); renderCart(); pintarMapa(lat, lng); }
 }
 
 function pedirUbicacion() {
@@ -464,10 +604,20 @@ function bloqueEntrega() {
   const f = store.service.fields || {};
 
   const campo = (fl) => {
-    return `<div class="field" data-field="${fl.id}">
+    // La dirección del delivery se puede escribir y elegir de una lista; al
+    // elegirla, el punto cae solo en el mapa.
+    const busca = fl.id === 'direccion' && store.service.mode === 'delivery';
+    const entrada = `<input id="f-${fl.id}" data-input="${fl.id}" type="${fl.type}"
+      ${busca ? 'data-busca-dir autocomplete="off" role="combobox" aria-controls="sugeDir" aria-expanded="false"' : ''}
+      placeholder="${esc(fl.placeholder || '')}" value="${esc(f[fl.id] || '')}">`;
+    return `<div class="field${busca ? ' field--busca' : ''}" data-field="${fl.id}">
       <label for="f-${fl.id}">${esc(fl.label)}</label>
-      <input id="f-${fl.id}" data-input="${fl.id}" type="${fl.type}"
-             placeholder="${esc(fl.placeholder || '')}" value="${esc(f[fl.id] || '')}"></div>`;
+      ${busca
+        ? `<div class="busca-caja">${entrada}<ul class="sugerencias" id="sugeDir" role="listbox" hidden></ul></div>
+           <p class="field__pista" id="sugeEstado" hidden></p>
+           ${store.entrega ? '' : '<p class="field__pista">Escríbela y elígela de la lista, o usa tu ubicación aquí abajo.</p>'}`
+        : entrada}
+    </div>`;
   };
 
   return `
@@ -648,8 +798,9 @@ function renderCart() {
            El restaurante confirma y sigue contigo por ahí.</p>`
       : ''}`;
 
-  if (paso === 'entrega' && store.service.mode === 'delivery' && store.entrega) {
-    pintarMapa(store.entrega.lat, store.entrega.lng);
+  if (paso === 'entrega' && store.service.mode === 'delivery') {
+    montarMapa();
+    if (store.entrega) pintarMapa(store.entrega.lat, store.entrega.lng);
   }
 }
 
@@ -681,9 +832,29 @@ function bindDrawer() {
     const modo = e.target.closest('[data-mode]');
     if (modo) { store.setService({ mode: modo.dataset.mode }); return; }
 
+    const sug = e.target.closest('[data-sugerencia]');
+    if (sug) {
+      const d = sugeLista[Number(sug.dataset.sugerencia)];
+      cerrarSugerencias();
+      if (d) {
+        store.service.fields.direccion = d.corta;
+        dirAuto = true;
+        guardarServicio();
+        await fijarUbicacion(d.lat, d.lng, false, d);
+      }
+      return;
+    }
+    if (!e.target.closest('.field--busca')) cerrarSugerencias();
+
     if (e.target.closest('[data-geo]')) return pedirUbicacion();
     if (e.target.closest('[data-mapa]')) return pintarMapa(ENVIO.origen.lat, ENVIO.origen.lng);
-    if (e.target.closest('[data-geo-reset]')) { store.limpiarEntrega(); return renderCart(); }
+    if (e.target.closest('[data-geo-reset]')) {
+      store.limpiarEntrega();
+      mapaAbierto = false;
+      // La dirección que puso la web se va con el punto; la escrita a mano se queda.
+      if (dirAuto) { store.service.fields.direccion = ''; dirAuto = false; guardarServicio(); }
+      return renderCart();
+    }
 
     const met = e.target.closest('[data-metodo]');
     if (met) { store.pago.metodo = met.dataset.metodo; return renderCart(); }
@@ -714,8 +885,12 @@ function bindDrawer() {
     const campo = e.target.closest('[data-input]');
     if (campo) {
       store.service.fields[campo.dataset.input] = campo.value;
-      try { localStorage.setItem('zhuba.service.v1', JSON.stringify(store.service)); } catch { /* noop */ }
+      guardarServicio();
       campo.closest('.field')?.classList.remove('is-bad');
+      if (campo.hasAttribute('data-busca-dir')) {
+        dirAuto = false;                       // a partir de aquí la escribe él
+        agendarSugerencias(campo.value);
+      }
       return actualizarPie();
     }
     const pago = e.target.closest('[data-pago]');
