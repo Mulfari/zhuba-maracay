@@ -276,7 +276,8 @@ h1, h2, h3 { margin: 0; }
 /* La vitrina partida: tipografía sobre piedra a la izquierda, fotos reales de
    la casa a la derecha. Las dos columnas derivan solas en sentidos opuestos;
    el scroll añade su propio desplazamiento encima. */
-.hero { position: relative; height: 100svh; min-height: 38rem; overflow: hidden;
+.hero { --p: 0;                     /* 0 arriba del todo, 1 al pasarlo entero */
+  position: relative; height: 100svh; min-height: 38rem; overflow: hidden;
   isolation: isolate; display: grid; grid-template-columns: 1fr; align-items: center; }
 @media (min-width: 900px) { .hero { grid-template-columns: minmax(0,1fr) minmax(0,1fr); } }
 
@@ -332,7 +333,15 @@ h1, h2, h3 { margin: 0; }
     linear-gradient(90deg, var(--void) 0%, rgba(11,9,8,.66) 10%, transparent 30%),
     linear-gradient(180deg, rgba(11,9,8,.6), transparent 20%, transparent 76%, rgba(11,9,8,.8)); }
 
+/* El héroe se cierra al bajar en vez de limitarse a salir: el texto se
+   disuelve y la vitrina se apaga hacia la piedra de la sección siguiente.
+   Todo desde `--p`, así que es opacidad pura y no cuesta un fotograma. */
+.hero__grid { opacity: calc(1 - var(--p) * var(--p) * 1.5); }
+.hero__fade { position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: var(--void); opacity: calc(var(--p) * var(--p) * .85); }
+
 .hero__credit { position: absolute; right: var(--pad); bottom: 1.1rem; z-index: 3; margin: 0;
+  opacity: calc(1 - var(--p) * var(--p) * 3);
   font-family: var(--mono); font-size: .55rem; letter-spacing: .2em;
   text-transform: uppercase; color: rgba(239,230,214,.34); }
 
@@ -502,6 +511,13 @@ h1, h2, h3 { margin: 0; }
 }
 .card__add:hover { background: var(--ember); border-color: var(--ember); color: #191207; }
 .card__add svg { width: 14px; height: 14px; }
+
+/* Pieza de vitrina: se mira, no se añade. */
+.card__flag--case { color: var(--travertine-2);
+  border-color: rgba(239,230,214,.3); }
+.card__case { font-family: var(--mono); font-size: .55rem; letter-spacing: .13em;
+  text-transform: uppercase; color: var(--travertine-3); text-align: right;
+  border: 1px dashed rgba(239,230,214,.22); border-radius: 1px; padding: .3rem .5rem; }
 
 .pairing { font-family: var(--mono); font-size: .58rem; letter-spacing: .1em;
   text-transform: uppercase; color: var(--travertine-3); }
@@ -819,6 +835,8 @@ h1, h2, h3 { margin: 0; }
   .grain { animation: none; }
   .hero__col, .hero__grid, .story__media video, .story__media img { transform: none !important; }
   .hero__track { animation: none !important; }
+  .hero__grid, .hero__credit { opacity: 1 !important; }
+  .hero__fade { display: none; }
   .hero__live i { animation: none !important; }
 }
 

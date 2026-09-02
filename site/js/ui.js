@@ -5,7 +5,7 @@
 import { store, money, BRANCHES, CONTACT } from './store.js';
 import { TAGS, ADJUSTMENTS, ADJUSTMENT_MAP, ADJUSTMENT_NOTE, SERVICE_MODES } from '../data/modifiers.js';
 import { whatsappLink, orderSnapshot } from './ticket.js';
-import { revealAll, scrollspy, centerPill, addParallax } from './motion.js';
+import { revealAll, scrollspy, centerPill, addParallax, addExitProgress } from './motion.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -140,7 +140,7 @@ function renderHero() {
           <figure><img src="img/${esc(n)}.webp" alt=""${j >= col.length ? ' loading="lazy"' : ''}
             decoding="async" width="520" height="520"></figure>`).join('')}
       </div>
-    </div>`).join('') + '<div class="hero__blend"></div>';
+    </div>`).join('') + '<div class="hero__blend"></div><div class="hero__fade"></div>';
 
   // el scroll añade su propio desplazamiento sobre la deriva continua
   $$('.hero__col', mosaic).forEach((col, i) => addParallax(col, i === 0 ? 90 : 150));
@@ -173,16 +173,20 @@ function pintarEstado() {
 /* =================================================================== carta */
 function itemCard(item) {
   const out = store.isOut(item.id);
+  // Pieza de vitrina: el menú oficial publica un rango, no un precio, así que
+  // no puede entrar en la comanda. No debe enseñar un botón de añadir.
+  const vitrina = item.orderable === false;
   const { main, sub } = priceLabel(item);
   const shown = item.tags.slice(0, 3);
   const rest = item.tags.length - shown.length;
   const pairItem = item.pair ? store.item(item.pair) : null;
 
   return `
-  <article class="card${out ? ' is-out' : ''}" data-item="${item.id}">
+  <article class="card${out ? ' is-out' : ''}${vitrina ? ' is-case' : ''}" data-item="${item.id}">
     <div style="position:relative">
       ${figure(item)}
-      ${item.hero ? '<span class="card__flag">Firma</span>' : ''}
+      ${vitrina ? '<span class="card__flag card__flag--case">Vitrina</span>'
+                : item.hero ? '<span class="card__flag">Firma</span>' : ''}
       ${out ? '<div class="card__sold">Agotado hoy</div>' : ''}
     </div>
     <div class="card__body">
@@ -194,8 +198,10 @@ function itemCard(item) {
       <div class="tags">${shown.map(tagChip).join('')}${rest > 0 ? `<span class="tag tag--more">+${rest}</span>` : ''}</div>
       <div class="card__foot">
         <span class="pairing">${pairItem ? `Marida con <b>${esc(pairItem.name)}</b>` : ''}</span>
-        <button class="card__add" data-open="${item.id}" ${out ? 'disabled' : ''}
-                aria-label="Personalizar y añadir ${esc(item.name)}">${ICON.plus}</button>
+        ${vitrina
+          ? '<span class="card__case">Se elige en el mostrador</span>'
+          : `<button class="card__add" data-open="${item.id}" ${out ? 'disabled' : ''}
+                aria-label="Personalizar y añadir ${esc(item.name)}">${ICON.plus}</button>`}
       </div>
     </div>
   </article>`;
@@ -795,6 +801,8 @@ export function mountApp() {
     }
   });
 
+  // el héroe se cierra al bajar: el texto se disuelve y la vitrina se apaga
+  addExitProgress($('.hero'), '--p');
   // el bloque de texto se rezaga un poco frente a la vitrina
   addParallax($('#heroGrid'), -70);
   addParallax($('#storyMedia'), 120);

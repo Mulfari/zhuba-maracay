@@ -8,8 +8,22 @@ export const reducedMotion = () => mq.matches;
 
 /* ------------------------------------------------------------- parallax */
 const layers = [];
+const progresos = [];
 let ticking = false;
 let midiendo = false;
+
+/**
+ * Publica en una variable CSS cuánto has recorrido del elemento: 0 al
+ * empezar, 1 cuando lo has pasado entero. Con eso el CSS puede encadenar
+ * desvanecidos sin que el JS toque estilos uno a uno.
+ */
+export function addExitProgress(el, prop = '--p') {
+  if (!el) return;
+  for (let i = progresos.length - 1; i >= 0; i--) {
+    if (!progresos[i].el.isConnected) progresos.splice(i, 1);
+  }
+  progresos.push({ el, prop });
+}
 
 /** Descarta capas cuyo elemento ya no está en el documento. */
 export function pruneParallax() {
@@ -73,6 +87,13 @@ function frame() {
     const escala = l.scale ? 1 + (1 - Math.abs(p - 0.5) * 2) * l.scale : 1;
     l.el.style.transform =
       `translate3d(0, ${shift.toFixed(2)}px, 0)${l.scale ? ` scale(${escala.toFixed(4)})` : ''}`;
+  }
+
+  for (const g of progresos) {
+    const r = g.el.getBoundingClientRect();
+    const alto = r.height || vh;
+    const p = Math.max(0, Math.min(1, -r.top / alto));
+    g.el.style.setProperty(g.prop, p.toFixed(3));
   }
 }
 
