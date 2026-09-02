@@ -1067,7 +1067,7 @@ function fila(item) {
 function refBs(item) {
   const p = store.basePrice(item);
   const enBs = p == null ? null : store.aBs(p);
-  return enBs == null ? '' : `<span class="row__bs">${bolivares(enBs)}</span>`;
+  return enBs == null ? '' : `<span class="row__bs">${bolivares(enBs, 0)}</span>`;
 }
 
 function platosVisibles() {

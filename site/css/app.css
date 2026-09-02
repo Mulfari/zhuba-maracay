@@ -166,7 +166,7 @@ h1, h2, h3 { margin: 0; }
   font-variation-settings: 'opsz' 20;
   font-weight: 600;
   letter-spacing: -.01em;
-  font-feature-settings: 'lnum' 1;
+  font-feature-settings: 'lnum' 1, 'tnum' 1;
 }
 
 /* ============================================================== layout === */
@@ -1097,9 +1097,11 @@ h1, h2, h3 { margin: 0; }
 .tag--out { color: var(--vermillion); border-color: color-mix(in srgb, var(--vermillion) 45%, transparent); }
 
 .row__end { display: grid; justify-items: end; gap: .45rem; flex: none; }
-.row__price { font-size: 1rem; white-space: nowrap; }
-.row__price small { font-family: var(--mono); font-size: .52rem; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--travertine-3); margin-right: .3rem; }
+.row__price { position: relative; font-size: 1.06rem; white-space: nowrap;
+  text-align: right; line-height: 1.15; }
+.row__price small { position: absolute; right: 0; bottom: 100%; margin-bottom: .06rem;
+  font-family: var(--mono); font-size: .5rem; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--travertine-3); }
 .row__add {
   width: 34px; height: 34px; border-radius: 2px; cursor: pointer; display: grid; place-items: center;
   border: 1px solid rgba(239,230,214,.24); background: transparent; color: var(--travertine);
@@ -1110,6 +1112,18 @@ h1, h2, h3 { margin: 0; }
 .row__add[disabled] { opacity: .35; pointer-events: none; }
 .row__case { font-family: var(--mono); font-size: .52rem; letter-spacing: .12em;
   text-transform: uppercase; color: var(--travertine-3); text-align: right; max-width: 6rem; }
+
+/* En pantalla ancha la lista no se estira hasta el borde: una carta con
+   renglones de 150 caracteres no se lee, y el precio queda a un palmo del
+   plato al que pertenece. Con la medida acotada, importe y nombre se miran. */
+@media (min-width: 900px) {
+  .rows, .pedir .cat__head { max-width: 60rem; }
+  /* Precio y botón en la misma línea: el importe queda a la altura del
+     nombre en vez de flotando encima del botón. */
+  .row__end { grid-auto-flow: column; align-items: center; gap: .85rem;
+    align-self: start; padding-top: .08rem; }
+  .row__price { font-size: 1.12rem; }
+}
 
 @media (max-width: 520px) {
   .row { gap: .75rem; padding: .8rem 0; }

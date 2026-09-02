@@ -197,7 +197,7 @@ function itemCard(item) {
         <h4>${esc(item.name)}</h4>
         <div class="card__price price">${sub ? `<small>${sub}</small>` : ''}${esc(main)}
           ${(() => { const p = store.basePrice(item), v = p == null ? null : store.aBs(p);
-             return v == null ? '' : `<span class="card__bs">${bolivares(v)}</span>`; })()}</div>
+             return v == null ? '' : `<span class="card__bs">${bolivares(v, 0)}</span>`; })()}</div>
       </div>
       <p class="card__desc">${esc(item.desc)}</p>
       <div class="tags">

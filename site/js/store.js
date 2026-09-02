@@ -35,8 +35,10 @@ const write = (key, value) => {
 export const money = (n) =>
   `${CONTACT.currency}${Number(n).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-export const bolivares = (n) =>
-  `Bs ${Number(n).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+/* Los céntimos de bolívar sólo importan donde se paga de verdad. En la carta
+   la cifra es una referencia y va redondeada: más corta y más legible. */
+export const bolivares = (n, decimales = 2) =>
+  `Bs ${Number(n).toLocaleString('es-VE', { minimumFractionDigits: decimales, maximumFractionDigits: decimales })}`;
 
 /** Distancia en línea recta, en kilómetros. */
 export function distanciaKm(a, b) {
