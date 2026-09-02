@@ -5,7 +5,7 @@
 import { store, money, BRANCHES, CONTACT } from './store.js';
 import { TAGS, ADJUSTMENTS, ADJUSTMENT_MAP, ADJUSTMENT_NOTE, SERVICE_MODES } from '../data/modifiers.js';
 import { whatsappLink, orderSnapshot } from './ticket.js';
-import { revealAll, scrollspy, centerPill, addParallax, addExitProgress } from './motion.js';
+import { revealAll, scrollspy, centerPill, addParallax, addExitProgress, reducedMotion } from './motion.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -268,6 +268,7 @@ function renderMenu() {
 
 /* ============================================================ modal de plato */
 let modalState = null;
+let cambioSede;
 
 function openModal(itemId) {
   const item = store.item(itemId);
@@ -779,12 +780,28 @@ export function mountApp() {
 
   store.on((what) => {
     if (what === 'branch') {
-      renderMenu();
-      renderHero();
+      // El color y el estado de las pastillas cambian al instante: el clic
+      // tiene que responder. Lo que se reescribe entero se releva con un
+      // parpadeo corto para que no dé un salto seco.
       paintBranchChrome();
       renderVenues();
-      renderPill();
-      if ($('#drawer').classList.contains('is-open')) renderCart();
+      const relevo = () => {
+        renderMenu();
+        renderHero();
+        paintBranchChrome();
+        renderPill();
+        if ($('#drawer').classList.contains('is-open')) renderCart();
+      };
+      if (reducedMotion()) {
+        relevo();
+      } else {
+        clearTimeout(cambioSede);
+        document.body.classList.add('is-switching');
+        cambioSede = setTimeout(() => {
+          relevo();
+          requestAnimationFrame(() => document.body.classList.remove('is-switching'));
+        }, 190);
+      }
       toast(`Estás viendo ${store.branch.name}`);
     }
     if (what === 'cart' || what === 'service') {

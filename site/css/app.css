@@ -5,6 +5,23 @@
    para las etiquetas de comanda.
    ========================================================================= */
 
+/* Registrar los colores como propiedades permite interpolarlos: al cambiar
+   de sede, el oro no salta al acero, viaja. Sin soporte, simplemente salta. */
+@property --ember       { syntax: '<color>'; inherits: true; initial-value: #D6A050; }
+@property --ember-hi    { syntax: '<color>'; inherits: true; initial-value: #F2C97F; }
+@property --ember-deep  { syntax: '<color>'; inherits: true; initial-value: #A87433; }
+@property --accent      { syntax: '<color>'; inherits: true; initial-value: #D6A050; }
+@property --ink-on-accent { syntax: '<color>'; inherits: true; initial-value: #191207; }
+@property --amb-1       { syntax: '<color>'; inherits: true; initial-value: rgba(104, 74, 38, .17); }
+@property --amb-2       { syntax: '<color>'; inherits: true; initial-value: rgba(74, 58, 42, .13); }
+
+html {
+  transition:
+    --ember .85s var(--ease), --ember-hi .85s var(--ease), --ember-deep .85s var(--ease),
+    --accent .85s var(--ease), --ink-on-accent .85s var(--ease),
+    --amb-1 1.1s var(--ease), --amb-2 1.1s var(--ease);
+}
+
 :root {
   /* --- tinta y piedra --- */
   --void:        #0B0908;
@@ -679,6 +696,22 @@ h1, h2, h3 { margin: 0; }
    héroe está en pantalla: ahí la llamada a la acción ya existe. */
 @media (max-width: 899px) {
   .at-hero .cart-pill { transform: translate(-50%, 160%); }
+}
+
+/* Cambio de sede. Se apaga solo lo que cambia —el rótulo, el titular, la
+   bajada, la vitrina y la carta—; las pastillas y los botones se quedan
+   quietos para que el clic no pierda su anclaje. */
+#heroKicker, #heroTitle, #heroSub, .hero__mosaic, #menuList {
+  transition: opacity .42s var(--ease-out), transform .42s var(--ease-out);
+}
+.is-switching #heroKicker,
+.is-switching #heroSub,
+.is-switching .hero__mosaic,
+.is-switching #menuList { opacity: 0; transition-duration: .18s; }
+.is-switching #heroTitle { opacity: 0; transform: translateY(10px); transition-duration: .18s; }
+
+@media (prefers-reduced-motion: reduce) {
+  #heroKicker, #heroTitle, #heroSub, .hero__mosaic, #menuList { transition: none; }
 }
 
 /* ======================================================== slide-over ===== */
