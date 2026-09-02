@@ -682,6 +682,9 @@ function renderPill() {
   if (!pill) return;
   const n = store.count;
   pill.classList.toggle('is-visible', n > 0);
+  // La barra flota fija sobre el contenido: mientras haya comanda se reserva
+  // sitio abajo para que no se coma botones ni la última línea del pie.
+  document.body.classList.toggle('has-order', n > 0);
   $('#cartCount').textContent = String(n);
   $('#cartTotal').textContent = money(store.subtotal);
 }
@@ -746,6 +749,17 @@ export function mountApp() {
   bindDrawer();
 
   $('#cartPill').addEventListener('click', openDrawer);
+
+  // marca cuándo el héroe ocupa la pantalla, para que la barra flotante no
+  // se monte sobre sus botones en móvil
+  const hero = $('.hero');
+  if (hero && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver(
+      ([e]) => document.body.classList.toggle('at-hero', e.intersectionRatio > 0.45),
+      { threshold: [0, 0.45, 1] }
+    );
+    io.observe(hero);
+  }
   $('#drawerClose').addEventListener('click', closeDrawer);
   $('#scrim').addEventListener('click', () => { closeModal(); closeDrawer(); });
   document.addEventListener('keydown', (e) => {

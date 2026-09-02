@@ -596,6 +596,16 @@ h1, h2, h3 { margin: 0; }
   background: rgba(239,230,214,.08); }
 .cart-pill__go svg { width: 13px; }
 
+/* Sitio reservado para la barra flotante de la comanda. Solo cuando hay algo
+   dentro: si no, dejaría un hueco muerto en la visita normal. */
+.has-order .footer__base { padding-bottom: 3.4rem; }
+/* En móvil la barra flotante caía justo encima del botón «Ver la carta».
+   Alargar el héroe no la sube, así que simplemente no se asoma mientras el
+   héroe está en pantalla: ahí la llamada a la acción ya existe. */
+@media (max-width: 899px) {
+  .at-hero .cart-pill { transform: translate(-50%, 160%); }
+}
+
 /* ======================================================== slide-over ===== */
 .scrim {
   position: fixed; inset: 0; z-index: 70; background: rgba(6, 5, 4, .68);
