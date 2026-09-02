@@ -541,13 +541,15 @@ h1, h2, h3 { margin: 0; }
 .cat__head p { margin: .3rem 0 0; font-size: .88rem; color: var(--travertine-3); max-width: 48ch; }
 .cat__kanji { font-family: var(--display); font-size: 1.6rem; color: rgba(239,230,214,.2); }
 
-.grid { display: grid; gap: 1px; background: rgba(239, 230, 214, .09); border: var(--hair); }
+.grid { display: grid; gap: 0; background: transparent;
+  border-top: var(--hair); border-left: var(--hair); }
 @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 1040px) { .grid { grid-template-columns: repeat(3, 1fr); } }
 
 .card {
   background: var(--void); padding: 1.25rem 1.2rem 1.15rem;
-  display: grid; gap: .75rem; align-content: start; position: relative;
+  border-right: var(--hair); border-bottom: var(--hair);
+  display: flex; flex-direction: column; gap: .75rem; position: relative;
   transition: background .3s var(--ease);
 }
 .card:hover { background: var(--stone-900); }
@@ -556,12 +558,19 @@ h1, h2, h3 { margin: 0; }
 .card__figure img { width: 100%; height: auto; aspect-ratio: 4/3; object-fit: cover;
   transition: transform .8s var(--ease-out), filter .5s var(--ease); filter: saturate(.94); }
 .card:hover .card__figure img { transform: scale(1.055); filter: saturate(1.04); }
-.card__figure--empty {
-  aspect-ratio: 4/3; display: grid; place-items: center;
-  background: radial-gradient(120% 120% at 30% 20%, var(--stone-700), var(--stone-900));
-  border: var(--hair-soft);
+/* Sin fotografía no se finge una: la ficha se compone en tipografía. Un
+   rectángulo gris con un glifo dentro se lee como imagen que no cargó. */
+.card--text::before {
+  content: ''; display: block; width: 3.2rem; height: 1px; margin-bottom: .1rem;
+  background: linear-gradient(90deg, var(--ember), transparent);
 }
-.card__figure--empty span { font-family: var(--display); font-size: 2.6rem; color: rgba(239,230,214,.16); }
+.card--text .card__title h4 { font-size: 1.62rem; }
+.card--text .card__desc { -webkit-line-clamp: 8; font-size: .88rem; color: var(--travertine-2); }
+.card--text .card__body { gap: .65rem; }
+/* Dos márgenes automáticos —uno arriba del texto y otro sobre el pie—
+   reparten el hueco a partes iguales: el bloque queda centrado y el pie
+   sigue alineado con el de las fichas con foto de su misma fila. */
+.card--text .card__body > :first-child { margin-top: auto; }
 
 .card__flag {
   position: absolute; top: .55rem; left: .55rem; z-index: 2;
@@ -576,7 +585,7 @@ h1, h2, h3 { margin: 0; }
   font-family: var(--mono); font-size: .62rem; letter-spacing: .2em; text-transform: uppercase;
   color: var(--vermillion);
 }
-.card__body { display: grid; gap: .5rem; }
+.card__body { display: flex; flex-direction: column; gap: .5rem; flex: 1; }
 .card__title { display: flex; align-items: baseline; justify-content: space-between; gap: .9rem; }
 .card__title h4 { margin: 0; font-family: var(--display); font-size: 1.14rem; font-weight: 500; line-height: 1.2; letter-spacing: -.008em; }
 .card__price { font-size: 1.06rem; color: var(--travertine); white-space: nowrap; }
@@ -584,7 +593,8 @@ h1, h2, h3 { margin: 0; }
   text-transform: uppercase; color: var(--travertine-3); margin-right: .35rem; }
 .card__desc { margin: 0; font-size: .84rem; line-height: 1.58; color: var(--travertine-3);
   display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.card__foot { display: flex; align-items: center; justify-content: space-between; gap: .8rem; margin-top: .15rem; }
+.card__foot { display: flex; align-items: center; justify-content: space-between; gap: .8rem;
+  margin-top: auto; padding-top: .5rem; }
 
 .tags { display: flex; flex-wrap: wrap; gap: .3rem; }
 .tag {
@@ -595,6 +605,9 @@ h1, h2, h3 { margin: 0; }
 .tag--diet { color: var(--jade); border-color: color-mix(in srgb, var(--jade) 38%, transparent); }
 .tag--picante { color: var(--vermillion); border-color: color-mix(in srgb, var(--vermillion) 45%, transparent); }
 .tag--more { color: var(--travertine-3); }
+/* Avisa de que el plato se configura antes de abrirlo: cuántas preparaciones
+   o proteínas hay detrás. */
+.tag--opts { color: var(--ember); border-color: color-mix(in srgb, var(--ember) 45%, transparent); }
 
 .card__add {
   flex: none; width: 32px; height: 32px; border-radius: 2px; cursor: pointer;

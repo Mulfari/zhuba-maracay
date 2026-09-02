@@ -39,9 +39,7 @@ const tagChip = (t) => {
 };
 
 function figure(item, cls = 'card__figure') {
-  if (!item.img) {
-    return `<div class="${cls} ${cls}--empty"><span aria-hidden="true">乙</span></div>`;
-  }
+  if (!item.img) return '';
   return `<div class="${cls}"><img src="img/${esc(item.img)}" alt="${esc(item.name)}" loading="lazy" decoding="async" width="520" height="520"></div>`;
 }
 
@@ -185,21 +183,31 @@ function itemCard(item) {
   const rest = item.tags.length - shown.length;
   const pairItem = item.pair ? store.item(item.pair) : null;
 
+  const tarjeta = [
+    'card', out ? 'is-out' : '', vitrina ? 'is-case' : '', item.img ? '' : 'card--text'
+  ].filter(Boolean).join(' ');
+  const marca = vitrina ? '<span class="card__flag card__flag--case">Vitrina</span>'
+              : item.hero ? '<span class="card__flag">Firma</span>' : '';
+
   return `
-  <article class="card${out ? ' is-out' : ''}${vitrina ? ' is-case' : ''}" data-item="${item.id}">
-    <div style="position:relative">
+  <article class="${tarjeta}" data-item="${item.id}">
+    ${item.img ? `<div style="position:relative">
       ${figure(item)}
-      ${vitrina ? '<span class="card__flag card__flag--case">Vitrina</span>'
-                : item.hero ? '<span class="card__flag">Firma</span>' : ''}
+      ${marca}
       ${out ? '<div class="card__sold">Agotado hoy</div>' : ''}
-    </div>
+    </div>` : ''}
     <div class="card__body">
+      ${item.img ? '' : marca}
       <div class="card__title">
         <h4>${esc(item.name)}</h4>
         <div class="card__price price">${sub ? `<small>${sub}</small>` : ''}${esc(main)}</div>
       </div>
       <p class="card__desc">${esc(item.desc)}</p>
-      <div class="tags">${shown.map(tagChip).join('')}${rest > 0 ? `<span class="tag tag--more">+${rest}</span>` : ''}</div>
+      <div class="tags">
+        ${item.variants?.length > 1
+          ? `<span class="tag tag--opts">${item.variants.length} opciones</span>` : ''}
+        ${shown.map(tagChip).join('')}${rest > 0 ? `<span class="tag tag--more">+${rest}</span>` : ''}
+      </div>
       <div class="card__foot">
         <span class="pairing">${pairItem ? `Marida con <b>${esc(pairItem.name)}</b>` : ''}</span>
         ${vitrina
@@ -482,7 +490,7 @@ function lineRow(l) {
   <div class="line" data-line="${l.uid}">
     ${l.img
       ? `<img class="line__img" src="img/${esc(l.img)}" alt="" loading="lazy" width="56" height="56">`
-      : '<div class="line__img line__img--empty" aria-hidden="true">乙</div>'}
+      : '<div class="line__img line__img--empty" aria-hidden="true"></div>'}
     <div>
       <div class="line__top">
         <span class="line__name">${esc(l.name)}</span>
