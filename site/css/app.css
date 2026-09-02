@@ -192,20 +192,23 @@ h1, h2, h3 { margin: 0; }
     left: calc(-1em - .55rem); top: -.06em; margin: 0;
     display: block; line-height: 1; white-space: nowrap;
     writing-mode: vertical-rl;
-    /* Las etiquetas miden cosas muy distintas —«Lo que dicen» casi el doble
-       que «Dónde»— así que colgadas del titular acababan donde les tocaba,
-       una dentro de las tarjetas y otra flotando. Se desvanecen al bajar:
-       todas arrancan en la misma línea y ninguna termina en falso. */
-    -webkit-mask-image: linear-gradient(180deg, #000 0 46%, transparent 88%);
-    mask-image: linear-gradient(180deg, #000 0 46%, transparent 88%);
+    /* El desvanecido va en píxeles, no en porcentaje. En porcentaje cada
+       etiqueta se apagaba a una distancia distinta según lo larga que fuera,
+       y «La carta» llegaba 193 px por debajo de la barra pegajosa, que la
+       cortaba con su fondo. Así todas mueren a la misma altura y ninguna
+       alcanza la sección siguiente. */
+    -webkit-mask-image: linear-gradient(180deg, #000 0 78px, transparent 188px);
+    mask-image: linear-gradient(180deg, #000 0 78px, transparent 188px);
     /* Sin rotar: en vertical-rl el texto ya corre hacia abajo, que es la
        dirección en que se desvanece. Rotado 180° se leía de abajo arriba y
        la máscara se comía justo el arranque de la palabra. */
     transform: translate3d(0, calc(var(--p, 0) * -64px), 0);
     font-family: var(--display); font-weight: 500;
-    font-size: clamp(2.4rem, 4.2vw, 4.2rem);
-    letter-spacing: .22em; text-transform: uppercase;
-    color: rgba(239, 230, 214, .085);
+    /* del tamaño justo para que la palabra entera quepa dentro del
+       desvanecido: si no cabe, se lee como un recorte, no como una marca */
+    font-size: clamp(1.9rem, 3.1vw, 3.1rem);
+    letter-spacing: .1em; text-transform: uppercase;
+    color: rgba(239, 230, 214, .095);
   }
   .section-head--spine > .eyebrow::before { display: none; }
   .section-head--spine > h2,
@@ -388,7 +391,14 @@ h1, h2, h3 { margin: 0; }
 /* Nada de escalar la vitrina al desplazar: obliga a rasterizar de nuevo una
    capa con dieciséis fotos en cada fotograma. Medido, costaba 54 fotogramas
    de los 138 del barrido. El héroe ya se mueve por otras cuatro vías. */
-.hero__mosaic { position: relative; z-index: 0; align-self: stretch; height: 100%; min-height: 0;
+.hero__mosaic {
+  /* Las fotos se disuelven antes de llegar al borde. Pintar negro encima no
+     valía: se quedaba en un 80 % opaco y el `overflow` remataba el resto de
+     golpe, que es la línea de corte que se veía. Con máscara desaparecen de
+     verdad y debajo asoma el fondo de la página, sin costura. */
+  -webkit-mask-image: linear-gradient(180deg, #000 0 70%, transparent 99%);
+  mask-image: linear-gradient(180deg, #000 0 70%, transparent 99%);
+  position: relative; z-index: 0; align-self: stretch; height: 100%; min-height: 0;
   display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(6px,.6vw,10px); overflow: hidden; }
 .hero__col { min-height: 0; overflow: hidden; will-change: transform; }
 .hero__col:nth-child(2) { margin-top: -11%; }
@@ -410,7 +420,7 @@ h1, h2, h3 { margin: 0; }
 .hero__blend { position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background:
     linear-gradient(90deg, var(--void) 0%, rgba(11,9,8,.66) 10%, transparent 30%),
-    linear-gradient(180deg, rgba(11,9,8,.6), transparent 20%, transparent 76%, rgba(11,9,8,.8)); }
+    linear-gradient(180deg, rgba(11,9,8,.6), transparent 20%, transparent 78%, rgba(11,9,8,.3)); }
 
 /* El héroe se cierra al bajar en vez de limitarse a salir: el texto se
    disuelve y la vitrina se apaga hacia la piedra de la sección siguiente.
