@@ -9,8 +9,8 @@ export const reducedMotion = () => mq.matches;
 /* ------------------------------------------------------------- parallax */
 const layers = [];
 let ticking = false;
+let midiendo = false;
 
-/** speed: fracción del scroll que recorre la capa (negativo = más lenta). */
 /** Descarta capas cuyo elemento ya no está en el documento. */
 export function pruneParallax() {
   for (let i = layers.length - 1; i >= 0; i--) {
@@ -18,29 +18,61 @@ export function pruneParallax() {
   }
 }
 
-export function addParallax(el, speed, opts = {}) {
+/**
+ * `travel`: recorrido total en píxeles a lo largo de todo el paso del
+ * elemento por la pantalla. Negativo = se rezaga respecto al scroll.
+ */
+export function addParallax(el, travel, opts = {}) {
   if (!el) return;
   pruneParallax();
-  layers.push({ el, speed, scale: opts.scale || 0, max: opts.max ?? 90, fade: opts.fade || 0 });
+  layers.push({ el, travel, scale: opts.scale || 0, top: 0, h: 0 });
+  medir();
+}
+
+/**
+ * Guarda la posición de cada capa *sin* su transformación.
+ *
+ * Esto importa: leer `getBoundingClientRect()` de un elemento que ya está
+ * desplazado y sacar de ahí el desplazamiento siguiente crea una
+ * realimentación — el movimiento deja de ser proporcional al scroll y se
+ * nota a tirones. Aquí se mide una vez con la transformación anulada y a
+ * partir de ahí todo sale de `scrollY`, que es la única fuente de verdad.
+ */
+function medir() {
+  if (midiendo) return;
+  midiendo = true;
+  const y = window.scrollY;
+  for (const l of layers) {
+    const previa = l.el.style.transform;
+    l.el.style.transform = 'none';
+    const r = l.el.getBoundingClientRect();
+    l.top = r.top + y;
+    l.h = r.height;
+    l.el.style.transform = previa;
+  }
+  midiendo = false;
 }
 
 function frame() {
   ticking = false;
   if (reducedMotion()) return;
   const vh = window.innerHeight;
-  // Un viewport degenerado (pane oculto) o expandido (captura de página
-  // completa) haría que el desplazamiento se dispare y saque el contenido
-  // de su sección. En esos casos se deja todo en su sitio.
+  // Un viewport degenerado (panel oculto) o expandido (captura de página
+  // completa) dispararía el desplazamiento y sacaría el contenido de su
+  // sección. En esos casos se deja todo en su sitio.
   if (vh < 240 || vh > 3000) { layers.forEach((l) => { l.el.style.transform = ''; }); return; }
+
+  const y = window.scrollY;
   for (const l of layers) {
-    const r = l.el.getBoundingClientRect();
-    if (r.bottom < -vh * 0.5 || r.top > vh * 1.5) continue;
-    // progreso: 0 cuando el elemento entra por abajo, 1 cuando sale por arriba
-    const p = (vh - r.top) / (vh + r.height);
-    const shift = Math.max(-l.max, Math.min(l.max, (p - 0.5) * l.speed * 100));
-    const scale = l.scale ? 1 + (1 - Math.abs(p - 0.5) * 2) * l.scale : 1;
-    l.el.style.transform = `translate3d(0, ${shift.toFixed(2)}px, 0)${l.scale ? ` scale(${scale.toFixed(4)})` : ''}`;
-    if (l.fade) l.el.style.opacity = String(Math.max(0, 1 - Math.max(0, p - 0.55) * l.fade));
+    if (!l.h) continue;
+    // 0 cuando el elemento asoma por abajo, 1 cuando termina de salir por arriba
+    const bruto = (y - l.top + vh) / (vh + l.h);
+    if (bruto < -0.35 || bruto > 1.35) continue;          // muy lejos de pantalla
+    const p = bruto < 0 ? 0 : bruto > 1 ? 1 : bruto;
+    const shift = (p - 0.5) * l.travel;
+    const escala = l.scale ? 1 + (1 - Math.abs(p - 0.5) * 2) * l.scale : 1;
+    l.el.style.transform =
+      `translate3d(0, ${shift.toFixed(2)}px, 0)${l.scale ? ` scale(${escala.toFixed(4)})` : ''}`;
   }
 }
 
@@ -48,12 +80,24 @@ function onScroll() {
   if (!ticking) { ticking = true; requestAnimationFrame(frame); }
 }
 
+let redim;
+function onResize() {
+  clearTimeout(redim);
+  redim = setTimeout(() => { medir(); frame(); }, 120);
+}
+
 export function startParallax() {
   if (reducedMotion()) return;
+  medir();
   window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll, { passive: true });
+  window.addEventListener('resize', onResize, { passive: true });
+  // las fotos cambian la altura de la página al cargar: conviene remedir
+  window.addEventListener('load', () => { medir(); frame(); });
   frame();
 }
+
+/** Vuelve a medir tras redibujar (por ejemplo, al cambiar de sede). */
+export function refreshParallax() { pruneParallax(); medir(); frame(); }
 
 /* ------------------------------------------------------------- revelado */
 export function revealAll(root = document) {

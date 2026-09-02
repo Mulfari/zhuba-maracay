@@ -143,7 +143,7 @@ function renderHero() {
     </div>`).join('') + '<div class="hero__blend"></div>';
 
   // el scroll añade su propio desplazamiento sobre la deriva continua
-  $$('.hero__col', mosaic).forEach((col, i) => addParallax(col, i === 0 ? 11 : 26, { max: 70 }));
+  $$('.hero__col', mosaic).forEach((col, i) => addParallax(col, i === 0 ? 90 : 150));
 }
 
 /* Estado real del local en hora de Venezuela: abre a las 12:00 m. y cierra a
@@ -796,8 +796,8 @@ export function mountApp() {
   });
 
   // el bloque de texto se rezaga un poco frente a la vitrina
-  addParallax($('#heroGrid'), -14, { max: 55 });
-  addParallax($('#storyMedia'), 16, { max: 60 });
+  addParallax($('#heroGrid'), -70);
+  addParallax($('#storyMedia'), 120);
   revealAll();
 }
 
