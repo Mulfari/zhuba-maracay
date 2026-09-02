@@ -42,8 +42,6 @@ export function buildTicket(store) {
     L.push(`Envío: ${b.deliveryFee == null ? 'a coordinar' : money(b.deliveryFee)}`);
   }
   L.push(`TOTAL: ${money(store.subtotal + (store.service.mode === 'delivery' ? (b.deliveryFee || 0) : 0))}`);
-  L.push('');
-  L.push('_Precios tomados del menú digital oficial. Por favor confirmen disponibilidad y total._');
 
   return L.join('\n');
 }

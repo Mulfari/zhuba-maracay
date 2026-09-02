@@ -32,7 +32,9 @@
 <link rel="preload" as="image" href="img/sashimi-especial-zhuba.webp" fetchpriority="high">
 <link rel="stylesheet" href="css/app.css">
 <style>
-  :root { --grain-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E"); }
+  :root {
+    --stone-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='620' height='620'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.013' numOctaves='5' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='.10'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='.05'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='620' height='620' filter='url(%23m)'/%3E%3Crect width='620' height='620' filter='url(%23g)'/%3E%3C/svg%3E");
+    --grain-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E"); }
 </style>
 
 <script type="application/ld+json">
@@ -159,18 +161,11 @@
         </p>
       </div>
 
-      <figure class="plate reveal" data-d="1">
-        <div class="plate__frame">
-          <video id="storyMedia" muted loop playsinline preload="none" poster="assets/cocina-poster.jpg"
-                 data-src="assets/cocina"
-                 aria-label="Detalle de nigiris y sashimi sobre piedra oscura"></video>
-        </div>
-        <figcaption class="plate__caption">
-          <span class="plate__fig">Fig. 01</span>
-          <span>Barra fría · corte del día</span>
-          <span class="plate__note">Recreación generada</span>
-        </figcaption>
-      </figure>
+      <div class="story__media reveal" data-d="1">
+        <video id="storyMedia" muted loop playsinline preload="none" poster="assets/cocina-poster.jpg"
+               data-src="assets/cocina"
+               aria-label="Detalle de nigiris y sashimi sobre piedra oscura"></video>
+      </div>
     </div>
 
     <div class="pillars reveal">
@@ -221,13 +216,6 @@
   <div class="wrap">
     <div id="menuList"></div>
 
-    <p class="menu-note">
-      <strong>Sobre los precios.</strong> Son los que publica el menú digital oficial de ZHUBA y sirven de
-      referencia: el restaurante confirma disponibilidad y total al recibir tu comanda. Algunas reseñas de
-      clientes advierten que al precio de carta se le suman servicio e impuestos, así que conviene
-      confirmarlo al ordenar. ¿Quieres la carta completa? Está en el
-      <a id="fullMenuLink" href="https://app-menuqr.web.app/?id=zhuba1108" target="_blank" rel="noopener">menú digital de la casa</a>.
-    </p>
   </div>
 </section>
 
@@ -335,10 +323,8 @@
 
     <div class="footer__base">
       <p>
-        Carta, precios y alérgenos tomados del menú digital oficial de ZHUBA; las fotografías de los platos
-        son del propio restaurante, incluidas las de la portada. El único vídeo del sitio, en la sección
-        Historia, es una recreación generada por IA. Las reseñas son extractos textuales del perfil público
-        de Google.
+        El vídeo de la sección Historia es una recreación generada, no una grabación del local.
+        Las reseñas son extractos textuales del perfil público de Google.
       </p>
       <p>
         <span id="year">2026</span> · ZHUBA Restaurant &amp; Café, Maracay · Aragua ·

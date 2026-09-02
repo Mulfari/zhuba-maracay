@@ -56,7 +56,15 @@ html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
-  background: var(--void);
+  /* Piedra: un moteado muy suave y de baja frecuencia sobre el negro cálido.
+     Va pintado en el fondo del documento, sin `fixed` ni mezcla, así que se
+     compone una vez y no cuesta nada al desplazar. */
+  background-color: var(--void);
+  background-image: var(--stone-url),
+    radial-gradient(120% 55% at 50% 0%, rgba(74, 55, 34, .32), transparent 62%);
+  background-size: 620px 620px, 100% 1500px;
+  background-repeat: repeat, no-repeat;
+  background-position: center top, center top;
   color: var(--travertine);
   font-family: var(--sans);
   font-size: clamp(15px, .45vw + 14px, 16.5px);
@@ -154,12 +162,18 @@ h1, h2, h3 { margin: 0; }
   .section-head--spine > .eyebrow {
     grid-column: 1; grid-row: 1 / span 3; align-self: start;
     writing-mode: vertical-rl; transform: rotate(180deg);
-    margin: 0; padding-block: .1rem; gap: .9rem;
-    color: var(--travertine-3);
+    margin: 0; gap: 1.2rem;
+    /* grande y apagado: se lee como ilustración de fondo, igual que el
+       kanji del otro lado, no como una etiqueta */
+    font-family: var(--display); font-weight: 500;
+    font-size: clamp(1.9rem, 3.4vw, 3.1rem);
+    letter-spacing: .16em; text-transform: uppercase;
+    color: rgba(239, 230, 214, .085);
+    user-select: none;
   }
   .section-head--spine > .eyebrow::before {
-    width: 1px; height: 34px;
-    background: linear-gradient(180deg, transparent, var(--ember));
+    width: 1px; height: clamp(50px, 7vw, 90px);
+    background: linear-gradient(180deg, transparent, rgba(239, 230, 214, .16));
   }
 }
 .section-head h2 { font-size: clamp(2.3rem, 6.2vw, 4.4rem); }
@@ -415,36 +429,16 @@ h1, h2, h3 { margin: 0; }
 /* ============================================================= historia == */
 .story { display: grid; gap: clamp(2.4rem, 5vw, 4.5rem); align-items: center; }
 @media (min-width: 900px) { .story { grid-template-columns: 1.05fr .95fr; } }
-.story .plate { align-self: center; }
+.story .story__media { align-self: center; }
 
-/* Lámina impresa: passe-partout de piedra, filete y pie de figura fuera del
-   encuadre. El vídeo deja de ser un rectángulo suelto y pasa a estar montado. */
-.plate { margin: 0; display: grid; gap: .85rem; }
-.plate__frame {
-  position: relative; overflow: hidden;
-  padding: clamp(.5rem, .9vw, .85rem);
-  background: var(--stone-900); border: var(--hair);
+.story__media { position: relative; border-radius: var(--radius); overflow: hidden; border: var(--hair); }
+.story__media video, .story__media img { width: 100%; height: auto; aspect-ratio: 16/10; object-fit: cover;
+  will-change: transform; }
+.story__media::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 55%, rgba(11,9,8,.45));
+  pointer-events: none;
 }
-.plate__frame::after {                       /* filete interior del montaje */
-  content: ''; position: absolute; inset: clamp(.5rem, .9vw, .85rem);
-  border: 1px solid rgba(239,230,214,.16); pointer-events: none; z-index: 2;
-}
-.plate__frame video, .plate__frame img {
-  width: 100%; height: auto; aspect-ratio: 16/10; object-fit: cover;
-  will-change: transform;
-}
-/* se levanta como un telón la primera vez que entra en pantalla */
-.plate__frame { clip-path: inset(0 0 100% 0); transition: clip-path 1.15s var(--ease-out); }
-.plate.is-in .plate__frame { clip-path: inset(0 0 0 0); }
-
-.plate__caption {
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem .8rem;
-  padding-top: .7rem; border-top: var(--hair-soft);
-  font-family: var(--mono); font-size: .6rem; letter-spacing: .15em;
-  text-transform: uppercase; color: var(--travertine-3);
-}
-.plate__fig { color: var(--ember); }
-.plate__note { margin-left: auto; color: rgba(239,230,214,.28); }
 
 .pillars { display: grid; gap: 1px; background: rgba(239,230,214,.1); border: var(--hair); margin-top: 2.4rem; }
 @media (min-width: 640px) { .pillars { grid-template-columns: repeat(3, 1fr); } }
@@ -877,7 +871,6 @@ h1, h2, h3 { margin: 0; }
   .hero__track { animation: none !important; }
   .hero__grid, .hero__credit { opacity: 1 !important; }
   .hero__line { transform: none !important; }
-  .plate__frame { clip-path: none !important; }
   .hero__fade { display: none; }
   .hero__live i { animation: none !important; }
 }

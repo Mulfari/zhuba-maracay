@@ -351,8 +351,8 @@ function openModal(itemId) {
       <div class="opt-group">
         <div class="opt-group__head"><h4>Alérgenos y dieta</h4></div>
         <div class="tags">${item.tags.map(tagChip).join('')}</div>
-        <p class="allergen-note">Información declarada en el menú digital oficial de ZHUBA. Si tienes una alergia,
-        avísanos también por WhatsApp antes de que la cocina prepare tu pedido.</p>
+        <p class="allergen-note">Si tienes una alergia, avísanos también por WhatsApp antes de que la
+        cocina prepare tu pedido.</p>
       </div>` : ''}
     </div>
     ${orderable ? `
@@ -593,8 +593,7 @@ function renderCart() {
     </div>
     <button class="btn btn--wa" data-checkout>${ICON.wa} Completar pedido por WhatsApp</button>
     <p class="fineprint">Se abre WhatsApp con la comanda escrita, lista para enviar a <b>${esc(b.phone)}</b>.
-    ${store.service.mode === 'delivery' ? esc(b.deliveryFeeNote) + ' ' : ''}Precios de referencia del menú digital oficial;
-    el restaurante confirma disponibilidad y total.</p>`;
+    ${store.service.mode === 'delivery' ? esc(b.deliveryFeeNote) : ''}</p>`;
 }
 
 function bindDrawer() {
