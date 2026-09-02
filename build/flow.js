@@ -1,7 +1,7 @@
-/* Recorrido funcional completo sobre la página real, vía CDP.
-   uso: node flow.js <url> */
+/* Recorrido funcional de las dos páginas, vía CDP.
+   uso: node flow.js <base>   (p. ej. http://localhost:4181 o la URL de producción) */
 const http = require('http');
-const URL_ = process.argv[2] || 'http://localhost:4181/';
+const BASE = (process.argv[2] || 'http://localhost:4181').replace(/\/$/, '');
 const PORT = 9222;
 
 const get = (p) => new Promise((res, rej) => {
@@ -27,70 +27,105 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     if (r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description || 'eval error');
     return r.result?.value;
   };
+  const ir = async (ruta) => { await send('Page.navigate', { url: BASE + ruta }); await sleep(4200); };
 
   await new Promise((r) => ws.addEventListener('open', r));
   await send('Page.enable');
   await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
-  await ev('1');
-  await send('Page.navigate', { url: URL_ });
-  await sleep(4000);
-  await ev("localStorage.clear()");
-  await send('Page.navigate', { url: URL_ });
-  await sleep(4000);
 
   const out = [];
   const check = (name, ok, detail = '') => { out.push({ name, ok: !!ok, detail }); };
 
-  // --- 1. carta cargada
-  const base = await ev("({cards:document.querySelectorAll('.card').length, cats:document.querySelectorAll('.cat').length, pills:document.querySelectorAll('.pill').length})");
-  check('carta del restaurante renderizada', base.cards > 50 && base.cats === 8, JSON.stringify(base));
+  /* ============================================================ portada */
+  await ir('/');
+  await ev('localStorage.clear()');
+  await ir('/');
 
-  // --- 2. abrir el modal de un plato con variantes (Sashimi)
+  const portada = await ev(`({
+    fichas: document.querySelectorAll('.card').length,
+    categorias: document.querySelectorAll('.cat').length,
+    sinComanda: !document.querySelector('.cart-pill') && !document.querySelector('.drawer'),
+    caminos: document.querySelectorAll('a[href^="pedir"]').length
+  })`);
+  check('la portada muestra la carta completa', portada.fichas > 50 && portada.categorias === 8, JSON.stringify(portada));
+  check('la portada ya no lleva comanda', portada.sinComanda, JSON.stringify(portada));
+  check('desde la portada hay varios caminos al pedido', portada.caminos >= 4, `${portada.caminos} enlaces`);
+
   await ev("document.querySelector('[data-open=\"r-sashimi\"]').click()");
   await sleep(600);
-  const modal = await ev("({open:document.getElementById('modal').classList.contains('is-open'), variants:document.querySelectorAll('[data-variant]').length, adj:document.querySelectorAll('[data-adj]').length, pair:!!document.querySelector('[data-pair]'), total:document.getElementById('modalTotal').textContent})");
-  check('modal con variantes, ajustes y maridaje', modal.open && modal.variants === 5 && modal.adj > 3 && modal.pair, JSON.stringify(modal));
+  const ficha = await ev(`({
+    abierta: document.getElementById('modal').classList.contains('is-open'),
+    precios: document.querySelectorAll('.ficha-lista li').length,
+    sinAnadir: !document.querySelector('[data-add]'),
+    enlace: document.querySelector('.modal__foot a')?.getAttribute('href') || ''
+  })`);
+  check('la ficha informa y remite al pedido, sin añadir',
+    ficha.abierta && ficha.precios === 5 && ficha.sinAnadir && ficha.enlace.includes('plato=r-sashimi'),
+    JSON.stringify(ficha));
 
-  // --- 3. elegir variante cara, dos ajustes, maridaje y nota
+  /* ====================================================== pedido en línea */
+  await ir('/pedir.html');
+  const lista = await ev(`({
+    filas: document.querySelectorAll('.row').length,
+    categorias: document.querySelectorAll('.cat').length,
+    buscador: !!document.getElementById('buscar'),
+    sinRecuadroVacio: document.querySelectorAll('.card__figure--empty').length === 0
+  })`);
+  check('la página de pedidos lista los platos en filas',
+    lista.filas > 50 && lista.categorias === 8 && lista.buscador && lista.sinRecuadroVacio, JSON.stringify(lista));
+
+  await ev("const b=document.getElementById('buscar'); b.value='salmón'; b.dispatchEvent(new Event('input'))");
+  await sleep(400);
+  const busca = await ev("({resultados: document.querySelectorAll('.row').length, hayIndice: !document.getElementById('indice').parentElement.hidden})");
+  check('el buscador filtra la carta', busca.resultados > 3 && busca.resultados < 40 && !busca.hayIndice, JSON.stringify(busca));
+  await ev("document.getElementById('buscarBorrar').click()");
+  await sleep(400);
+
+  await ev("document.querySelector('[data-open=\"r-sashimi\"]').click()");
+  await sleep(600);
+  const modal = await ev(`({
+    open: document.getElementById('modal').classList.contains('is-open'),
+    variants: document.querySelectorAll('[data-variant]').length,
+    adj: document.querySelectorAll('[data-adj]').length,
+    pair: !!document.querySelector('[data-pair]')
+  })`);
+  check('el modal trae variantes, ajustes y maridaje',
+    modal.open && modal.variants === 5 && modal.adj > 3 && modal.pair, JSON.stringify(modal));
+
   await ev("document.querySelectorAll('[data-variant]')[4].click()");
   await sleep(200);
-  const afterVariant = await ev("document.getElementById('modalTotal').textContent");
-  check('el precio sigue a la variante elegida', afterVariant.includes('18,00'), afterVariant);
+  check('el precio sigue a la variante elegida',
+    (await ev("document.getElementById('modalTotal').textContent")).includes('18,00'));
 
   await ev("document.querySelectorAll('[data-adj]')[0].click(); document.querySelectorAll('[data-adj]')[3].click(); document.querySelector('[data-pair]').click(); document.getElementById('kitchenNote').value='Sin sésamo, por favor';");
   await sleep(200);
-  const withPair = await ev("document.getElementById('modalTotal').textContent");
-  check('el maridaje suma al total del modal', withPair.includes('27,50'), withPair);
+  check('el maridaje suma al total',
+    (await ev("document.getElementById('modalTotal').textContent")).includes('27,50'));
 
-  await ev("document.querySelectorAll('[data-qty]')[1].click()"); // qty 2
+  await ev("document.querySelectorAll('[data-qty]')[1].click()");
   await sleep(150);
-  const qty2 = await ev("document.getElementById('modalTotal').textContent");
-  check('la cantidad multiplica el plato, no el maridaje', qty2.includes('45,50'), qty2);
+  check('la cantidad multiplica el plato, no el maridaje',
+    (await ev("document.getElementById('modalTotal').textContent")).includes('45,50'));
 
   await ev("document.querySelector('[data-add]').click()");
   await sleep(500);
+  const cart = await ev("({count:document.getElementById('cartCount').textContent, visible:document.getElementById('cartPill').classList.contains('is-visible')})");
+  check('la barra de comanda marca 3 ítems', cart.count === '3' && cart.visible, JSON.stringify(cart));
 
-  // --- 4. estado del carrito
-  const cart = await ev("({count:document.getElementById('cartCount').textContent, total:document.getElementById('cartTotal').textContent, visible:document.getElementById('cartPill').classList.contains('is-visible')})");
-  check('la pastilla del carrito muestra 3 ítems', cart.count === '3' && cart.visible, JSON.stringify(cart));
-
-  // --- 5. abrir el cajón y revisar la línea
   await ev("document.getElementById('cartPill').click()");
   await sleep(600);
   const drawer = await ev("({lines:document.querySelectorAll('.line').length, mods:document.querySelector('.line__mods').textContent.replace(/\\s+/g,' ').trim(), note:document.querySelector('.line__note')?.textContent.trim(), upsell:document.querySelectorAll('[data-quick]').length, svc:document.querySelectorAll('[data-mode]').length})");
-  check('cajón con líneas, modificadores, nota y upsell',
+  check('el cajón lleva líneas, modificadores, nota y upsell',
     drawer.lines === 2 && drawer.mods.includes('Eel') && drawer.note.includes('sésamo') && drawer.upsell > 3 && drawer.svc === 3,
     JSON.stringify(drawer));
 
-  // --- 6. validación del servicio: delivery sin datos no debe pasar
   await ev("document.querySelector('[data-mode=\"delivery\"]').click()");
   await sleep(400);
   await ev("document.querySelector('[data-checkout]').click()");
   await sleep(400);
   const blocked = await ev("({bad:document.querySelectorAll('.field.is-bad').length, orders:JSON.parse(localStorage.getItem('zhuba.orders.v1')||'[]').length})");
-  check('el checkout se bloquea si faltan datos de delivery', blocked.bad >= 2 && blocked.orders === 0, JSON.stringify(blocked));
+  check('el envío se bloquea si faltan datos', blocked.bad >= 2 && blocked.orders === 0, JSON.stringify(blocked));
 
-  // --- 7. rellenar y construir el ticket (sin abrir WhatsApp)
   await ev(`
     const set=(id,v)=>{const el=document.querySelector('[data-input="'+id+'"]');
       el.value=v; el.dispatchEvent(new Event('input',{bubbles:true}));};
@@ -101,52 +136,48 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const ticket = await ev(`(async()=>{
     const {store}=await import(new URL('js/store.js', location.href).href);
     const {buildTicket, whatsappLink}=await import(new URL('js/ticket.js', location.href).href);
-    return {txt:buildTicket(store), link:whatsappLink(store), sub:store.subtotal, count:store.count};
+    return {txt:buildTicket(store), link:whatsappLink(store)};
   })()`);
   check('el ticket lleva sede, servicio, datos, líneas y total',
     ticket.txt.includes('ZHUBA Restaurant') && ticket.txt.includes('Delivery') &&
     ticket.txt.includes('Andrea') && ticket.txt.includes('Las Delicias') &&
-    ticket.txt.includes('Eel (anguila)') && ticket.txt.includes('Sin sésamo') &&
-    ticket.txt.includes('TOTAL'), '');
+    ticket.txt.includes('Eel (anguila)') && ticket.txt.includes('Sin sésamo') && ticket.txt.includes('TOTAL'));
   check('el enlace apunta al WhatsApp de la sede y va codificado',
     ticket.link.startsWith('https://wa.me/584124554207?text=') && ticket.link.length > 300 && !/\s/.test(ticket.link),
-    ticket.link.slice(0, 80));
+    ticket.link.slice(0, 70));
 
-  // --- 8. cambio de sede: otra carta, carrito independiente
   await ev("document.getElementById('drawerClose').click()");
   await sleep(400);
-  await ev("document.querySelector('.venue-pill[data-branch=\"cafe\"]').click()");
+  await ev("document.querySelector('#sedes .venue-pill[data-branch=\"cafe\"]').click()");
   await sleep(900);
-  const cafe = await ev("({cats:document.querySelectorAll('.cat').length, first:document.querySelector('.cat h3').textContent, count:document.getElementById('cartCount').textContent, wa:document.getElementById('waTop').href, name:document.getElementById('venueName').textContent})");
-  check('cambiar de sede cambia carta, carrito y WhatsApp',
-    cafe.cats === 7 && cafe.first.includes('Gelato') && cafe.count === '0' && cafe.wa.includes('VXIVBTNU3I5AC1'),
-    JSON.stringify(cafe));
+  const cafe = await ev("({cats:document.querySelectorAll('.cat').length, first:document.querySelector('.cat h3').textContent, count:document.getElementById('cartCount').textContent})");
+  check('cambiar de sede cambia carta y comanda',
+    cafe.cats === 7 && cafe.first.includes('Gelato') && cafe.count === '0', JSON.stringify(cafe));
 
-  // --- 9. persistencia tras recarga
-  await send('Page.navigate', { url: URL_ });
-  await sleep(3800);
-  const persisted = await ev("({branch:document.getElementById('venueName').textContent, count:document.getElementById('cartCount').textContent})");
-  check('la sede elegida sobrevive a la recarga', persisted.branch.trim() === 'Café', JSON.stringify(persisted));
-
-  await ev("document.querySelector('.venue-pill[data-branch=\"restaurante\"]').click()");
+  await ir('/pedir.html');
+  const vuelta = await ev("({count:document.getElementById('cartCount').textContent})");
+  check('la sede elegida sobrevive a la recarga', vuelta.count === '0', JSON.stringify(vuelta));
+  await ev("document.querySelector('#sedes .venue-pill[data-branch=\"restaurante\"]').click()");
   await sleep(800);
-  const backCart = await ev("({count:document.getElementById('cartCount').textContent, total:document.getElementById('cartTotal').textContent})");
-  check('el carrito del restaurante se recupera intacto', backCart.count === '3', JSON.stringify(backCart));
+  check('la comanda del restaurante se recupera intacta',
+    (await ev("document.getElementById('cartCount').textContent")) === '3');
 
-  // --- 10. agotados desde el panel
   await ev("localStorage.setItem('zhuba.stock.v1', JSON.stringify({'r-fukkatsu':false}))");
-  await send('Page.navigate', { url: URL_ });
-  await sleep(3800);
-  const sold = await ev("({out:!!document.querySelector('[data-item=\"r-fukkatsu\"]').querySelector('.card__sold'), disabled:document.querySelector('[data-open=\"r-fukkatsu\"]').disabled})");
-  check('un plato marcado agotado se bloquea en la carta', sold.out && sold.disabled, JSON.stringify(sold));
+  await ir('/pedir.html');
+  const sold = await ev("({out:document.querySelector('[data-item=\"r-fukkatsu\"]').classList.contains('is-out'), disabled:document.querySelector('[data-open=\"r-fukkatsu\"]').disabled})");
+  check('un plato agotado se bloquea en el pedido', sold.out && sold.disabled, JSON.stringify(sold));
+
+  await ev("localStorage.removeItem('zhuba.stock.v1')");
+  await ir('/pedir.html?plato=r-tartarzhuba');
+  await sleep(700);
+  const enlace = await ev("({abierto:document.getElementById('modal').classList.contains('is-open'), titulo:document.getElementById('modalTitle')?.textContent.trim()||''})");
+  check('el enlace directo desde la portada abre el plato',
+    enlace.abierto && enlace.titulo.includes('Tartar'), JSON.stringify(enlace));
 
   console.log('\n=== RECORRIDO FUNCIONAL ===');
   out.forEach((r) => console.log(`${r.ok ? 'OK  ' : 'FALLA'} ${r.name}${r.ok ? '' : '  → ' + r.detail}`));
   const bad = out.filter((r) => !r.ok).length;
   console.log(`\n${out.length - bad}/${out.length} comprobaciones correctas`);
-  if (out.some((r) => r.name.startsWith('el ticket'))) {
-    console.log('\n--- TICKET ---\n' + ticket.txt);
-  }
   ws.close();
   process.exit(bad ? 1 : 0);
 })().catch((e) => { console.error('ERR', e.message); process.exit(1); });

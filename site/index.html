@@ -33,6 +33,7 @@
 <link rel="stylesheet" href="css/app.css">
 <style>
   :root {
+    --seal-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='22.5' fill='none' stroke='%23EFE6D6' stroke-opacity='.22' stroke-width='2'/%3E%3Cpath d='M22 23.5h20L23 40.5h20' fill='none' stroke='%23EFE6D6' stroke-opacity='.22' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     --grain-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E"); }
 </style>
 
@@ -100,7 +101,7 @@
         </button>
         <div class="venue__menu" id="venueMenu" role="menu" aria-label="Elegir sede"></div>
       </div>
-      <a class="btn btn--sm btn--solid" id="waTop" href="https://wa.me/584124554207" target="_blank" rel="noopener">Reservar</a>
+      <a class="btn btn--sm btn--solid" href="pedir">Pedir en línea</a>
     </div>
   </div>
 </header>
@@ -120,9 +121,8 @@
       <div class="venue-pills" id="venuePills" role="group" aria-label="Elegir sede"></div>
 
       <div class="hero__cta">
-        <a class="btn btn--solid" href="#carta">Ver la carta</a>
-        <a class="btn" id="heroMaps" href="https://www.google.com/maps/search/?api=1&query=Zhuba+Restaurant+17+Calle+Los+Clubes+Maracay+Aragua"
-           target="_blank" rel="noopener">Cómo llegar</a>
+        <a class="btn btn--solid" href="pedir">Pedir en línea</a>
+        <a class="btn" href="#carta">Ver la carta</a>
       </div>
 
       <div class="hero__meta">
@@ -215,6 +215,15 @@
   <div class="wrap">
     <div id="menuList"></div>
 
+    <aside class="llamada reveal">
+      <div>
+        <p class="eyebrow">Pedido en línea</p>
+        <h3 class="display">¿Listo para pedir?</h3>
+        <p>Arma tu comanda plato a plato, con tus ajustes de cocina, y sale directo por WhatsApp
+           a la sede que elijas. Mesa, pick-up o delivery.</p>
+      </div>
+      <a class="btn btn--solid" href="pedir">Pedir en línea</a>
+    </aside>
   </div>
 </section>
 
@@ -300,6 +309,7 @@
       <div>
         <h4>Contacto</h4>
         <ul>
+          <li><a href="pedir">Pedir en línea</a></li>
           <li><a href="tel:+584124554207">+58 412-4554207</a></li>
           <li><a href="https://wa.me/584124554207" target="_blank" rel="noopener">WhatsApp restaurante</a></li>
           <li><a href="https://wa.me/message/VXIVBTNU3I5AC1" target="_blank" rel="noopener">WhatsApp café</a></li>
@@ -333,33 +343,10 @@
   </div>
 </footer>
 
-<!-- ============================================ carrito, modal y avisos -->
-<button class="cart-pill" id="cartPill" aria-label="Abrir tu comanda">
-  <span class="cart-pill__count" id="cartCount">0</span>
-  <span class="cart-pill__txt">Tu comanda</span>
-  <span class="cart-pill__total price" id="cartTotal">0,00 €</span>
-  <span class="cart-pill__go" aria-hidden="true">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-         stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
-  </span>
-</button>
+<!-- ==================================================== ficha y avisos -->
 
 <div class="scrim" id="scrim"></div>
 
-<aside class="drawer" id="drawer" aria-hidden="true" aria-label="Tu comanda">
-  <header class="drawer__head">
-    <div>
-      <h2 class="display">Tu comanda</h2>
-      <p id="drawerSub">ZHUBA Restaurant</p>
-    </div>
-    <button class="icon-btn" id="drawerClose" aria-label="Cerrar comanda">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-        <path d="M4 4l8 8M12 4l-8 8"/></svg>
-    </button>
-  </header>
-  <div class="drawer__body" id="drawerBody"></div>
-  <div class="drawer__foot" id="drawerFoot"></div>
-</aside>
 
 <div class="modal" id="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal__panel" id="modalPanel"></div>
