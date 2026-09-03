@@ -184,7 +184,36 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   check('el enlace directo desde la portada abre el plato',
     enlace.abierto && enlace.titulo.includes('Tartar'), JSON.stringify(enlace));
 
-    /* ================== las capas de fondo no dependen del alto del viewport */
+    /* =============================================== la entrada de la página */
+  await ir('/');
+  const entrada = await ev(`({
+    // A los 4 s la cortina ya no está: ni tapa ni se come los clics.
+    retirada: !document.getElementById('cortina'),
+    fotosMarcadas: document.querySelectorAll('img[data-suave]').length,
+    // Las perezosas de más abajo aún no han cargado, y está bien: lo que no
+    // puede pasar es que una foto ya cargada se quede invisible.
+    invisibles: Array.from(document.querySelectorAll('img[data-suave]'))
+      .filter((i) => i.complete && i.naturalWidth && !i.classList.contains('is-cargada')).length,
+    primeras: document.querySelectorAll('img[data-primera]').length
+  })`);
+  check('la cortina se retira sola y no deja capa encima',
+    entrada.retirada && entrada.primeras >= 2, JSON.stringify(entrada));
+  check('las fotos entran fundiéndose, y ninguna cargada se queda invisible',
+    entrada.fotosMarcadas > 20 && entrada.invisibles === 0, JSON.stringify(entrada));
+
+  const red = await ev(`(async()=>{
+    const html = await (await fetch(new URL('pedir.html', location.href))).text();
+    return {
+      // El tope arranca con el HTML: si dependiera del módulo, en una red
+      // lenta la cortina duraría justo lo que no debe.
+      topeEnLinea: html.includes('setTimeout(function ()') && html.includes("getElementById('cortina')"),
+      sinJs: html.includes('<noscript><style>.cortina { display: none }</style></noscript>')
+    };
+  })()`);
+  check('la cortina tiene tope propio y no atrapa a nadie',
+    red.topeEnLinea && red.sinJs, JSON.stringify(red));
+
+  /* ================== las capas de fondo no dependen del alto del viewport */
   await ir('/');
   const fondo = await ev(`(async()=>{
     const css = await (await fetch(new URL('css/app.css', location.href))).text();

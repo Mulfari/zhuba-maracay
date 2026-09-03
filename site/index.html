@@ -28,7 +28,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=DM+Mono:wght@300;400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=DM+Mono:wght@400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="img/sashimi-especial-zhuba.webp" fetchpriority="high">
 <link rel="stylesheet" href="css/app.css">
 <style>
@@ -64,6 +64,31 @@
 </script>
 </head>
 <body>
+<!-- La cortina de entrada. Se retira sola en cuanto están las fuentes y las
+     primeras fotos, o a los 2,5 s pase lo que pase. Sin JS no se muestra. -->
+<noscript><style>.cortina { display: none }</style></noscript>
+<div class="cortina" id="cortina" aria-hidden="true">
+  <svg class="cortina__sello" viewBox="0 0 64 64" aria-hidden="true">
+    <circle cx="32" cy="32" r="27" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".35"/>
+    <circle cx="32" cy="32" r="22.5" fill="none" stroke="#D6A050" stroke-width="2"/>
+    <path d="M22 23.5h20L23 40.5h20" fill="none" stroke="#D6A050" stroke-width="3.2"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <span class="cortina__hilo"><i></i></span>
+</div>
+<script>
+  /* El tope de la cortina arranca aquí, con el HTML, y no cuando termina de
+     bajar el JavaScript: en una red lenta los módulos tardan justo lo que la
+     cortina no debe durar. `carga.js` la retira antes si todo está listo. */
+  (function () {
+    setTimeout(function () {
+      var c = document.getElementById('cortina');
+      if (!c) return;
+      c.classList.add('is-out');
+      setTimeout(function () { c.remove(); }, 700);
+    }, 2500);
+  })();
+</script>
 <div class="ambient" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
 <a class="skip" href="#carta">Saltar a la carta</a>

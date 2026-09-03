@@ -1329,3 +1329,45 @@ h1, h2, h3 { margin: 0; }
   color: var(--travertine-3);
 }
 .field__pista { margin: .35rem 0 0; font-size: .72rem; line-height: 1.45; color: var(--travertine-3); }
+
+/* =========================================================================
+   LA ENTRADA
+   Una cortina corta mientras llegan las fuentes y las primeras fotos. No
+   acelera nada: evita que se vea a la página montarse —el texto pintando
+   con una serif de repuesto y saltando después, el mosaico en negro—.
+   ========================================================================= */
+.cortina {
+  position: fixed; inset: 0; z-index: 200;
+  display: grid; place-content: center; justify-items: center; gap: 1.5rem;
+  background: var(--void);
+  opacity: 1; transition: opacity .55s var(--ease-out);
+}
+.cortina.is-out { opacity: 0; pointer-events: none; }
+.cortina__sello { width: 54px; height: 54px; color: var(--travertine); }
+
+/* Un hilo que se llena, no una rueda que gira: la rueda es de otra casa. */
+.cortina__hilo { display: block; width: 132px; height: 1px; background: rgba(239,230,214,.14); overflow: hidden; }
+.cortina__hilo i {
+  display: block; height: 100%; width: 100%; background: var(--ember);
+  transform-origin: left center; transform: scaleX(0);
+  animation: hilo 2.4s var(--ease-out) forwards;
+}
+@keyframes hilo {
+  0%   { transform: scaleX(0) }
+  55%  { transform: scaleX(.7) }
+  100% { transform: scaleX(1) }
+}
+
+/* --- las fotos entran fundiéndose ---------------------------------------
+   Solo las que marca el JS: si no llega a correr, se ven como siempre. */
+img[data-suave] { opacity: 0; }
+img[data-suave].is-cargada { opacity: 1; transition: opacity .45s var(--ease-out); }
+
+/* El hueco de cada foto del mosaico ya tiene color: mientras cae la imagen
+   se lee como una rejilla, no como agujeros negros. */
+.hero__track figure { background: var(--stone-800); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cortina__hilo i { animation: none; transform: scaleX(1); }
+  img[data-suave] { opacity: 1; }
+}

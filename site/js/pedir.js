@@ -9,6 +9,7 @@
 import { store, money, bolivares, BRANCHES, CONTACT, METODOS_PAGO, ENVIO } from './store.js';
 import { TAGS, AJUSTES, ADJUSTMENT_MAP, ADJUSTMENT_NOTE, SERVICE_MODES } from '../data/modifiers.js';
 import { whatsappLink, orderSnapshot } from './ticket.js';
+import { cortina, fotosSuaves } from './carga.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -1146,6 +1147,7 @@ function renderLista() {
   };
   vigilarScroll();
   window.addEventListener('scroll', vigilarScroll, { passive: true });
+  fotosSuaves(lista);
 }
 
 /* -------------------------------------------------------------- cabecera */
@@ -1253,4 +1255,6 @@ export function mountPedidos() {
       openModal(item.id);
     }, cambia ? 420 : 80);
   }
+
+  cortina();
 }

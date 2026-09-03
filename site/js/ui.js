@@ -5,6 +5,7 @@
 import { store, money, bolivares, BRANCHES, CONTACT } from './store.js';
 import { TAGS } from '../data/modifiers.js';
 import { revealAll, scrollspy, centerPill, addParallax, addExitProgress, reducedMotion } from './motion.js';
+import { cortina, fotosSuaves } from './carga.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -134,6 +135,7 @@ function renderHero() {
       <div class="hero__track" style="--dur:${duraciones[i] || 72}s">
         ${col.concat(col).map((n, j) => `
           <figure><img src="img/${esc(n)}.webp" alt=""${j >= col.length ? ' loading="lazy"' : ''}
+            ${j === 0 ? 'data-primera fetchpriority="high"' : ''}
             decoding="async" width="520" height="520"></figure>`).join('')}
       </div>
     </div>`).join('') + '<div class="hero__blend"></div><div class="hero__fade"></div>';
@@ -269,6 +271,7 @@ function renderMenu() {
   };
 
   revealAll(list);
+  fotosSuaves(list);
 }
 
 /* ============================================= ficha del plato (informativa) */
@@ -442,6 +445,8 @@ export function mountApp() {
   addParallax($('#heroGrid'), -70);
   $$('.section').forEach((sec) => addExitProgress(sec, '--p'));
   revealAll();
+  fotosSuaves();
+  cortina();
 }
 
 export { toast };
