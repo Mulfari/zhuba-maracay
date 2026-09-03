@@ -104,8 +104,14 @@ a { color: inherit; text-decoration: none; }
 /* Profundidad sin textura sucia. Un moteado de baja frecuencia sobre negro
    no parece piedra: parece mancha. La hondura la dan degradados anchos, y el
    relieve lo pone el grano fino. Capa fija y compuesta: no repinta al bajar. */
+/* Alto anclado al viewport grande (`lvh`), que no cambia cuando el móvil
+   esconde su barra. Con `inset: 0` la caja crecía cincuenta y tantos píxeles
+   y, como los degradados se sitúan en porcentajes de ella, el resplandor de
+   abajo se desplazaba cuarenta píxeles y la viñeta se ensanchaba: toda la
+   luz de la página se movía a mitad del gesto. */
 .ambient {
-  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  position: fixed; inset: 0 0 auto; z-index: -1; pointer-events: none;
+  height: 100vh; height: 100lvh;
   background:
     radial-gradient(70% 48% at 18% 8%, var(--amb-1), transparent 68%),
     radial-gradient(60% 45% at 92% 72%, var(--amb-2), transparent 70%),
@@ -113,8 +119,16 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* --- grano de película sobre todo el documento --------------------------- */
+/* La holgura y el vaivén van en píxeles, no en porcentaje del viewport.
+   Con `inset: -50%` la capa medía dos pantallas: al esconder el móvil su
+   barra, la capa crecía, su borde superior se movía casi treinta píxeles y
+   el grano se desplazaba por encima de todo. Con holgura fija el borde no
+   se mueva lo que se mueva el viewport —y de paso se pinta un cuarto de
+   superficie en vez de cuatro pantallas. */
 .grain {
-  position: fixed; inset: -50%;
+  position: fixed; inset: -40px auto auto -40px;
+  width: calc(100vw + 80px);
+  height: calc(100vh + 80px); height: calc(100lvh + 80px);
   pointer-events: none; z-index: 90;
   opacity: .07;
   background-image: var(--grain-url);
@@ -123,10 +137,10 @@ a { color: inherit; text-decoration: none; }
 }
 @keyframes grain {
   0%,100% { transform: translate(0,0) }
-  20% { transform: translate(-3%, 2%) }
-  40% { transform: translate(2%, -3%) }
-  60% { transform: translate(-2%, -2%) }
-  80% { transform: translate(3%, 1%) }
+  20% { transform: translate(-9px, 6px) }
+  40% { transform: translate(6px, -9px) }
+  60% { transform: translate(-6px, -6px) }
+  80% { transform: translate(9px, 3px) }
 }
 
 /* =========================================================== tipografía == */

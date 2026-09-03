@@ -12,6 +12,29 @@ const progresos = [];
 let ticking = false;
 let midiendo = false;
 
+/* Al deslizar hacia abajo, el navegador del móvil esconde su propia barra y
+   el viewport crece de golpe unas decenas de píxeles. La página no ha
+   cambiado de tamaño —nada se ha reflowado—, pero `innerHeight` sí, y el
+   paralaje lo usa para saber por dónde va cada capa. Si le hiciera caso,
+   todas las capas se corregirían a mitad del gesto: eso es el brinco.
+   De ahí que se guarde una altura de referencia y solo se actualice cuando
+   el cambio es de verdad (girar el teléfono, redimensionar la ventana). */
+let vhRef = 0;
+let anchoRef = 0;
+
+function fijarViewport() {
+  vhRef = window.innerHeight;
+  anchoRef = window.innerWidth;
+}
+
+/** ¿Este cambio de tamaño es solo la barra del navegador entrando o saliendo? */
+function soloLaBarra() {
+  if (!vhRef) return false;
+  if (window.innerWidth !== anchoRef) return false;      // ha girado o cambió el ancho
+  const salto = Math.abs(window.innerHeight - vhRef);
+  return salto > 0 && salto < vhRef * 0.25;
+}
+
 /**
  * Publica en una variable CSS cuánto has recorrido del elemento: 0 al
  * empezar, 1 cuando lo has pasado entero. Con eso el CSS puede encadenar
@@ -70,11 +93,12 @@ function medir() {
 function frame() {
   ticking = false;
   if (reducedMotion()) return;
-  const vh = window.innerHeight;
   // Un viewport degenerado (panel oculto) o expandido (captura de página
   // completa) dispararía el desplazamiento y sacaría el contenido de su
   // sección. En esos casos se deja todo en su sitio.
-  if (vh < 240 || vh > 3000) { layers.forEach((l) => { l.el.style.transform = ''; }); return; }
+  const vivo = window.innerHeight;
+  if (vivo < 240 || vivo > 3000) { layers.forEach((l) => { l.el.style.transform = ''; }); return; }
+  const vh = vhRef || vivo;
 
   const y = window.scrollY;
   for (const l of layers) {
@@ -103,12 +127,15 @@ function onScroll() {
 
 let redim;
 function onResize() {
+  if (soloLaBarra()) return;      // no hay nada que remedir: no se ha movido nada
+  fijarViewport();
   clearTimeout(redim);
   redim = setTimeout(() => { medir(); frame(); }, 120);
 }
 
 export function startParallax() {
   if (reducedMotion()) return;
+  fijarViewport();
   medir();
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onResize, { passive: true });

@@ -184,7 +184,45 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   check('el enlace directo desde la portada abre el plato',
     enlace.abierto && enlace.titulo.includes('Tartar'), JSON.stringify(enlace));
 
-    /* ================================= cada familia habla con su propia voz */
+    /* ================== las capas de fondo no dependen del alto del viewport */
+  await ir('/');
+  const fondo = await ev(`(async()=>{
+    const css = await (await fetch(new URL('css/app.css', location.href))).text();
+    const bloque = (sel) => {
+      const i = css.indexOf(sel + ' {');
+      return i === -1 ? '' : css.slice(i, css.indexOf('}', i));
+    };
+    const amb = bloque('.ambient'), gr = bloque('.grain');
+    // @keyframes lleva llaves dentro: el recorte por la primera se queda corto.
+    const iKf = css.indexOf('@keyframes grain {');
+    const kf = iKf === -1 ? '' : css.slice(iKf, iKf + 340);
+    return {
+      // El viewport grande no cambia cuando el navegador esconde su barra;
+      // el dinámico sí, y los porcentajes de una caja fija, también.
+      ambienteAnclado: /height:\\s*100lvh/.test(amb) && !/inset:\\s*0;/.test(amb),
+      granoAnclado: /100lvh/.test(gr) && !/inset:\\s*-50%/.test(gr),
+      // El vaivén del grano en píxeles: en porcentaje, su amplitud cambiaba
+      // con el alto de la pantalla.
+      vaivenEnPixeles: kf.includes('px') && !/translate\\([^)]*%/.test(kf),
+      sinDinamico: !/\\d(dvh|dvmin|dvmax)/.test(css)
+    };
+  })()`);
+  check('el fondo no se mueve cuando el navegador esconde su barra',
+    fondo.ambienteAnclado && fondo.granoAnclado && fondo.vaivenEnPixeles && fondo.sinDinamico,
+    JSON.stringify(fondo));
+
+  const refViewport = await ev(`(async()=>{
+    const js = await (await fetch(new URL('js/motion.js', location.href))).text();
+    return {
+      // El paralaje mide contra una altura de referencia, no contra la viva.
+      referencia: js.includes('vhRef') && js.includes('const vh = vhRef || vivo'),
+      ignoraLaBarra: js.includes('soloLaBarra()') && /function onResize\\(\\)\\s*\\{\\s*\\n\\s*if \\(soloLaBarra\\(\\)\\) return;/.test(js)
+    };
+  })()`);
+  check('el paralaje ignora el cambio de alto que trae la barra',
+    refViewport.referencia && refViewport.ignoraLaBarra, JSON.stringify(refViewport));
+
+  /* ================================= cada familia habla con su propia voz */
   const voz = await ev(`(async()=>{
     const {AJUSTES, ADJUSTMENT_MAP}=await import(new URL('data/modifiers.js', location.href).href);
     const cafe = await import(new URL('data/menu-cafe.js', location.href).href);
