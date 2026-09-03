@@ -135,7 +135,10 @@ a { color: inherit; text-decoration: none; }
   font-weight: 500;
   line-height: .96;
   letter-spacing: -.022em;
-  font-variation-settings: 'opsz' 96;
+  /* Bodoni Moda trae un eje de tamaño óptico (6-96): a 96 los trazos finos
+     son hilos, que es lo que quieres en un cartel y lo que desaparece en un
+     teléfono. Dejar que lo elija el navegador según el tamaño real. */
+  font-optical-sizing: auto;
 }
 h1, h2, h3 { margin: 0; }
 
@@ -163,7 +166,7 @@ h1, h2, h3 { margin: 0; }
 
 .price {
   font-family: var(--display);
-  font-variation-settings: 'opsz' 20;
+  font-optical-sizing: auto;
   font-weight: 600;
   letter-spacing: -.01em;
   font-feature-settings: 'lnum' 1, 'tnum' 1;
@@ -364,6 +367,12 @@ h1, h2, h3 { margin: 0; }
 .hero__grid { display: grid; gap: clamp(1.1rem,2.2vw,1.7rem); max-width: 31rem; will-change: transform; }
 
 .hero h1 { font-size: clamp(2.5rem, 5.4vw, 4.4rem); }
+/* El interlineado y el ajuste de .display son valores de cartel. En el
+   teléfono el titular baja a 40px y esos mismos valores lo dejan apretado:
+   la «y» de la segunda línea le llega a los descendentes de la primera. */
+@media (max-width: 620px) {
+  .hero h1 { line-height: 1.06; letter-spacing: -.012em; }
+}
 /* Al bajar, las dos líneas del titular se abren un poco entre ellas: la
    frase se despide separándose en vez de irse en bloque. */
 .hero__line { display: block; will-change: transform; }
