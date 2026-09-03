@@ -184,7 +184,35 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   check('el enlace directo desde la portada abre el plato',
     enlace.abierto && enlace.titulo.includes('Tartar'), JSON.stringify(enlace));
 
-    /* =============================================== la entrada de la página */
+    /* ============================================================ el chef */
+  await ir('/');
+  const chef = await ev(`(async()=>{
+    const cafe = await import(new URL('data/menu-cafe.js', location.href).href);
+    const { BRANCHES } = await import(new URL('js/store.js', location.href).href);
+    const mosaicos = BRANCHES.flatMap((b) => b.heroPhotos.flat());
+    const sec = document.getElementById('chef');
+    return {
+      seccion: !!sec,
+      nombre: sec?.querySelector('h2')?.textContent.trim() || '',
+      cargo: sec?.querySelector('.chef__cargo')?.textContent.trim() || '',
+      retrato: sec?.querySelector('img')?.getAttribute('src') || '',
+      alt: sec?.querySelector('img')?.getAttribute('alt') || '',
+      enlace: !!document.querySelector('a[href="#chef"]'),
+      // El retrato no puede volver a colarse como foto de un plato ni al mosaico.
+      enMosaico: mosaicos.includes('alta-pasteleria'),
+      comoPlato: cafe.ITEMS.some((i) => i.img === 'alta-pasteleria.webp'),
+      // Y no queda rastro de la sección que sustituye.
+      sinPiedraBrasa: !document.body.textContent.includes('Piedra, brasa')
+    };
+  })()`);
+  check('la portada presenta al chef con su nombre y su cargo',
+    chef.seccion && chef.nombre === 'Ali Makki J.' && /Chef-Curador/.test(chef.cargo) &&
+    chef.enlace && chef.sinPiedraBrasa, JSON.stringify(chef));
+  check('el retrato vive en su sección, no haciendo de plato',
+    chef.retrato.includes('alta-pasteleria') && chef.alt.includes('Ali Makki') &&
+    !chef.enMosaico && !chef.comoPlato, JSON.stringify(chef));
+
+  /* =============================================== la entrada de la página */
   await ir('/');
   const entrada = await ev(`({
     // A los 4 s la cortina ya no está: ni tapa ni se come los clics.

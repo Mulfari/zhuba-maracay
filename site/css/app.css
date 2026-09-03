@@ -1371,3 +1371,22 @@ img[data-suave].is-cargada { opacity: 1; transition: opacity .45s var(--ease-out
   .cortina__hilo i { animation: none; transform: scaleX(1); }
   img[data-suave] { opacity: 1; }
 }
+
+/* --- el chef -------------------------------------------------------------
+   Un retrato no es un plato: se enmarca en vertical y no se recorta a 16/10,
+   que le cortaría la cabeza. La foto original mide 520 px, así que la caja
+   se queda por debajo de eso para que no se vea blanda. */
+.chef__cargo {
+  margin: .5rem 0 0; font-family: var(--mono); font-size: .62rem;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--ember);
+}
+.story__media--chef {
+  margin: 0; aspect-ratio: 1 / 1; max-width: 26rem; justify-self: center; width: 100%;
+}
+.story__media--chef img {
+  position: absolute; inset: 0; top: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: 50% 32%;
+  /* Se asienta al subir, como el vídeo que había antes, pero sin escalarla:
+     a 520 px de origen, ampliarla se nota. */
+  transform: translate3d(0, calc((var(--p, .5) - .5) * 42px), 0);
+}

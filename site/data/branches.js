@@ -61,7 +61,7 @@ export const BRANCHES = [
     heroSub: 'Waffle hongkonesa hecha al momento, brioche siciliana rellena, alta pastelería con ingredientes italianos y paninis prensados al instante.',
     heroPhotos: [
       ['bubble-waffle-al-gelato', 'cafe-latte', 'barquillon', 'crispy-al-caesar'],
-      ['alta-pasteleria', 'brownie-con-gelato', 'cafes-frios', 'roast-beef-schiacciata']
+      ['croissants-rellenos', 'brownie-con-gelato', 'cafes-frios', 'roast-beef-schiacciata']
     ],
     menu: 'cafe',
     phone: '+58 412-4554207',

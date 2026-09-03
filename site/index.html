@@ -110,7 +110,7 @@
     </a>
 
     <nav class="header__nav" aria-label="Principal">
-      <a href="#historia">Historia</a>
+      <a href="#chef">Chef</a>
       <a href="#carta">Carta</a>
       <a href="#resenas">Reseñas</a>
       <a href="#sedes">Sedes</a>
@@ -162,34 +162,33 @@
 
 </section>
 
-<!-- ============================================================ historia -->
-<section class="section" id="historia">
-  <span class="kanji-mark" aria-hidden="true">物語</span>
+<!-- ================================================================ chef -->
+<section class="section" id="chef">
+  <span class="kanji-mark" aria-hidden="true">匠</span>
   <div class="wrap">
     <div class="story">
       <div class="reveal">
         <div class="section-head section-head--spine" style="margin-bottom:1.6rem">
-          <p class="eyebrow">Casa</p>
-          <h2 class="display">Piedra, brasa<br>y barra fría</h2>
+          <p class="eyebrow">Chef</p>
+          <h2 class="display">Ali Makki J.</h2>
+          <p class="chef__cargo">CEO y Chef-Curador</p>
         </div>
         <p class="lede">
-          ZHUBA es un complejo gastronómico en La Floresta donde conviven una cocina asiática
-          contemporánea y un café de alta pastelería. El salón mezcla lo medieval con lo moderno:
-          piedra travertino, mármol y una iluminación cálida que baja el ruido del día.
+          Bajo su visión, ZHUBA es un solo complejo con cuatro oficios: restaurante de alta gama,
+          café, pastelería fina y un laboratorio de gelato artesanal. Cocina de autor que cruza
+          Asia con el Mediterráneo, donde el emplatado es parte del plato.
         </p>
         <p class="lede" style="margin-top:1rem">
-          En la barra fría se trabaja salmón noruego, atún saku, escolar, hamachi y anguila.
-          En caliente manda el wok, y los cortes tataki pasan por parrilla volcánica.
-          De fondo, la fusión mediterránea-oriental que define la casa: azafrán junto a la soya,
-          aceite de oliva junto al sésamo.
+          El salón principal y el rooftop se renovaron hace poco: travertino, mármol y luz cálida,
+          ordenados según los principios del Feng Shui. Detrás de cada servicio hay un equipo
+          multidisciplinario con el mismo estándar para una cena de dos que para una gala.
         </p>
       </div>
 
-      <div class="story__media reveal" data-d="1">
-        <video id="storyMedia" muted loop playsinline preload="none" poster="assets/cocina-poster.jpg"
-               data-src="assets/cocina"
-               aria-label="Detalle de nigiris y sashimi sobre piedra oscura"></video>
-      </div>
+      <figure class="story__media story__media--chef reveal" data-d="1">
+        <img src="img/alta-pasteleria.webp" width="520" height="520" loading="lazy" decoding="async"
+             alt="Ali Makki J., chef de ZHUBA, terminando el emplatado de un postre">
+      </figure>
     </div>
 
     <div class="pillars">
@@ -382,9 +381,7 @@
 <script type="module">
   import { mountApp } from './js/ui.js';
   import { startParallax, stickyHeader } from './js/motion.js';
-  import { initVideos } from './js/media.js';
   document.getElementById('year').textContent = new Date().getFullYear();
-  initVideos();
   mountApp();
   stickyHeader(document.getElementById('header'));
   startParallax();

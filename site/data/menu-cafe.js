@@ -78,7 +78,9 @@ export const ITEMS = [
 
   /* --------------------------------------------------- PASTELERÍA */
   {
-    id: 'c-altapasteleria', cat: 'pasteleria', name: 'Alta Pastelería & Tentaciones Frías', img: 'alta-pasteleria.webp', hero: true,
+    id: 'c-altapasteleria', cat: 'pasteleria', name: 'Alta Pastelería & Tentaciones Frías', img: null, hero: true,
+    // `alta-pasteleria.webp` no es una foto de la vitrina: es el retrato del
+    // chef, y vive en su sección. Sin foto propia, la ficha usa el hueco.
     desc: 'La joya de la casa. Una selección exclusiva de nuestra vitrina, donde la frescura de la alta pastelería se encuentra con la nobleza de los ingredientes italianos.',
     price: null, variants: [], orderable: false, priceNote: '$5 – $7 según la pieza',
     tags: ['organico', 'gluten', 'lactosa', 'huevos'], pair: 'c-espresso'
