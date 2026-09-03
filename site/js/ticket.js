@@ -1,5 +1,5 @@
 /**
- * Traduce el carrito a una comanda de cocina legible y a un enlace de
+ * Traduce el carrito a un pedido legible para el local y a un enlace de
  * WhatsApp con el mensaje precargado, dirigido al número de la sede activa.
  *
  * El ticket lleva el pago dentro a propósito: quien lo recibe tiene que poder
@@ -20,7 +20,7 @@ export function buildTicket(store, extra = {}) {
   const now = new Date();
   const L = [];
 
-  L.push('*ZHUBA · COMANDA*');
+  L.push('*ZHUBA · PEDIDO*');
   if (extra.id) L.push(`Nº ${extra.id}`);
   L.push(`Sede: ${b.name}`);
   L.push(`Servicio: ${mode.label}`);

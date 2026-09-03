@@ -51,7 +51,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     caminos: document.querySelectorAll('a[href^="pedir"]').length
   })`);
   check('la portada muestra la carta completa', portada.fichas > 50 && portada.categorias === 8, JSON.stringify(portada));
-  check('la portada ya no lleva comanda', portada.sinComanda, JSON.stringify(portada));
+  check('la portada ya no lleva pedido', portada.sinComanda, JSON.stringify(portada));
   check('desde la portada hay varios caminos al pedido', portada.caminos >= 4, `${portada.caminos} enlaces`);
 
   await ev("document.querySelector('[data-open=\"r-sashimi\"]').click()");
@@ -115,7 +115,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await ev("document.querySelector('[data-add]').click()");
   await sleep(500);
   const cart = await ev("({count:document.getElementById('cartCount').textContent, visible:document.getElementById('cartPill').classList.contains('is-visible')})");
-  check('la barra de comanda marca 3 ítems', cart.count === '3' && cart.visible, JSON.stringify(cart));
+  check('la barra del pedido marca 3 ítems', cart.count === '3' && cart.visible, JSON.stringify(cart));
 
   await ev("document.getElementById('cartPill').click()");
   await sleep(600);
@@ -161,7 +161,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await ev("document.querySelector('#sedes .venue-pill[data-branch=\"cafe\"]').click()");
   await sleep(900);
   const cafe = await ev("({cats:document.querySelectorAll('.cat').length, first:document.querySelector('.cat h3').textContent, count:document.getElementById('cartCount').textContent})");
-  check('cambiar de sede cambia carta y comanda',
+  check('cambiar de sede cambia carta y pedido',
     cafe.cats === 7 && cafe.first.includes('Gelato') && cafe.count === '0', JSON.stringify(cafe));
 
   await ir('/pedir.html');
@@ -169,7 +169,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   check('la sede elegida sobrevive a la recarga', vuelta.count === '0', JSON.stringify(vuelta));
   await ev("document.querySelector('#sedes .venue-pill[data-branch=\"restaurante\"]').click()");
   await sleep(800);
-  check('la comanda del restaurante se recupera intacta',
+  check('el pedido del restaurante se recupera intacto',
     (await ev("document.getElementById('cartCount').textContent")) === '3');
 
   await ev("localStorage.setItem('zhuba.stock.v1', JSON.stringify({'r-fukkatsu':false}))");
@@ -414,7 +414,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const pasos = await ev(`({pasos:document.querySelectorAll('.pasos li').length,
     siguiente:!!document.querySelector('[data-siguiente]'),
     sinEnviar:!document.querySelector('[data-enviar]')})`);
-  check('la comanda pasa por tres pasos antes de salir',
+  check('el pedido pasa por tres pasos antes de salir',
     pasos.pasos === 3 && pasos.siguiente && pasos.sinEnviar, JSON.stringify(pasos));
 
   await ev(`document.querySelector('[data-siguiente]').click()`);
@@ -497,7 +497,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     salida.referencia === '012345678' &&
     salida.enBs > 0 && salida.envio === 2 && salida.conUbicacion,
     JSON.stringify(salida));
-  check('tras enviar, la comanda queda limpia',
+  check('tras enviar, el pedido queda limpio',
     salida.carroVacio && salida.cajonCerrado, JSON.stringify(salida));
   console.log('\n=== RECORRIDO FUNCIONAL ===');
   out.forEach((r) => console.log(`${r.ok ? 'OK  ' : 'FALLA'} ${r.name}${r.ok ? '' : '  → ' + r.detail}`));

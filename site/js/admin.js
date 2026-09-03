@@ -108,7 +108,7 @@ function renderOrders() {
   const list = $('#orders');
   const orders = visibleOrders();
   if (!orders.length) {
-    list.innerHTML = `<p class="muted">Sin comandas registradas todavía. Las que se envíen por WhatsApp desde
+    list.innerHTML = `<p class="muted">Sin pedidos registrados todavía. Los que se envíen por WhatsApp desde
       esta web aparecerán aquí, en este dispositivo.</p>`;
     return;
   }
@@ -139,7 +139,7 @@ function renderMetrics() {
   const top = Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
   $('#metrics').innerHTML = `
-    <div class="stat"><span>Comandas hoy</span><b>${today.length}</b></div>
+    <div class="stat"><span>Pedidos hoy</span><b>${today.length}</b></div>
     <div class="stat"><span>Ítems hoy</span><b>${items}</b></div>
     <div class="stat"><span>Facturado hoy</span><b>${money(revenue)}${enBs(revenue)}</b></div>
     <div class="stat"><span>Ya cobrado</span><b>${money(suma(cobrado, totalDe))}${
@@ -246,7 +246,7 @@ function boot() {
   });
 
   $('#clearOrders').addEventListener('click', () => {
-    if (confirm('¿Borrar el historial de comandas de este dispositivo?')) store.clearOrders();
+    if (confirm('¿Borrar el historial de pedidos de este dispositivo?')) store.clearOrders();
   });
 
   store.on((what) => {
@@ -255,7 +255,7 @@ function boot() {
     if (what === 'tasa') { renderCobro(); renderMetrics(); }
   });
 
-  // otra pestaña envió una comanda
+  // otra pestaña envió un pedido
   window.addEventListener('storage', (e) => {
     if (!e.key || !e.key.startsWith('zhuba.')) return;
     store.orders = JSON.parse(localStorage.getItem('zhuba.orders.v1') || '[]');

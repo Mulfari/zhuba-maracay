@@ -86,7 +86,7 @@ export const ADJUSTMENT_NOTE =
 export const SERVICE_MODES = [
   {
     id: 'mesa', label: 'En mesa', icon: 'table',
-    hint: 'Ya estás en el salón: pásanos tu comanda.',
+    hint: 'Ya estás en el salón: pásanos tu pedido.',
     fields: [{ id: 'mesa', label: 'Número de mesa', type: 'text', placeholder: 'Ej. 14', required: true }]
   },
   {

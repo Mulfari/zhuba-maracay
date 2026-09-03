@@ -84,9 +84,3 @@ export const ENVIO = {
   busqueda: { viewbox: '-67.78,10.43,-67.40,10.11', ciudad: 'Maracay' }
 };
 
-/** Estados por los que pasa una comanda antes de salir hacia WhatsApp. */
-export const PASOS = [
-  { id: 'comanda', label: 'Tu comanda' },
-  { id: 'entrega', label: 'Entrega' },
-  { id: 'pago', label: 'Pago' }
-];

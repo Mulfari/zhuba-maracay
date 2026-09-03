@@ -282,7 +282,7 @@ class Store {
   /* --------------------------------------------------- aviso al restaurante */
   /**
    * Un sitio estático no puede avisar al local por su cuenta. Si el
-   * restaurante configura un webhook, aquí se le manda la comanda en cuanto
+   * restaurante configura un webhook, aquí se le manda el pedido en cuanto
    * el cliente marca que pagó — antes de abrir WhatsApp, que es justo donde
    * alguien puede abandonar el proceso con el pago ya hecho.
    */

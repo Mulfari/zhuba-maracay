@@ -170,7 +170,7 @@ function pintarEstado() {
 function itemCard(item) {
   const out = store.isOut(item.id);
   // Pieza de vitrina: el menú oficial publica un rango, no un precio, así que
-  // no puede entrar en la comanda. No debe enseñar un botón de añadir.
+  // no puede entrar en el pedido. No debe enseñar un botón de añadir.
   const vitrina = item.orderable === false;
   const { main, sub } = priceLabel(item);
   const shown = item.tags.slice(0, 3);
@@ -273,7 +273,7 @@ function renderMenu() {
 
 /* ============================================= ficha del plato (informativa) */
 /* En la portada no se pide: la ficha cuenta el plato y ofrece el camino a la
-   página de pedidos, que es donde vive la comanda. */
+   página de pedidos, que es donde vive el pedido. */
 let cambioSede;
 
 function openModal(itemId) {

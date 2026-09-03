@@ -2,7 +2,7 @@
  * ZHUBA · Pedido en línea.
  *
  * Página aparte de la portada y con otro trabajo: aquí no se cuenta la casa,
- * se arma una comanda. Llega tráfico frío desde el enlace de Instagram, casi
+ * se arma un pedido. Llega tráfico frío desde el enlace de Instagram, casi
  * todo desde el móvil, así que manda la rapidez: buscador, lista compacta con
  * miniatura y un botón de añadir siempre a la vista.
  */
@@ -312,18 +312,18 @@ function lineRow(l) {
 
 
 /* ============================================================ el pago, por pasos */
-/* La comanda se arma, se dice cómo se entrega y se paga antes de salir. El
+/* El pedido se arma, se dice cómo se entrega y se paga antes de salir. El
    orden importa: el aviso al restaurante se dispara en cuanto alguien marca
    que pagó, no al final, porque el punto flojo es justo ese —pagar y no
    terminar de mandar el mensaje. */
 
-let paso = 'comanda';
+let paso = 'pedido';
 let mapa = null, marcador = null;
 let mapaNodo = null;      // el div del mapa, que sobrevive a los repintados
 let mapaAbierto = false;  // ¿lo ha pedido el cliente aunque no haya punto?
 
 const PASOS = [
-  { id: 'comanda', label: 'Comanda' },
+  { id: 'pedido', label: 'Pedido' },
   { id: 'entrega', label: 'Entrega' },
   { id: 'pago', label: 'Pago' }
 ];
@@ -719,7 +719,7 @@ function upsellPicks() {
 
 /** Qué falta para poder seguir. Cadena vacía = se puede. */
 function loQueFalta() {
-  if (paso === 'comanda') return store.cart.length ? '' : 'Añade algo a la comanda';
+  if (paso === 'pedido') return store.cart.length ? '' : 'Añade algo a tu pedido';
   if (paso === 'entrega') {
     const modo = SERVICE_MODES.find((m) => m.id === store.service.mode);
     const f = store.service.fields || {};
@@ -749,24 +749,24 @@ function renderCart() {
   $('#drawerSub').textContent = b.name;
 
   if (!store.cart.length) {
-    paso = 'comanda';
+    paso = 'pedido';
     body.innerHTML = `
       <div class="empty">
         <span aria-hidden="true">乙</span>
-        <p>Tu comanda está vacía. Añade algo de la carta y lo enviamos a ${esc(store.branch.name)}.</p>
+        <p>Tu pedido está vacío. Añade algo de la carta y lo enviamos a ${esc(store.branch.name)}.</p>
         <button class="btn btn--ghost btn--sm" data-close-drawer>Ver la carta</button>
       </div>`;
     foot.innerHTML = '';
     return;
   }
 
-  const picks = paso === 'comanda' ? upsellPicks() : [];
+  const picks = paso === 'pedido' ? upsellPicks() : [];
   body.innerHTML = pasosBarra() + (
-    paso === 'comanda' ? `
+    paso === 'pedido' ? `
       ${store.cart.map(lineRow).join('')}
       ${picks.length ? `
       <div class="upsell">
-        <h4 class="paso-titulo">Completa la mesa</h4>
+        <h4 class="paso-titulo">Para acompañar</h4>
         <div class="upsell__rail">
           ${picks.map((i) => `
             <button class="upsell__card" data-quick="${i.id}">
@@ -796,10 +796,10 @@ function renderCart() {
       ? `<button class="btn btn--wa" data-enviar ${falta ? 'disabled' : ''}>${ICON.wa} ${
           store.pago.metodo === 'efectivo' ? 'Enviar pedido por WhatsApp' : 'Ya pagué · enviar por WhatsApp'}</button>`
       : `<button class="btn btn--solid" data-siguiente ${falta ? 'disabled' : ''}>
-           ${paso === 'comanda' ? 'Continuar' : 'Continuar al pago'}</button>`}
-    ${paso !== 'comanda' ? '<button class="link-x" data-atras>Volver</button>' : ''}
+           ${paso === 'pedido' ? 'Continuar' : 'Continuar al pago'}</button>`}
+    ${paso !== 'pedido' ? '<button class="link-x" data-atras>Volver</button>' : ''}
     ${paso === 'pago'
-      ? `<p class="fineprint">Al enviar se abre WhatsApp con la comanda escrita hacia <b>${esc(b.phone)}</b>.
+      ? `<p class="fineprint">Al enviar se abre WhatsApp con el pedido escrito hacia <b>${esc(b.phone)}</b>.
            El restaurante confirma y sigue contigo por ahí.</p>`
       : ''}`;
 
@@ -874,12 +874,12 @@ function bindDrawer() {
     }
 
     if (e.target.closest('[data-siguiente]')) {
-      paso = paso === 'comanda' ? 'entrega' : 'pago';
+      paso = paso === 'pedido' ? 'entrega' : 'pago';
       $('#drawerBody').scrollTop = 0;
       return renderCart();
     }
     if (e.target.closest('[data-atras]')) {
-      paso = paso === 'pago' ? 'entrega' : 'comanda';
+      paso = paso === 'pago' ? 'entrega' : 'pedido';
       $('#drawerBody').scrollTop = 0;
       return renderCart();
     }
@@ -954,14 +954,14 @@ async function enviar() {
   pedido.total = store.total;
 
   // Primero se registra y se avisa; después WhatsApp. Si alguien paga y no
-  // llega a mandar el mensaje, el restaurante ya tiene la comanda.
+  // llega a mandar el mensaje, el restaurante ya tiene el pedido.
   // El estado es el de cocina (nuevo → en cocina → listo). Si está cobrado o
   // no es otra cosa, y va en `pago`: el panel lo enseña aparte.
   const guardado = store.recordOrder(pedido);
 
   // El aviso sale ya, pero no se espera aquí: entre el clic y `window.open`
   // no puede haber un `await`, o el navegador móvil da la pestaña por no
-  // pedida y la bloquea. El enlace se arma antes de vaciar la comanda.
+  // pedida y la bloquea. El enlace se arma antes de vaciar el pedido.
   const avisando = store.avisar({
     ...pedido, id: guardado.id, en: new Date().toISOString(),
     comprobante: store.pago.comprobante ? store.pago.comprobante.datos : null
@@ -971,7 +971,7 @@ async function enviar() {
   store.clearCart();
   store.pago = { metodo: null, referencia: '', telefono: '', comprobante: null };
   store.limpiarEntrega();
-  paso = 'comanda';
+  paso = 'pedido';
   closeDrawer();
 
   const pestana = window.open(link, '_blank');
@@ -982,7 +982,7 @@ async function enviar() {
 }
 
 function openDrawer() {
-  paso = 'comanda';
+  paso = 'pedido';
   renderCart();
   $('#drawer').classList.add('is-open');
   $('#drawer').setAttribute('aria-hidden', 'false');
@@ -1007,7 +1007,7 @@ function renderPill() {
   if (!pill) return;
   const n = store.count;
   pill.classList.toggle('is-visible', n > 0);
-  // La barra flota fija sobre el contenido: mientras haya comanda se reserva
+  // La barra flota fija sobre el contenido: mientras haya pedido se reserva
   // sitio abajo para que no se coma botones ni la última línea del pie.
   document.body.classList.toggle('has-order', n > 0);
   $('#cartCount').textContent = String(n);
