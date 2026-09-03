@@ -753,7 +753,7 @@ function renderCart() {
     body.innerHTML = `
       <div class="empty">
         <span aria-hidden="true">乙</span>
-        <p>Tu comanda está vacía. Añade platos de la carta y los enviamos al restaurante.</p>
+        <p>Tu comanda está vacía. Añade algo de la carta y lo enviamos a ${esc(store.branch.name)}.</p>
         <button class="btn btn--ghost btn--sm" data-close-drawer>Ver la carta</button>
       </div>`;
     foot.innerHTML = '';
