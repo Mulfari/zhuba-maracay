@@ -80,13 +80,13 @@ export const ITEMS = [
   {
     id: 'c-altapasteleria', cat: 'pasteleria', name: 'Alta Pastelería & Tentaciones Frías', img: 'alta-pasteleria.webp', hero: true,
     desc: 'La joya de la casa. Una selección exclusiva de nuestra vitrina, donde la frescura de la alta pastelería se encuentra con la nobleza de los ingredientes italianos.',
-    price: null, variants: [], orderable: false, priceNote: '5 € – 7 € según la pieza',
+    price: null, variants: [], orderable: false, priceNote: '$5 – $7 según la pieza',
     tags: ['organico', 'gluten', 'lactosa', 'huevos'], pair: 'c-espresso'
   },
   {
     id: 'c-bolleria', cat: 'pasteleria', name: 'Bollería Fina & Repostería de Autor', img: null,
     desc: 'Piezas selectas de nuestra vitrina, horneadas con los mejores ingredientes: cannolis, croissants de autor, crumbles rústicos y mucho más.',
-    price: null, variants: [], orderable: false, priceNote: '3 € – 7 € según la pieza',
+    price: null, variants: [], orderable: false, priceNote: '$3 – $7 según la pieza',
     tags: ['organico', 'gluten', 'lactosa', 'fcascara'], pair: 'c-cappuccino'
   },
 

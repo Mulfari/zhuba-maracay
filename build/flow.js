@@ -184,7 +184,60 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   check('el enlace directo desde la portada abre el plato',
     enlace.abierto && enlace.titulo.includes('Tartar'), JSON.stringify(enlace));
 
-    /* ======================================== la dirección, en los dos sentidos */
+    /* ================================= cada familia habla con su propia voz */
+  const voz = await ev(`(async()=>{
+    const {AJUSTES, ADJUSTMENT_MAP}=await import(new URL('data/modifiers.js', location.href).href);
+    const cafe = await import(new URL('data/menu-cafe.js', location.href).href);
+    const rest = await import(new URL('data/menu-restaurante.js', location.href).href);
+    // Toda categoría de las dos cartas tiene familia, y toda familia dice
+    // quién prepara y con qué ejemplo: si no, alguien se queda con «la cocina».
+    const cats = [...cafe.CATEGORIES, ...rest.CATEGORIES].map((c) => c.id);
+    const huerfanas = cats.filter((c) => !ADJUSTMENT_MAP[c]);
+    const incompletas = Object.entries(AJUSTES)
+      .filter(([, f]) => !f.quien || !f.ejemplo || !f.opciones?.length)
+      .map(([k]) => k);
+    return { cats: cats.length, huerfanas, incompletas,
+             quienes: [...new Set(Object.values(AJUSTES).map((f) => f.quien))].sort() };
+  })()`);
+  check('toda la carta sabe quién la prepara',
+    voz.cats === 15 && !voz.huerfanas.length && !voz.incompletas.length &&
+    voz.quienes.length === 4, JSON.stringify(voz));
+
+  const familias = [];
+  for (const [id, espera] of [['c-barquilla', 'la heladería'], ['c-espresso', 'la barra'],
+    ['r-moscow', 'la barra'], ['c-caesar', 'la cocina'], ['r-fukkatsu', 'la cocina']]) {
+    await ir(`/pedir.html?plato=${id}`);
+    await sleep(600);
+    familias.push(await ev(`({id:'${id}', espera:'${espera}',
+      etiqueta: document.querySelector('label[for=kitchenNote]')?.textContent.trim() || '',
+      ejemplo: document.getElementById('kitchenNote')?.placeholder || '',
+      grupo: Array.from(document.querySelectorAll('.modal__panel h4')).map(h=>h.textContent.trim()).join('|')})`));
+  }
+  check('a un helado no le habla la cocina',
+    familias.every((f) => f.etiqueta === `Notas para ${f.espera}` && f.ejemplo.startsWith('Ej. ')),
+    JSON.stringify(familias.map((f) => `${f.id}: ${f.etiqueta}`)));
+  check('el ejemplo de la nota va con lo que se pide',
+    familias.find((f) => f.id === 'c-barquilla').ejemplo.includes('sabores') &&
+    familias.find((f) => f.id === 'r-fukkatsu').ejemplo.includes('cebollín') &&
+    familias.find((f) => f.id === 'c-espresso').ejemplo.includes('lactosa'),
+    JSON.stringify(familias.map((f) => f.ejemplo)));
+  check('el grupo de ajustes ya no dice cocina',
+    familias.every((f) => !/cocina/i.test(f.grupo)) &&
+    familias.every((f) => f.grupo.includes('Cómo lo preparamos')),
+    JSON.stringify(familias.map((f) => f.grupo)));
+
+  const sinEuros = await ev(`(async()=>{
+    const cafe = await import(new URL('data/menu-cafe.js', location.href).href);
+    const rest = await import(new URL('data/menu-restaurante.js', location.href).href);
+    const notas = [...cafe.ITEMS, ...rest.ITEMS].map((i) => i.priceNote || '').filter(Boolean);
+    return { notas, conEuro: notas.filter((n) => n.includes('€')),
+             pill: document.getElementById('cartTotal')?.textContent.trim() || '' };
+  })()`);
+  check('la carta ya no cotiza en euros',
+    sinEuros.notas.length > 0 && !sinEuros.conEuro.length && !sinEuros.pill.includes('€'),
+    JSON.stringify(sinEuros));
+
+  /* ======================================== la dirección, en los dos sentidos */
   await ir('/pedir.html');
   await ev(`(async()=>{
     const {store}=await import(new URL('js/store.js', location.href).href);

@@ -7,7 +7,7 @@
  * miniatura y un botón de añadir siempre a la vista.
  */
 import { store, money, bolivares, BRANCHES, CONTACT, METODOS_PAGO, ENVIO } from './store.js';
-import { TAGS, ADJUSTMENTS, ADJUSTMENT_MAP, ADJUSTMENT_NOTE, SERVICE_MODES } from '../data/modifiers.js';
+import { TAGS, AJUSTES, ADJUSTMENT_MAP, ADJUSTMENT_NOTE, SERVICE_MODES } from '../data/modifiers.js';
 import { whatsappLink, orderSnapshot } from './ticket.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -74,7 +74,12 @@ let cambioSede;
 function openModal(itemId) {
   const item = store.item(itemId);
   if (!item || store.isOut(item.id)) return;
-  const adjustments = ADJUSTMENTS[ADJUSTMENT_MAP[item.cat]] || [];
+  // Quién prepara este plato y con qué ejemplo se le habla: no es lo mismo
+  // pedirle algo a la cocina que a la barra o a la heladería.
+  const familia = AJUSTES[ADJUSTMENT_MAP[item.cat]] || {};
+  const adjustments = familia.opciones || [];
+  const quien = familia.quien || 'la cocina';
+  const ejemplo = familia.ejemplo || 'Ej. alguna alergia, cómo lo prefieres';
   const pairItem = item.pair ? store.item(item.pair) : null;
 
   modalState = {
@@ -120,7 +125,7 @@ function openModal(itemId) {
       ${adjustments.length && orderable ? `
       <div class="opt-group">
         <div class="opt-group__head">
-          <h4>Ajustes de cocina</h4>
+          <h4>Cómo lo preparamos</h4>
           <span class="opt-group__req" style="color:var(--travertine-3)">Sin recargo</span>
         </div>
         <div class="opts">
@@ -147,8 +152,8 @@ function openModal(itemId) {
 
       ${orderable ? `
       <div class="field">
-        <label for="kitchenNote">Notas para la cocina</label>
-        <textarea id="kitchenNote" placeholder="Ej. salsa aparte, sin cebollín, alergia a los frutos secos"></textarea>
+        <label for="kitchenNote">Notas para ${esc(quien)}</label>
+        <textarea id="kitchenNote" placeholder="${esc(ejemplo)}"></textarea>
       </div>` : `
       <p class="allergen-note"><strong style="color:var(--travertine-2)">Pieza de vitrina.</strong>
       ${esc(item.priceNote || '')} — se elige en el mostrador y se confirma en el momento.</p>`}
@@ -157,8 +162,8 @@ function openModal(itemId) {
       <div class="opt-group">
         <div class="opt-group__head"><h4>Alérgenos y dieta</h4></div>
         <div class="tags">${item.tags.map(tagChip).join('')}</div>
-        <p class="allergen-note">Si tienes una alergia, avísanos también por WhatsApp antes de que la
-        cocina prepare tu pedido.</p>
+        <p class="allergen-note">Si tienes una alergia, avísanos también por WhatsApp antes de que
+        preparemos tu pedido.</p>
       </div>` : ''}
     </div>
     ${orderable ? `

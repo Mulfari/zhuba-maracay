@@ -3,7 +3,8 @@
  * Nombres, descripciones, variantes, precios y alérgenos tomados del menú
  * digital oficial del restaurante (app-menuqr.web.app/?id=zhuba1108).
  * Selección curada: la carta completa supera los 300 platos.
- * `price` en la moneda que publica el propio menú (€). `variants` = opciones
+ * `price` en dólares, que es a lo que el restaurante ancla la carta; se
+ * cobra en bolívares a la tasa oficial. `variants` = opciones
  * reales de preparación o proteína, cada una con su precio publicado.
  */
 export const CATEGORIES = [

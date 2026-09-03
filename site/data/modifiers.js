@@ -23,20 +23,50 @@ export const TAGS = {
   gsesamo:     { label: 'Sésamo',             icon: '',   kind: 'allergen' }
 };
 
-/** Ajustes de cocina por familia de plato. Sin costo adicional. */
-export const ADJUSTMENTS = {
-  barra_fria: [
-    'Sin picante', 'Salsa spicy aparte', 'Sin cebollín', 'Sin queso crema',
-    'Sin aguacate', 'Extra wasabi', 'Extra jengibre', 'Sin sésamo'
-  ],
-  wok: [
-    'Sin picante', 'Poca sal', 'Sin cebolla', 'Salsa aparte',
-    'Vegetales bien crocantes', 'Sin salsa de soya'
-  ],
-  coctel: ['Sin hielo', 'Menos dulce', 'Copa escarchada', 'Sin garnish'],
-  cafe: ['Leche sin lactosa', 'Sin azúcar', 'Extra caliente', 'Doble shot', 'Para llevar'],
-  panaderia: ['Sin cebolla', 'Sin picante', 'Salsa aparte', 'Bien tostado', 'Para llevar'],
-  dulce: ['Sin crema chantilly', 'Extra topping', 'Sin sirope', 'Para llevar']
+/* Ajustes por familia. Sin costo adicional.
+   Cada familia dice también quién la prepara y con qué ejemplo: a un gelato
+   no lo hace «la cocina», y «salsa aparte, sin cebollín» no le dice nada a
+   quien está pidiendo un helado. */
+export const AJUSTES = {
+  barra_fria: {
+    quien: 'la cocina',
+    ejemplo: 'Ej. salsa aparte, sin cebollín, alergia a los frutos secos',
+    opciones: ['Sin picante', 'Salsa spicy aparte', 'Sin cebollín', 'Sin queso crema',
+      'Sin aguacate', 'Extra wasabi', 'Extra jengibre', 'Sin sésamo']
+  },
+  wok: {
+    quien: 'la cocina',
+    ejemplo: 'Ej. poca sal, sin picante, la salsa aparte',
+    opciones: ['Sin picante', 'Poca sal', 'Sin cebolla', 'Salsa aparte',
+      'Vegetales bien crocantes', 'Sin salsa de soya']
+  },
+  panaderia: {
+    quien: 'la cocina',
+    ejemplo: 'Ej. bien tostado, sin cebolla, cortado por la mitad',
+    opciones: ['Sin cebolla', 'Sin picante', 'Salsa aparte', 'Bien tostado', 'Para llevar']
+  },
+  coctel: {
+    quien: 'la barra',
+    ejemplo: 'Ej. sin hielo, menos dulce, tráelo con el postre',
+    opciones: ['Sin hielo', 'Menos dulce', 'Copa escarchada', 'Sin garnish']
+  },
+  cafe: {
+    quien: 'la barra',
+    ejemplo: 'Ej. leche sin lactosa, sin azúcar, poco hielo',
+    opciones: ['Leche sin lactosa', 'Sin azúcar', 'Extra caliente', 'Doble shot', 'Para llevar']
+  },
+  gelato: {
+    // El sabor no está en la carta y hay que decirlo: la barquilla se sirve
+    // «con uno o dos sabores», así que el ejemplo lo pide lo primero.
+    quien: 'la heladería',
+    ejemplo: 'Ej. qué sabores quieres, sin sirope, es para regalo',
+    opciones: ['Sin crema chantilly', 'Extra topping', 'Sin sirope', 'Para llevar']
+  },
+  pasteleria: {
+    quien: 'la pastelería',
+    ejemplo: 'Ej. sin sirope, con velita, es para regalo',
+    opciones: ['Sin crema chantilly', 'Extra topping', 'Sin sirope', 'Para llevar']
+  }
 };
 
 /** Qué familia de ajustes corresponde a cada categoría de la carta. */
@@ -44,13 +74,13 @@ export const ADJUSTMENT_MAP = {
   aperitivos: 'barra_fria', firma: 'barra_fria', tempura: 'barra_fria',
   tradicionales: 'barra_fria', sashimi: 'barra_fria', crudos: 'barra_fria',
   wok: 'wok', barra: 'coctel',
-  gelato: 'dulce', pasteleria: 'dulce', paninis: 'panaderia',
-  schiacciatas: 'panaderia', hojaldre: 'panaderia',
+  gelato: 'gelato', pasteleria: 'pasteleria',
+  paninis: 'panaderia', schiacciatas: 'panaderia', hojaldre: 'panaderia',
   calientes: 'cafe', frias: 'cafe'
 };
 
 export const ADJUSTMENT_NOTE =
-  'Los ajustes de cocina no tienen recargo publicado. Si tu petición implica un extra, la cocina te lo confirma al recibir el pedido.';
+  'Estos ajustes no tienen recargo publicado. Si tu petición implica un extra, te lo confirmamos al recibir el pedido.';
 
 /** Modos de servicio. Los campos se renderizan desde aquí, no desde el HTML. */
 export const SERVICE_MODES = [
