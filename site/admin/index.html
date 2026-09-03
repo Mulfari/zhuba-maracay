@@ -40,11 +40,51 @@
     color: var(--travertine-3); font-weight: 400; margin: 0 0 1rem; display: flex; justify-content: space-between; gap: 1rem; }
 
   .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px;
-    background: rgba(239,230,214,.1); border: var(--hair); margin-bottom: 2rem; }
+    background: rgba(239,230,214,.1); border: var(--hair); margin-bottom: .7rem; }
   @media (min-width: 620px) { .stats { grid-template-columns: repeat(4, 1fr); } }
-  @media (min-width: 1180px) { .stats { grid-template-columns: repeat(8, 1fr); } }
-  @media (min-width: 1180px) { .stat b { font-size: 1.25rem; } }
-  .stat { background: var(--void); padding: 1rem .95rem; display: grid; gap: .3rem; }
+  .stat { background: var(--void); padding: .7rem .8rem; display: grid; gap: .15rem; }
+  .stat span { font-family: var(--mono); font-size: .52rem; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--travertine-3); }
+  .stat b { font-family: var(--display); font-size: 1.15rem; font-weight: 600; letter-spacing: -.02em; }
+  .stat--ojo b { color: var(--ember); }
+  .stats-mas { margin: 0 0 2rem; font-family: var(--mono); font-size: .6rem;
+    letter-spacing: .06em; color: var(--travertine-3); line-height: 1.7; }
+
+  /* --- cabecera y pestañas ---------------------------------------------
+     Antes: tres botones de sede y «Salir» ocupaban una pantalla entera del
+     teléfono antes de ver un solo pedido. */
+  .adm-head__row { display: flex; align-items: center; gap: .7rem; padding-block: .7rem; }
+  .adm-sede {
+    margin-left: auto; max-width: 11.5rem; padding: .4rem .6rem; border-radius: 2px;
+    border: var(--hair); background: var(--stone-900); color: var(--travertine);
+    font: inherit; font-size: .8rem;
+  }
+  .adm-sede:focus { outline: none; border-color: var(--ember); }
+  .adm-tabs { display: flex; gap: 0; border-top: var(--hair-soft); }
+  .adm-tabs button {
+    flex: 1; padding: .8rem .4rem; background: none; border: 0; cursor: pointer;
+    font-family: var(--mono); font-size: .62rem; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--travertine-3); border-bottom: 2px solid transparent;
+  }
+  .adm-tabs button[aria-selected="true"] { color: var(--travertine); border-bottom-color: var(--ember); }
+  .adm-main { padding-top: 1.6rem; }
+  .adm-tab[hidden] { display: none !important; }
+  .adm-tabla { max-height: none; overflow: visible; margin-top: .8rem; }
+  @media (min-width: 900px) { .adm-tabla { max-height: 62vh; overflow: auto; } }
+  .caja--riesgo { border-color: color-mix(in srgb, var(--vermillion) 35%, transparent); }
+
+  /* --- filas de la carta -------------------------------------------------
+     Con el nombre y la sede partiéndose en dos líneas cada uno, cabían cinco
+     platos de ciento tres por pantalla. Cada dato en su renglón y sin
+     partirse: el nombre completo se ve al buscar. */
+  td > b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  td > .muted { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  @media (max-width: 560px) {
+    td { padding: .5rem .35rem; }
+    td:first-child { max-width: 0; width: 100%; }
+    .toggle span { display: none; }          /* basta el interruptor */
+    input[type=number] { width: 64px; }
+  }
   .stat span { font-family: var(--mono); font-size: .56rem; letter-spacing: .16em;
     text-transform: uppercase; color: var(--travertine-3); }
   .stat b { font-family: var(--display); font-size: 1.6rem; font-weight: 600; letter-spacing: -.02em; }
@@ -94,8 +134,12 @@
   td:first-child { padding-left: 0; }
   td.num { text-align: right; white-space: nowrap; width: 1%; }
   td b { font-weight: 600; font-size: .88rem; display: block; }
+  /* Etiqueta corta: versalita monoespaciada. Una frase entera en versalitas
+     no se lee, así que las frases van en la letra del texto. */
   .muted { color: var(--travertine-3); font-family: var(--mono); font-size: .58rem;
     letter-spacing: .1em; text-transform: uppercase; }
+  p.muted, li.muted { font-family: var(--sans); font-size: .82rem; letter-spacing: 0;
+    text-transform: none; line-height: 1.6; }
   tr.is-out b { text-decoration: line-through; color: var(--travertine-3); }
   input[type=number] { width: 82px; padding: .35rem .5rem; border-radius: 3px; border: var(--hair);
     background: rgba(239,230,214,.05); color: var(--travertine); font-family: var(--mono); font-size: .8rem; text-align: right; }
@@ -207,93 +251,99 @@
 <div id="panel" hidden>
   <header class="adm-head">
     <div class="wrap adm-head__row">
-      <h1 class="adm-title"><span>ZHUBA</span>Panel de cocina</h1>
-      <div class="seg" id="filters" style="margin-left:auto"></div>
+      <h1 class="adm-title"><span>ZHUBA</span>Panel</h1>
+      <label class="sr-only" for="sede">Sede</label>
+      <select id="sede" class="adm-sede"></select>
       <button class="btn btn--sm btn--ghost" id="logout">Salir</button>
     </div>
+    <!-- El trabajo va primero: se entra en Pedidos, y lo demás se busca. -->
+    <nav class="wrap adm-tabs" role="tablist" aria-label="Secciones del panel">
+      <button role="tab" data-tab="pedidos" aria-selected="true">Pedidos</button>
+      <button role="tab" data-tab="carta" aria-selected="false">Carta</button>
+      <button role="tab" data-tab="ajustes" aria-selected="false">Ajustes</button>
+    </nav>
   </header>
 
-  <main class="wrap" style="padding-top:2rem">
-    <div class="stats" id="metrics"></div>
-
-    <div class="cols">
-      <section>
-        <h2 class="adm">
-          <span>Pedidos entrantes</span>
-          <button class="btn btn--sm btn--ghost" id="clearOrders">Vaciar historial</button>
-        </h2>
-        <div id="orders"></div>
-      </section>
-
-      <aside>
-        <h2 class="adm">Más vendidos hoy</h2>
-        <ul class="toplist" id="top"></ul>
-
-        <h2 class="adm" style="margin-top:2.4rem">
-          <span>Carta e inventario</span>
-          <span id="stockCount" class="muted"></span>
-        </h2>
-        <div class="field" style="margin-top:0">
-          <label class="sr-only" for="search">Buscar plato</label>
-          <input id="search" type="search" placeholder="Buscar plato…">
-        </div>
-        <div style="max-height:60vh;overflow:auto;margin-top:.8rem">
-          <table><tbody id="stock"></tbody></table>
-        </div>
-      </aside>
-    </div>
-
-
-    <section id="cobro" class="cobro-panel">
-      <h2 class="adm"><span>Cobro y envío</span></h2>
-
-      <div class="cobro-grid">
-        <div class="caja">
-          <h3>Tasa del día</h3>
-          <p class="tasa-estado" id="tasaEstado"></p>
-          <label class="campo"><span>Fijar tasa a mano (opcional)</span>
-            <input id="tasaManual" type="number" step="0.01" min="0" placeholder="en blanco = la oficial"></label>
-          <button class="btn btn--sm btn--ghost" id="tasaRefrescar">Volver a la tasa oficial</button>
-          <p class="pista">La carta está en dólares y la web muestra el equivalente en bolívares.
-             Si la consulta falla se usa la última tasa conocida; nunca se inventa una.</p>
-        </div>
-
-        <div class="caja">
-          <h3>Envío por distancia</h3>
-          <div id="anillos"></div>
-          <label class="campo"><span>Máximo que se reparte (km)</span>
-            <input id="maxKm" type="number" step="1" min="1"></label>
-          <p class="pista">Precios en dólares. Un anillo sin precio se muestra como
-             «por confirmar»; más allá del máximo, la web no deja pedir delivery.</p>
-        </div>
-      </div>
-
-      <div class="caja">
-        <h3>Datos de pago</h3>
-        <p class="pista">Solo se le ofrecen al cliente los métodos con todos sus datos rellenos.
-           Mientras estén vacíos, la web pide los datos por WhatsApp en lugar de enseñar nada inventado.</p>
-        <div id="metodos" class="metodos"></div>
-      </div>
-
-      <div class="caja">
-        <h3>Aviso interno</h3>
-        <label class="campo"><span>Dirección donde avisar (https://…)</span>
-          <input id="aviso" type="url" placeholder="https://… webhook de Make, Zapier, Google Apps Script…"></label>
-        <button class="btn btn--sm btn--ghost" id="avisoProbar">Enviar aviso de prueba</button>
-        <p class="pista"><b>Esto importa.</b> El pedido se manda aquí en cuanto el cliente marca que
-           pagó, <em>antes</em> de abrir WhatsApp. Es la red de seguridad para quien paga y no llega a
-           enviar el mensaje. Sin esta dirección, ese caso se pierde: un sitio sin servidor no puede
-           avisar por su cuenta.</p>
-      </div>
+  <main class="wrap adm-main">
+    <!-- ------------------------------------------------------- pedidos -->
+    <section id="tab-pedidos" class="adm-tab">
+      <div class="stats" id="metrics"></div>
+      <p class="stats-mas" id="metricsMas"></p>
+      <h2 class="adm"><span>Entrantes</span></h2>
+      <div id="orders"></div>
     </section>
 
-    <p class="adm-note">
-      Los pedidos, el inventario y los precios editados se guardan en el almacenamiento local de
-      <strong style="color:var(--travertine-2)">este dispositivo y este navegador</strong>: es un panel de
-      demostración, sin servidor. Lo que apagues aquí se ve agotado en la carta pública abierta en este mismo
-      equipo. El precio original del menú oficial se recupera con el botón ↺.
-      <a href="../" style="color:var(--ember)">Volver a la web</a>
-    </p>
+    <!-- --------------------------------------------------------- carta -->
+    <section id="tab-carta" class="adm-tab" hidden>
+      <h2 class="adm"><span>Carta e inventario</span><span id="stockCount" class="muted"></span></h2>
+      <div class="field" style="margin-top:0">
+        <label class="sr-only" for="search">Buscar plato</label>
+        <input id="search" type="search" placeholder="Buscar plato…">
+      </div>
+      <div class="adm-tabla"><table><tbody id="stock"></tbody></table></div>
+
+      <h2 class="adm" style="margin-top:2.4rem"><span>Más vendidos hoy</span></h2>
+      <ul class="toplist" id="top"></ul>
+    </section>
+
+    <!-- ------------------------------------------------------- ajustes -->
+    <section id="tab-ajustes" class="adm-tab" hidden>
+      <div id="cobro" class="cobro-panel">
+        <div class="cobro-grid">
+          <div class="caja">
+            <h3>Tasa del día</h3>
+            <p class="tasa-estado" id="tasaEstado"></p>
+            <label class="campo"><span>Fijar tasa a mano (opcional)</span>
+              <input id="tasaManual" type="number" step="0.01" min="0" placeholder="en blanco = la oficial"></label>
+            <button class="btn btn--sm btn--ghost" id="tasaRefrescar">Volver a la tasa oficial</button>
+            <p class="pista">La carta está en dólares y la web muestra el equivalente en bolívares.
+               Si la consulta falla se usa la última tasa conocida; nunca se inventa una.</p>
+          </div>
+
+          <div class="caja">
+            <h3>Envío por distancia</h3>
+            <div id="anillos"></div>
+            <label class="campo"><span>Máximo que se reparte (km)</span>
+              <input id="maxKm" type="number" step="1" min="1"></label>
+            <p class="pista">Precios en dólares. Un anillo sin precio se muestra como
+               «por confirmar»; más allá del máximo, la web no deja pedir delivery.</p>
+          </div>
+        </div>
+
+        <div class="caja">
+          <h3>Datos de pago</h3>
+          <p class="pista">Solo se le ofrecen al cliente los métodos con todos sus datos rellenos.
+             Mientras estén vacíos, la web pide los datos por WhatsApp en lugar de enseñar nada inventado.</p>
+          <div id="metodos" class="metodos"></div>
+        </div>
+
+        <div class="caja">
+          <h3>Aviso interno</h3>
+          <label class="campo"><span>Dirección donde avisar (https://…)</span>
+            <input id="aviso" type="url" placeholder="https://… webhook de Make, Zapier, Google Apps Script…"></label>
+          <button class="btn btn--sm btn--ghost" id="avisoProbar">Enviar aviso de prueba</button>
+          <p class="pista"><b>Esto importa.</b> El pedido se manda aquí en cuanto el cliente marca que
+             pagó, <em>antes</em> de abrir WhatsApp. Es la red de seguridad para quien paga y no llega a
+             enviar el mensaje. Sin esta dirección, ese caso se pierde: un sitio sin servidor no puede
+             avisar por su cuenta.</p>
+        </div>
+
+        <!-- Borrar no es una acción de todos los días: vive al final y avisa. -->
+        <div class="caja caja--riesgo">
+          <h3>Vaciar el historial</h3>
+          <p class="pista">Borra los pedidos guardados en este dispositivo. No se puede deshacer.</p>
+          <button class="btn btn--sm btn--ghost" id="clearOrders">Vaciar historial</button>
+        </div>
+      </div>
+
+      <p class="adm-note">
+        Los pedidos, el inventario y los precios editados se guardan en el almacenamiento local de
+        <strong style="color:var(--travertine-2)">este dispositivo y este navegador</strong>: es un panel de
+        demostración, sin servidor. Lo que apagues aquí se ve agotado en la carta pública abierta en este mismo
+        equipo. El precio original del menú oficial se recupera con el botón ↺.
+        <a href="../" style="color:var(--ember)">Volver a la web</a>
+      </p>
+    </section>
   </main>
 </div>
 

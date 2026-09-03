@@ -59,7 +59,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await sleep(1500);
   await tirar('panel');
 
-  await ev("document.getElementById('cobro')?.scrollIntoView({block:'start'})");
+  await ev("document.querySelector('[data-tab=\"ajustes\"]')?.click()");
+  await sleep(700);
   await sleep(900);
   await tirar('cobro');
   await ev("document.querySelector('#anillos')?.scrollIntoView({block:'center'})");

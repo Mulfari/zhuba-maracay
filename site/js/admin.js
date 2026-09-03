@@ -138,17 +138,20 @@ function renderMetrics() {
   today.forEach((o) => o.lines.forEach((l) => { tally[l.name] = (tally[l.name] || 0) + l.qty; }));
   const top = Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
+  // Cuatro cifras se miran; las otras cuatro se consultan. No merecen el
+  // mismo tamaño ni ocupar dos pantallas antes de llegar a los pedidos.
+  const pendientes = visibleOrders().filter((o) => o.state !== 'completado').length;
   $('#metrics').innerHTML = `
     <div class="stat"><span>Pedidos hoy</span><b>${today.length}</b></div>
-    <div class="stat"><span>Ítems hoy</span><b>${items}</b></div>
-    <div class="stat"><span>Facturado hoy</span><b>${money(revenue)}${enBs(revenue)}</b></div>
-    <div class="stat"><span>Ya cobrado</span><b>${money(suma(cobrado, totalDe))}${
-      enBs(suma(cobrado, totalDe))}</b></div>
-    <div class="stat"><span>Por cobrar</span><b>${money(suma(porCobrar, totalDe))}${
-      enBs(suma(porCobrar, totalDe))}</b></div>
-    <div class="stat"><span>Envíos hoy</span><b>${money(envios)}</b></div>
-    <div class="stat"><span>Ticket medio</span><b>${money(today.length ? revenue / today.length : 0)}</b></div>
-    <div class="stat"><span>Pendientes</span><b>${visibleOrders().filter((o) => o.state !== 'completado').length}</b></div>`;
+    <div class="stat"><span>Pendientes</span><b>${pendientes}</b></div>
+    <div class="stat"><span>Facturado</span><b>${money(revenue)}${enBs(revenue)}</b></div>
+    <div class="stat stat--ojo"><span>Por cobrar</span><b>${money(suma(porCobrar, totalDe))}${
+      enBs(suma(porCobrar, totalDe))}</b></div>`;
+
+  $('#metricsMas').textContent = today.length
+    ? `${items} ítems · ya cobrado ${money(suma(cobrado, totalDe))} · envíos ${money(envios)}`
+      + ` · ticket medio ${money(revenue / today.length)}`
+    : 'Sin ventas hoy todavía.';
 
   $('#top').innerHTML = top.length
     ? top.map(([name, n], i) => `<li><span class="rank">${i + 1}</span>${esc(name)}<b>${n}</b></li>`).join('')
@@ -199,9 +202,12 @@ function renderStock() {
 
 /* ------------------------------------------------------------------ arranque */
 function renderFilters() {
-  $('#filters').innerHTML = [{ id: 'todas', name: 'Todas las sedes' }, ...BRANCHES]
-    .map((b) => `<button data-filter="${b.id}" class="${filter === b.id ? 'is-on' : ''}">${esc(b.name)}</button>`)
-    .join('');
+  const sel = $('#sede');
+  const opciones = [{ id: 'todas', name: 'Todas las sedes' }, ...BRANCHES];
+  if (sel.options.length !== opciones.length) {
+    sel.innerHTML = opciones.map((b) => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
+  }
+  sel.value = filter;
 }
 
 function renderAll() {
@@ -217,11 +223,16 @@ function boot() {
   renderAll();
   bindCobro();
 
-  $('#filters').addEventListener('click', (e) => {
-    const b = e.target.closest('[data-filter]');
+  $('#sede').addEventListener('change', (e) => { filter = e.target.value; renderAll(); });
+
+  // Pestañas: se muestra una y se esconden las otras. El panel se usa de pie
+  // y con una mano; que haya que buscar menos.
+  $('.adm-tabs').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-tab]');
     if (!b) return;
-    filter = b.dataset.filter;
-    renderAll();
+    $$('.adm-tabs [data-tab]').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
+    $$('.adm-tab').forEach((sec) => { sec.hidden = sec.id !== `tab-${b.dataset.tab}`; });
+    window.scrollTo({ top: 0, behavior: 'instant' });
   });
 
   $('#orders').addEventListener('click', (e) => {
