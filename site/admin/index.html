@@ -71,6 +71,7 @@
   .adm-tab[hidden] { display: none !important; }
   .adm-tabla { max-height: none; overflow: visible; margin-top: .8rem; }
   @media (min-width: 900px) { .adm-tabla { max-height: 62vh; overflow: auto; } }
+  .demo-botones { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .8rem; }
   .caja--riesgo { border-color: color-mix(in srgb, var(--vermillion) 35%, transparent); }
 
   /* --- filas de la carta -------------------------------------------------
@@ -326,6 +327,18 @@
              pagó, <em>antes</em> de abrir WhatsApp. Es la red de seguridad para quien paga y no llega a
              enviar el mensaje. Sin esta dirección, ese caso se pierde: un sitio sin servidor no puede
              avisar por su cuenta.</p>
+        </div>
+
+        <div class="caja">
+          <h3>Demostración</h3>
+          <p class="pista">Carga pedidos, datos de pago y precios de envío inventados para ver el
+             panel funcionando. Los datos llevan la marca <b>DEMO</b> y solo existen en este
+             navegador. Bórralos antes de usar el panel de verdad.</p>
+          <div class="demo-botones">
+            <button class="btn btn--sm btn--solid" id="demoCargar">Cargar datos de muestra</button>
+            <button class="btn btn--sm btn--ghost" id="demoBorrar">Borrar la demostración</button>
+          </div>
+          <p class="pista" id="demoEstado"></p>
         </div>
 
         <!-- Borrar no es una acción de todos los días: vive al final y avisa. -->

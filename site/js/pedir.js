@@ -6,7 +6,7 @@
  * todo desde el móvil, así que manda la rapidez: buscador, lista compacta con
  * miniatura y un botón de añadir siempre a la vista.
  */
-import { store, money, bolivares, BRANCHES, CONTACT, METODOS_PAGO, ENVIO } from './store.js';
+import { store, money, bolivares, BRANCHES, MENUS, CONTACT, METODOS_PAGO, ENVIO } from './store.js';
 import { TAGS, AJUSTES, ADJUSTMENT_MAP, ADJUSTMENT_NOTE, SERVICE_MODES } from '../data/modifiers.js';
 import { whatsappLink, orderSnapshot } from './ticket.js';
 import { cortina, fotosSuaves } from './carga.js';
@@ -1076,11 +1076,41 @@ function refBs(item) {
   return enBs == null ? '' : `<span class="row__bs">${bolivares(enBs, 0)}</span>`;
 }
 
+/** Sin tildes y en minúsculas: quien busca «salmon» quiere el salmón. */
+const plano = (t) => String(t ?? '').toLowerCase()
+  .normalize('NFD').replace(/\p{Diacritic}/gu, '');
+
+/** Todo lo que describe un plato, junto: nombre, descripción, categoría,
+    variantes y etiquetas. Así «vegano» o «nigiri» encuentran algo. */
+function pajar(i) {
+  if (!i._pajar) {
+    const cat = store.categories.find((c) => c.id === i.cat)?.name || '';
+    i._pajar = plano([i.name, i.desc, cat,
+      (i.variants || []).map((v) => v.name).join(' '),
+      (i.tags || []).map((t) => TAGS[t]?.label || t).join(' ')].join(' '));
+  }
+  return i._pajar;
+}
+
+function coincide(item, palabras) {
+  const heno = pajar(item);
+  return palabras.every((p) => heno.includes(p));   // todas las palabras, en cualquier orden
+}
+
 function platosVisibles() {
-  const q = filtro.trim().toLowerCase();
-  if (!q) return store.items;
-  return store.items.filter((i) =>
-    i.name.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q));
+  const palabras = plano(filtro).split(/\s+/).filter(Boolean);
+  if (!palabras.length) return store.items;
+  return store.items.filter((i) => coincide(i, palabras));
+}
+
+/** Cuántos encajan en la otra sede: buscar «cappuccino» en el restaurante no
+    puede devolver un vacío mudo si el café los tiene. */
+function otraSede(palabras) {
+  const otra = BRANCHES.find((b) => b.id !== store.branchId);
+  if (!otra || !palabras.length) return null;
+  const items = MENUS[otra.menu].ITEMS;
+  const n = items.filter((i) => coincide(i, palabras)).length;
+  return n ? { sede: otra, n } : null;
 }
 
 let vigilarScroll = null;
@@ -1103,8 +1133,18 @@ function renderLista() {
            </div></header>
            <div class="rows">${items.map(fila).join('')}</div>
          </section>`
-      : `<div class="empty"><span aria-hidden="true">乙</span>
-           <p>Nada con «${esc(filtro.trim())}». Prueba con otro nombre o borra la búsqueda.</p></div>`;
+      : (() => {
+          // Buscar «cappuccino» en el restaurante no puede acabar en un vacío
+          // mudo si la otra sede sí lo tiene.
+          const otra = otraSede(plano(filtro).split(/\s+/).filter(Boolean));
+          return `<div class="empty"><span aria-hidden="true">乙</span>
+            <p>Nada con «${esc(filtro.trim())}» en ${esc(store.branch.name)}.</p>
+            ${otra
+              ? `<p class="empty__otra">Pero hay <b>${otra.n}</b> en ${esc(otra.sede.name)}.
+                   <button class="link-x" data-ir-sede="${otra.sede.id}">Buscar ahí</button></p>`
+              : '<p class="empty__otra">Prueba con otro nombre o borra la búsqueda.</p>'}
+          </div>`;
+        })();
     return;
   }
 
@@ -1160,7 +1200,6 @@ function pintarSede() {
 
   $$('#sedes .venue-pill').forEach((el) =>
     el.setAttribute('aria-pressed', String(el.dataset.branch === b.id)));
-  $('#sedeNota').textContent = b.kicker;
   $('#drawerSub').textContent = b.name;
 }
 
@@ -1203,6 +1242,8 @@ export function mountPedidos() {
   });
 
   $('#lista').addEventListener('click', (e) => {
+    const salto = e.target.closest('[data-ir-sede]');
+    if (salto) { store.setBranch(salto.dataset.irSede); return; }   // la búsqueda se mantiene
     const add = e.target.closest('[data-open]');
     if (add) { openModal(add.dataset.open); return; }
     const row = e.target.closest('.row');

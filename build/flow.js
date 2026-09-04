@@ -184,7 +184,43 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   check('el enlace directo desde la portada abre el plato',
     enlace.abierto && enlace.titulo.includes('Tartar'), JSON.stringify(enlace));
 
-    /* ============================================================ el chef */
+    /* =========================================== el buscador y la cabecera */
+  await ir('/pedir.html');
+  await ev(`document.querySelector('#sedes .venue-pill[data-branch="restaurante"]')?.click()`);
+  await sleep(700);
+
+  const cabecera = await ev(`(()=>{
+    const alto = (s) => { const e = document.querySelector(s); return e ? Math.round(e.getBoundingClientRect().height) : 0; };
+    return { pegado: alto('.ped-pegado'), total: alto('.ped-head'),
+             primerPlato: Math.round(document.querySelector('.row').getBoundingClientRect().top),
+             pantalla: window.innerHeight };
+  })()`);
+  check('la cabecera del pedido no se come la pantalla',
+    cabecera.pegado < 140 && cabecera.total < 190, JSON.stringify(cabecera));
+
+  const hallar = await ev(`(async()=>{
+    const b = document.getElementById('buscar');
+    const probar = async (q) => { b.value = q; b.dispatchEvent(new Event('input'));
+      await new Promise(r=>setTimeout(r,420));
+      return { filas: document.querySelectorAll('.row').length,
+               otra: !!document.querySelector('[data-ir-sede]') }; };
+    const sinTilde = await probar('salmon');
+    const conTilde = await probar('salmón');
+    const etiqueta = await probar('vegano');
+    const dosPalabras = await probar('saku atun');
+    const otraSede = await probar('cappuccino');
+    b.value=''; b.dispatchEvent(new Event('input'));
+    return { sinTilde, conTilde, etiqueta, dosPalabras, otraSede };
+  })()`);
+  check('buscar sin tildes encuentra lo mismo que con ellas',
+    hallar.sinTilde.filas > 0 && hallar.sinTilde.filas === hallar.conTilde.filas,
+    JSON.stringify(busca));
+  check('la búsqueda mira etiquetas y admite varias palabras',
+    hallar.etiqueta.filas > 0 && hallar.dosPalabras.filas > 0, JSON.stringify(busca));
+  check('lo que no está en esta sede se ofrece en la otra',
+    hallar.otraSede.filas === 0 && hallar.otraSede.otra, JSON.stringify(hallar.otraSede));
+
+  /* ============================================================ el chef */
   await ir('/');
   const chef = await ev(`(async()=>{
     const cafe = await import(new URL('data/menu-cafe.js', location.href).href);

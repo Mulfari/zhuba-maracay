@@ -1046,26 +1046,39 @@ h1, h2, h3 { margin: 0; }
    ========================================================================= */
 .pedir { padding-bottom: 6rem; }
 
-.ped-head {
-  position: sticky; top: 0; z-index: 45;
-  background: var(--void); border-bottom: var(--hair);
-}
-.ped-head__top { display: flex; align-items: center; gap: 1rem; padding-block: .8rem; }
+/* La cabecera ocupaba 259 px de los 844 de un teléfono y el primer plato
+   empezaba a los 447: media pantalla antes de ver comida. Ahora la fila de
+   marca y sede se desplaza fuera con la página y solo se quedan pegados el
+   buscador y el índice, que son las dos cosas que se usan al recorrer. */
+.ped-head { background: var(--void); border-bottom: var(--hair); }
+.ped-pegado { position: sticky; top: 0; z-index: 45; background: var(--void); }
+
+.ped-head__top { display: flex; align-items: center; gap: .8rem; padding-block: .55rem; }
 .ped-head__top .logo__sub { display: block; color: var(--ember); }
-.ped-live { margin-left: auto; font-family: var(--mono); font-size: .6rem;
+.ped-live { font-family: var(--mono); font-size: .6rem;
   letter-spacing: .12em; text-transform: uppercase; color: var(--travertine-3); }
 .ped-live b { color: var(--travertine); font-weight: 500; }
-.ped-back { flex: none; }
-@media (max-width: 640px) {
-  .ped-live { display: none; }
-  .ped-head__top { padding-block: .65rem; }
-}
+.ped-back { flex: none; margin-left: auto; font-family: var(--mono); font-size: .58rem;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--travertine-3);
+  border-bottom: 1px solid rgba(239,230,214,.22); padding-bottom: .1rem; }
+.ped-back:hover { color: var(--ember); border-color: var(--ember); }
 
-.ped-head__sedes { display: flex; align-items: center; gap: 1rem;
-  flex-wrap: wrap; padding-bottom: .8rem; }
-.ped-nota { margin: 0; font-family: var(--mono); font-size: .6rem; letter-spacing: .14em;
-  text-transform: uppercase; color: var(--travertine-3); }
-@media (max-width: 640px) { .ped-nota { display: none; } }
+/* La sede, del tamaño de un botón y no de una tarjeta: en la barra basta el
+   nombre, que la descripción ya está en la portada. */
+.venue-pills--barra { gap: .3rem; flex: none; }
+.venue-pills--barra .venue-pill { padding: .3rem .6rem; backdrop-filter: none; }
+.venue-pills--barra .venue-pill span { display: none; }
+.venue-pills--barra .venue-pill strong { font-size: .72rem; }
+
+@media (max-width: 700px) {
+  .ped-live { display: none; }
+  .ped-head__top { gap: .55rem; padding-block: .45rem; }
+  .ped-head__top .logo__seal { width: 26px; height: 26px; }
+  .ped-head__top .logo__sub { display: none; }
+  .ped-head__top .logo__word { font-size: .95rem; }
+  /* El propio logotipo ya lleva a la web: el enlace repetido no cabe. */
+  .ped-back { display: none; }
+}
 
 /* --- buscador ----------------------------------------------------------- */
 .ped-buscar { position: relative; display: flex; align-items: center; padding-bottom: .8rem; }
@@ -1390,3 +1403,8 @@ img[data-suave].is-cargada { opacity: 1; transition: opacity .45s var(--ease-out
      a 520 px de origen, ampliarla se nota. */
   transform: translate3d(0, calc((var(--p, .5) - .5) * 42px), 0);
 }
+
+/* --- la búsqueda sin resultados tiene salida ----------------------------- */
+.empty__otra { margin: .5rem 0 0; font-size: .84rem; color: var(--travertine-3); }
+.empty__otra b { color: var(--travertine); }
+.empty__otra .link-x { display: inline; margin-left: .35rem; }

@@ -4,6 +4,7 @@
  * lo que se apaga aquí desaparece de la carta al instante.
  */
 import { store, money, bolivares, BRANCHES, MENUS, METODOS_PAGO } from './store.js';
+import { CONFIG_DEMO, PEDIDOS_DEMO, AGOTADOS_DEMO } from '../data/demo.js';
 import { ORDER_STATES, SERVICE_MODES } from '../data/modifiers.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -344,6 +345,39 @@ function bindCobro() {
     await store.cargarTasa();
     renderCobro();
   });
+
+  /* ------------------------------------------------------- demostración
+     Con el panel vacío no se ve nada de lo que hace. Esto lo llena con datos
+     marcados como falsos, y se quita con el botón de al lado. */
+  const demoEstado = () => {
+    const n = store.orders.filter((o) => PEDIDOS_DEMO.some((d) => d.id === o.id)).length;
+    $('#demoEstado').textContent = n
+      ? `Hay ${n} ${n === 1 ? 'pedido' : 'pedidos'} de muestra cargados.`
+      : 'Ahora mismo no hay datos de muestra.';
+  };
+
+  $('#demoCargar').addEventListener('click', () => {
+    const ids = new Set(PEDIDOS_DEMO.map((d) => d.id));
+    store.orders = [...PEDIDOS_DEMO.map((d) => ({ ...d })),
+      ...store.orders.filter((o) => !ids.has(o.id))];
+    localStorage.setItem('zhuba.orders.v1', JSON.stringify(store.orders));
+    store.setConfig(CONFIG_DEMO);
+    Object.entries(AGOTADOS_DEMO).forEach(([id, ok]) => store.setStock(id, ok));
+    renderAll();
+    demoEstado();
+  });
+
+  $('#demoBorrar').addEventListener('click', () => {
+    const ids = new Set(PEDIDOS_DEMO.map((d) => d.id));
+    store.orders = store.orders.filter((o) => !ids.has(o.id));
+    localStorage.setItem('zhuba.orders.v1', JSON.stringify(store.orders));
+    store.setConfig({ pagos: {}, anillos: {}, aviso: '' });
+    Object.keys(AGOTADOS_DEMO).forEach((id) => store.setStock(id, true));
+    renderAll();
+    demoEstado();
+  });
+
+  demoEstado();
 
   $('#avisoProbar').addEventListener('click', async () => {
     const r = await store.avisar({ prueba: true, en: new Date().toISOString(), sede: store.branch.name });
