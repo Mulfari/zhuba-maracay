@@ -4,7 +4,7 @@
  */
 import { store, money, bolivares, BRANCHES, CONTACT } from './store.js';
 import { TAGS } from '../data/modifiers.js';
-import { revealAll, scrollspy, centerPill, addParallax, addExitProgress, reducedMotion } from './motion.js';
+import { revealAll, addParallax, addExitProgress, reducedMotion } from './motion.js';
 import { cortina, fotosSuaves } from './carga.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -218,56 +218,58 @@ function itemCard(item) {
   </article>`;
 }
 
+/* ================================================== los platos de la casa */
+/* La portada enseñaba las 63 fichas de la carta con su barra de categorías:
+   el 83 % de la página era un menú, y para eso ya está /pedir. Aquí quedan
+   los seis de firma, grandes y contados, que es lo que enseña un restaurante
+   cuando quiere que vengas. */
+function piezaFirma(item, i) {
+  const { main, sub } = priceLabel(item);
+  const categoria = store.categories.find((c) => c.id === item.cat)?.name || '';
+  const pairItem = item.pair ? store.item(item.pair) : null;
+  const dieta = item.tags.filter((t) => TAGS[t]?.kind === 'diet').slice(0, 2);
+
+  return `
+  <article class="pieza${i % 2 ? ' pieza--vuelta' : ''} reveal" data-d="${i % 3}" data-item="${item.id}">
+    <div class="pieza__foto">
+      ${item.img
+        ? `<img src="img/${esc(item.img)}" alt="${esc(item.name)}" width="520" height="520"
+             loading="lazy" decoding="async">`
+        : '<span class="pieza__sinfoto" aria-hidden="true">乙</span>'}
+      <span class="pieza__n">${String(i + 1).padStart(2, '0')}</span>
+    </div>
+
+    <div class="pieza__texto">
+      <p class="eyebrow eyebrow--plain">${esc(categoria)}</p>
+      <h3 class="display">${esc(item.name)}</h3>
+      <p class="pieza__desc">${esc(item.desc)}</p>
+
+      <div class="pieza__meta">
+        <span class="pieza__precio price">${sub ? `<small>${sub}</small>` : ''}${esc(main)}</span>
+        ${dieta.map(tagChip).join('')}
+      </div>
+
+      ${pairItem ? `<p class="pieza__marida">Marida con
+        <b>${esc(pairItem.name)}</b></p>` : ''}
+
+      <button class="link-x" data-open="${item.id}">Ver el plato</button>
+    </div>
+  </article>`;
+}
+
 function renderMenu() {
-  const pillRail = $('#menuPills');
-  const list = $('#menuList');
-  if (!pillRail || !list) return;
+  const list = $('#firmaList');
+  if (!list) return;
 
-  const cats = store.categories;
-  pillRail.innerHTML = cats.map((c, i) =>
-    `<button class="pill${i === 0 ? ' is-active' : ''}" data-cat="${c.id}">${esc(c.name)}</button>`).join('');
-
-  list.innerHTML = cats.map((c) => {
-    const items = store.items.filter((i) => i.cat === c.id);
-    if (!items.length) return '';
-    return `
-    <section class="cat" id="cat-${c.id}">
-      <header class="cat__head">
-        <div>
-          <h3>${esc(c.name)}</h3>
-          <p>${esc(c.blurb)}</p>
-        </div>
-        <span class="cat__kanji" aria-hidden="true">${esc(c.kanji)}</span>
-      </header>
-      <div class="grid">${items.map(itemCard).join('')}</div>
-    </section>`;
-  }).join('');
-
-  // scrollspy + navegación por pastillas
-  const sections = $$('.cat', list);
-  const setActive = (id) => {
-    let active = null;
-    $$('.pill', pillRail).forEach((p) => {
-      const on = `cat-${p.dataset.cat}` === id;
-      p.classList.toggle('is-active', on);
-      if (on) active = p;
-    });
-    if (active) centerPill(pillRail, active);
-  };
-  scrollspy(sections, setActive);
-
-  pillRail.onclick = (e) => {
-    const p = e.target.closest('.pill');
-    if (!p) return;
-    const target = $(`#cat-${p.dataset.cat}`);
-    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
+  // `hero: true` ya marcaba los de firma en los datos; aquí sirven de curaduría.
+  const firma = store.items.filter((i) => i.hero && i.orderable !== false).slice(0, 6);
+  list.innerHTML = firma.map(piezaFirma).join('');
 
   list.onclick = (e) => {
-    const add = e.target.closest('[data-open]');
-    if (add) { openModal(add.dataset.open); return; }
-    const card = e.target.closest('.card');
-    if (card && !store.isOut(card.dataset.item)) openModal(card.dataset.item);
+    const btn = e.target.closest('[data-open]');
+    if (btn) { openModal(btn.dataset.open); return; }
+    const pieza = e.target.closest('.pieza');
+    if (pieza) openModal(pieza.dataset.item);
   };
 
   revealAll(list);

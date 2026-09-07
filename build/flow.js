@@ -45,26 +45,32 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await ir('/');
 
   const portada = await ev(`({
-    fichas: document.querySelectorAll('.card').length,
-    categorias: document.querySelectorAll('.cat').length,
+    piezas: document.querySelectorAll('.pieza').length,
+    sinCatalogo: !document.querySelector('.card') && !document.querySelector('.cat'),
+    sinBarraCategorias: !document.getElementById('menuPills'),
     sinComanda: !document.querySelector('.cart-pill') && !document.querySelector('.drawer'),
     caminos: document.querySelectorAll('a[href^="pedir"]').length
   })`);
-  check('la portada muestra la carta completa', portada.fichas > 50 && portada.categorias === 8, JSON.stringify(portada));
+  // La portada enseña el restaurante, no lo lista: seis de firma y la carta
+  // entera vive en /pedir. Si vuelven las 63 fichas, esto avisa.
+  check('la portada enseña una selección, no el catálogo',
+    portada.piezas === 6 && portada.sinCatalogo && portada.sinBarraCategorias,
+    JSON.stringify(portada));
   check('la portada ya no lleva pedido', portada.sinComanda, JSON.stringify(portada));
   check('desde la portada hay varios caminos al pedido', portada.caminos >= 4, `${portada.caminos} enlaces`);
 
-  await ev("document.querySelector('[data-open=\"r-sashimi\"]').click()");
+  // Sashimi ya no está en la portada: de los seis de firma, el primero.
+  await ev("document.querySelector('.pieza [data-open]').click()");
   await sleep(600);
   const ficha = await ev(`({
     abierta: document.getElementById('modal').classList.contains('is-open'),
-    precios: document.querySelectorAll('.ficha-lista li').length,
+    titulo: document.getElementById('modalTitle')?.textContent.trim() || '',
     sinAnadir: !document.querySelector('[data-add]'),
     enlace: document.querySelector('.modal__foot a')?.getAttribute('href') || ''
   })`);
   check('la ficha informa y remite al pedido, sin añadir',
-    ficha.abierta && ficha.precios === 5 && ficha.sinAnadir && ficha.enlace.includes('plato=r-sashimi'),
-    JSON.stringify(ficha));
+    ficha.abierta && ficha.titulo.length > 3 && ficha.sinAnadir &&
+    ficha.enlace.includes('plato=r-'), JSON.stringify(ficha));
 
   /* ====================================================== pedido en línea */
   await ir('/pedir.html');
