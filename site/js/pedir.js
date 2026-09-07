@@ -1285,7 +1285,14 @@ export function mountPedidos() {
 
   // Enlace directo desde la portada: /pedir?plato=r-fukkatsu. Los identificadores
   // llevan la sede en el prefijo, así que se cambia sola si hace falta.
-  const pedido = new URLSearchParams(location.search).get('plato');
+  // La portada manda con qué casa abrir: /pedir?sede=cafe
+  const query = new URLSearchParams(location.search);
+  const sedePedida = query.get('sede');
+  if (sedePedida && BRANCHES.some((b) => b.id === sedePedida) && sedePedida !== store.branchId) {
+    store.setBranch(sedePedida);
+  }
+
+  const pedido = query.get('plato');
   const item = pedido ? store.item(pedido) : null;
   if (item) {
     const sede = item.id.startsWith('c-') ? 'cafe' : 'restaurante';

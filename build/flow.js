@@ -45,32 +45,35 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await ir('/');
 
   const portada = await ev(`({
-    piezas: document.querySelectorAll('.pieza').length,
-    sinCatalogo: !document.querySelector('.card') && !document.querySelector('.cat'),
-    sinBarraCategorias: !document.getElementById('menuPills'),
+    casas: document.querySelectorAll('.casa').length,
+    sinMenu: !document.querySelector('.card') && !document.querySelector('.cat')
+             && !document.querySelector('.pieza'),
+    sinPrecios: !document.querySelector('#casas .price') && !/\$\d/.test(
+      document.getElementById('casas')?.textContent || ''),
+    sinSelector: !document.getElementById('venueBtn') && !document.querySelector('.venue-pill'),
     sinComanda: !document.querySelector('.cart-pill') && !document.querySelector('.drawer'),
-    caminos: document.querySelectorAll('a[href^="pedir"]').length
+    caminos: document.querySelectorAll('a[href^="pedir"]').length,
+    conSede: Array.from(document.querySelectorAll('a[href^="pedir"]'))
+      .filter((a) => a.getAttribute('href').includes('sede=')).length
   })`);
-  // La portada enseña el restaurante, no lo lista: seis de firma y la carta
-  // entera vive en /pedir. Si vuelven las 63 fichas, esto avisa.
-  check('la portada enseña una selección, no el catálogo',
-    portada.piezas === 6 && portada.sinCatalogo && portada.sinBarraCategorias,
+  // La portada presenta el complejo: las dos casas a la vez, sin selector y
+  // sin carta. La carta —y sus precios— viven en /pedir.
+  check('la portada enseña las dos casas sin cambiar de sede',
+    portada.casas === 2 && portada.sinSelector && portada.sinMenu,
     JSON.stringify(portada));
-  check('la portada ya no lleva pedido', portada.sinComanda, JSON.stringify(portada));
-  check('desde la portada hay varios caminos al pedido', portada.caminos >= 4, `${portada.caminos} enlaces`);
+  check('la portada no lleva precios ni comanda',
+    portada.sinPrecios && portada.sinComanda, JSON.stringify(portada));
+  check('desde la portada hay varios caminos al pedido, con su casa',
+    portada.caminos >= 4 && portada.conSede === 2, JSON.stringify(portada));
 
-  // Sashimi ya no está en la portada: de los seis de firma, el primero.
-  await ev("document.querySelector('.pieza [data-open]').click()");
-  await sleep(600);
-  const ficha = await ev(`({
-    abierta: document.getElementById('modal').classList.contains('is-open'),
-    titulo: document.getElementById('modalTitle')?.textContent.trim() || '',
-    sinAnadir: !document.querySelector('[data-add]'),
-    enlace: document.querySelector('.modal__foot a')?.getAttribute('href') || ''
-  })`);
-  check('la ficha informa y remite al pedido, sin añadir',
-    ficha.abierta && ficha.titulo.length > 3 && ficha.sinAnadir &&
-    ficha.enlace.includes('plato=r-'), JSON.stringify(ficha));
+  // La casa elegida en la portada es la que abre la página de pedidos.
+  await ir('/pedir.html?sede=cafe');
+  const abreCafe = await ev(`(async()=>{
+    const {store}=await import(new URL('js/store.js', location.href).href);
+    return { sede: store.branchId, titulo: document.querySelector('.cat h3')?.textContent || '' };
+  })()`);
+  check('el enlace de cada casa abre su carta',
+    abreCafe.sede === 'cafe' && abreCafe.titulo.includes('Gelato'), JSON.stringify(abreCafe));
 
   /* ====================================================== pedido en línea */
   await ir('/pedir.html');

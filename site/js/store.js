@@ -2,7 +2,7 @@
  * Estado de la aplicación. Nada de esto sabe cómo se dibuja la interfaz:
  * guarda, calcula y avisa. La vista se suscribe con `store.on()`.
  */
-import { BRANCHES, getBranch, CONTACT } from '../data/branches.js';
+import { BRANCHES, getBranch, COMPLEJO, CONTACT } from '../data/branches.js';
 import * as REST from '../data/menu-restaurante.js';
 import * as CAFE from '../data/menu-cafe.js';
 import { TASA, METODOS_PAGO, ENVIO } from '../data/pagos.js';
@@ -304,4 +304,4 @@ class Store {
 }
 
 export const store = new Store();
-export { MENUS, BRANCHES, CONTACT, METODOS_PAGO, ENVIO };
+export { MENUS, BRANCHES, COMPLEJO, CONTACT, METODOS_PAGO, ENVIO };

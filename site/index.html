@@ -91,7 +91,7 @@
 </script>
 <div class="ambient" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
-<a class="skip" href="#carta">Saltar al contenido</a>
+<a class="skip" href="#chef">Saltar al contenido</a>
 
 <!-- ============================================================ cabecera -->
 <header class="header" id="header">
@@ -111,21 +111,11 @@
 
     <nav class="header__nav" aria-label="Principal">
       <a href="#chef">Chef</a>
-      <a href="#carta">Firma</a>
+      <a href="#casas">Las casas</a>
       <a href="#resenas">Reseñas</a>
-      <a href="#sedes">Sedes</a>
     </nav>
 
     <div class="header__actions">
-      <div class="venue" id="venue">
-        <button class="venue__btn" id="venueBtn" aria-haspopup="true" aria-expanded="false" aria-controls="venueMenu">
-          <span class="venue__dot" aria-hidden="true"></span>
-          <span class="venue__name" id="venueName">Restaurante</span>
-          <svg class="venue__caret" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.4"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1.5L5 5l4-3.5"/></svg>
-        </button>
-        <div class="venue__menu" id="venueMenu" role="menu" aria-label="Elegir sede"></div>
-      </div>
       <a class="btn btn--sm btn--solid" href="pedir">Pedir en línea</a>
     </div>
   </div>
@@ -133,7 +123,7 @@
 
 <!-- ================================================================ hero -->
 <main id="top">
-<section class="hero" aria-label="ZHUBA Restaurant">
+<section class="hero" aria-label="ZHUBA Restaurant &amp; Café">
   <div class="hero__panel">
     <div class="hero__grid" id="heroGrid">
       <p class="hero__rule"><span id="heroKicker">Cocina asiática · Nikkei · Thai</span></p>
@@ -143,11 +133,9 @@
       <p class="hero__sub"><span id="heroSub">Cocina asiática con acento nikkei y tailandés.</span>
         <b id="heroTagline">Donde cada plato cuenta una historia.</b></p>
 
-      <div class="venue-pills" id="venuePills" role="group" aria-label="Elegir sede"></div>
-
       <div class="hero__cta">
         <a class="btn btn--solid" href="pedir">Pedir en línea</a>
-        <a class="btn" href="#carta">Los de la casa</a>
+        <a class="btn" href="#casas">Conoce las dos casas</a>
       </div>
 
       <div class="hero__meta">
@@ -216,34 +204,6 @@
 
 <hr class="rule">
 
-<!-- =============================================================== firma -->
-<section class="section" id="carta" style="padding-top:clamp(3rem,6vw,5rem)">
-  <div class="wrap">
-    <div class="section-head section-head--spine reveal">
-      <p class="eyebrow">Firma</p>
-      <h2 class="display">Los de la casa</h2>
-      <p class="lede">
-        Los que pedirías si vinieras hoy. Tócalos para ver de qué están hechos, qué llevan
-        y con qué los maridamos.
-      </p>
-    </div>
-
-    <div id="firmaList" class="firma"></div>
-
-    <aside class="llamada reveal">
-      <div>
-        <p class="eyebrow">La carta entera</p>
-        <h3 class="display">Y todo lo demás</h3>
-        <p>Más de cien referencias entre las dos sedes, con sus precios y sus alérgenos.
-           Se ve y se pide en la página de pedidos: mesa, pick-up o delivery.</p>
-      </div>
-      <a class="btn btn--solid" href="pedir">Ver la carta y pedir</a>
-    </aside>
-  </div>
-</section>
-
-<hr class="rule">
-
 <!-- ============================================================= reseñas -->
 <section class="section" id="resenas">
   <span class="kanji-mark" aria-hidden="true">声</span>
@@ -279,20 +239,20 @@
 
 <hr class="rule">
 
-<!-- =============================================================== sedes -->
-<section class="section" id="sedes">
+<!-- =============================================================== casas -->
+<section class="section" id="casas">
   <span class="kanji-mark" aria-hidden="true">場</span>
   <div class="wrap">
     <div class="section-head section-head--spine reveal">
-      <p class="eyebrow">Dónde</p>
+      <p class="eyebrow">Casas</p>
       <h2 class="display">Dos casas,<br>una dirección</h2>
       <p class="lede">
         El restaurante y el café comparten el complejo del 17 de Calle Los Clubes, en La Floresta.
-        Cada uno tiene su propia carta: cambia de sede aquí arriba y toda la página —incluido tu
-        pedido— se ajusta a la que elijas.
+        Se entra por la misma puerta y cada uno tiene lo suyo: uno es barra fría y wok, el otro
+        café, vitrina y gelato.
       </p>
     </div>
-    <div class="venues reveal" id="venuesGrid"></div>
+    <div class="casas reveal" id="casasLista"></div>
   </div>
 </section>
 </main>
@@ -360,14 +320,7 @@
 
 <!-- ==================================================== ficha y avisos -->
 
-<div class="scrim" id="scrim"></div>
-
-
-<div class="modal" id="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-  <div class="modal__panel" id="modalPanel"></div>
-</div>
-
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<!-- La portada ya no abre fichas ni cambia de sede: sin modal, sin aviso. -->
 
 <script type="module">
   import { mountApp } from './js/ui.js';

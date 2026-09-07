@@ -7,6 +7,19 @@
  * toda la UI (selector, WhatsApp, mapa, horarios, panel de cocina) se enlaza
  * dinámicamente a la sede activa. No hay nada codificado en la vista.
  */
+/**
+ * La portada ya no cambia de sede: presenta el complejo entero y deja que
+ * cada casa se explique en su bloque. Esto es lo que se dice del conjunto.
+ */
+export const COMPLEJO = {
+  kicker: 'Restaurante · Café · Pastelería · Gelato',
+  titulo: [{ text: 'Cocina asiática' }, { em: 'y', text: 'café de autor' }],
+  sub: 'Un complejo gastronómico en La Floresta: barra fría con salmón noruego y atún saku, '
+     + 'fuego vivo en el wok, y al lado un café con pastelería fina y gelato artesanal.',
+  tagline: 'Donde cada plato cuenta una historia y cada detalle refleja nuestro buen gusto.',
+  direccion: '17 Calle Los Clubes, casa nro 10, Urb. La Floresta, Maracay 2101, Aragua'
+};
+
 export const BRANCHES = [
   {
     id: 'restaurante',

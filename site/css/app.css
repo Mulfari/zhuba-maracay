@@ -1533,3 +1533,64 @@ img[data-suave].is-cargada { opacity: 1; transition: opacity .45s var(--ease-out
   }
   .pieza__texto h3 { margin-top: .2rem; }
 }
+
+/* =========================================================================
+   LAS DOS CASAS
+   La portada dejó de cambiar de sede: aquí están las dos, cada una con su
+   temperatura —brasa el restaurante, acero el café— dentro de su bloque.
+   ========================================================================= */
+.casas { display: grid; gap: clamp(3rem, 7vw, 6rem); }
+
+.casa { display: grid; gap: clamp(1.4rem, 3vw, 2.6rem); position: relative; }
+@media (min-width: 900px) {
+  .casa { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); align-items: center; }
+  .casa:nth-child(even) .casa__fotos { order: 2; }
+}
+
+/* --- el tríptico --------------------------------------------------------- */
+.casa__fotos {
+  position: relative;
+  display: grid; gap: 8px;
+  grid-template-columns: 1.6fr 1fr;
+  grid-template-rows: repeat(2, 1fr);
+}
+.casa__foto { margin: 0; overflow: hidden; border: var(--hair); background: var(--stone-800); }
+.casa__foto img { width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 1.3s var(--ease-out); }
+.casa:hover .casa__foto img { transform: scale(1.035); }
+/* La grande manda y las dos pequeñas la acompañan: no es una rejilla de tres
+   iguales, que es lo que hace que algo parezca un catálogo. */
+.casa__foto--0 { grid-row: 1 / 3; aspect-ratio: 4 / 5; }
+.casa__foto--1, .casa__foto--2 { aspect-ratio: 1 / 1; }
+
+.casa__cifra {
+  position: absolute; right: -.12em; bottom: -.28em; z-index: 2; pointer-events: none;
+  font-family: var(--display); font-weight: 500; line-height: .78;
+  font-size: clamp(4rem, 11vw, 8.5rem);
+  color: var(--acento); opacity: .15;
+}
+
+/* --- el texto ------------------------------------------------------------ */
+.casa__texto { min-width: 0; }
+.casa__texto .eyebrow { color: var(--acento); }
+.casa__texto h3 {
+  margin: .45rem 0 0; font-size: clamp(1.9rem, 4vw, 2.9rem);
+  font-weight: 500; line-height: 1.04; letter-spacing: -.022em;
+}
+.casa__lede {
+  margin: 1rem 0 0; font-size: .96rem; line-height: 1.72; color: var(--travertine-2);
+  max-width: 44ch;
+}
+
+.casa__datos { display: grid; gap: .9rem; margin: 1.6rem 0 0; padding-top: 1.2rem;
+  border-top: var(--hair-soft); max-width: 44ch; }
+.casa__datos dt {
+  font-family: var(--mono); font-size: .54rem; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--travertine-3);
+}
+.casa__datos dd { margin: .3rem 0 0; font-size: .86rem; line-height: 1.65; color: var(--travertine-2); }
+.casa__datos b { color: var(--travertine); font-weight: 500; }
+
+.casa__cta { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.7rem; }
+/* El botón sólido toma el color de su casa. */
+.casa__cta .btn--solid { background: var(--acento); border-color: var(--acento); }
