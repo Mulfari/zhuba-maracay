@@ -1411,63 +1411,125 @@ img[data-suave].is-cargada { opacity: 1; transition: opacity .45s var(--ease-out
 
 /* =========================================================================
    LOS DE LA CASA
-   Seis platos contados, no sesenta y tres listados. La foto manda y el texto
-   la acompaña; en pantalla ancha se alternan los lados para que la página se
-   lea como una revista y no como una rejilla.
+   Seis platos compuestos como las páginas de un cuadernillo, no como seis
+   filas iguales: tres composiciones que se turnan, la cifra en el margen
+   como en una carta impresa y la categoría corriendo por el lomo de la foto.
+   Las fotos originales miden 520 px, así que ninguna se enseña más ancha:
+   ampliarlas las volvería blandas y ese es el techo de toda la retícula.
    ========================================================================= */
+.firma { display: grid; }
+
 .pieza {
-  display: grid; gap: clamp(1.1rem, 3vw, 2.4rem);
-  align-items: center;
-  padding-block: clamp(2.2rem, 5vw, 3.6rem);
-  border-bottom: var(--hair-soft);
+  position: relative;
+  display: grid;
+  gap: clamp(1.4rem, 3vw, 2.6rem);
+  padding-block: clamp(3.2rem, 8vw, 6.5rem);
   cursor: pointer;
 }
-.pieza:last-child { border-bottom: 0; }
-
-@media (min-width: 860px) {
-  .pieza { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-  /* Alternar el lado: la vista rebota de izquierda a derecha al bajar. */
-  .pieza--vuelta .pieza__foto { order: 2; }
+/* Un filete corto entre piezas, no una caja: separa sin encajonar. */
+.pieza + .pieza::before {
+  content: ''; position: absolute; top: 0; left: 0; width: clamp(3rem, 12vw, 9rem);
+  height: 1px; background: rgba(239,230,214,.20);
 }
 
+/* --- la cifra, en el margen ---------------------------------------------- */
+.pieza__cifra {
+  position: absolute; z-index: 0; pointer-events: none; user-select: none;
+  font-family: var(--display); font-weight: 500; line-height: .8;
+  font-size: clamp(5rem, 15vw, 12rem);
+  color: rgba(239,230,214,.045);
+  top: clamp(1.6rem, 4vw, 3.4rem);
+}
+
+/* --- la foto ------------------------------------------------------------- */
 .pieza__foto {
-  position: relative; aspect-ratio: 1 / 1; overflow: hidden;
-  border: var(--hair); background: var(--stone-800);
-  display: grid; place-items: center;
+  position: relative; margin: 0; overflow: hidden;
+  background: var(--stone-800); display: grid; place-items: center;
+  border: var(--hair);
 }
 .pieza__foto img {
-  width: 100%; height: 100%; object-fit: cover;
-  transition: transform 1.1s var(--ease-out);
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 1.4s var(--ease-out), filter 1.4s var(--ease-out);
+  filter: saturate(.97);
 }
-.pieza:hover .pieza__foto img { transform: scale(1.035); }
+.pieza:hover .pieza__foto img { transform: scale(1.04); filter: saturate(1.04); }
 .pieza__sinfoto { font-family: var(--display); font-size: 5rem; color: rgba(239,230,214,.10); }
 
-/* El número, como en una carta impresa: ordena sin numerar el precio. */
-.pieza__n {
-  position: absolute; left: 0; top: 0; padding: .5rem .8rem;
-  font-family: var(--mono); font-size: .6rem; letter-spacing: .2em;
-  color: var(--travertine-2); background: rgba(11,9,8,.72);
+/* La categoría corre por el lomo, como el nervio de un libro. */
+.pieza__lomo {
+  position: absolute; left: 0; bottom: 0; z-index: 2;
+  padding: .9rem .55rem;
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  font-family: var(--mono); font-size: .54rem; letter-spacing: .24em;
+  text-transform: uppercase; color: var(--travertine-2);
+  background: linear-gradient(0deg, rgba(11,9,8,.82), transparent);
 }
 
-.pieza__texto { min-width: 0; }
-.pieza__texto h3 { margin: .5rem 0 0; font-size: clamp(1.7rem, 3.4vw, 2.5rem); font-weight: 500; }
-.pieza__desc {
-  margin: .8rem 0 0; font-size: .95rem; line-height: 1.65; color: var(--travertine-2);
-  max-width: 46ch;
+/* --- el texto ------------------------------------------------------------ */
+.pieza__texto { position: relative; z-index: 1; min-width: 0; align-self: center; }
+.pieza__texto h3 {
+  margin: 0; font-size: clamp(2rem, 4.6vw, 3.4rem); font-weight: 500;
+  line-height: 1.02; letter-spacing: -.022em;
 }
-.pieza__meta { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; margin-top: 1.1rem; }
-.pieza__precio { font-size: 1.5rem; }
+.pieza__desc {
+  margin: 1rem 0 0; font-size: .96rem; line-height: 1.7; color: var(--travertine-2);
+  max-width: 40ch;
+}
+.pieza__pie {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: .5rem 1.1rem;
+  margin-top: 1.6rem; padding-top: 1rem; border-top: var(--hair-soft); max-width: 40ch;
+}
+.pieza__precio { font-size: 1.65rem; }
 .pieza__precio small {
   display: inline; margin-right: .35rem; font-family: var(--mono); font-size: .5rem;
   letter-spacing: .14em; text-transform: uppercase; color: var(--travertine-3);
 }
+.pieza__dieta { display: flex; gap: .3rem; margin-left: auto; }
 .pieza__marida {
-  margin: .9rem 0 0; font-family: var(--mono); font-size: .62rem;
+  margin: .9rem 0 0; font-family: var(--mono); font-size: .6rem;
   letter-spacing: .1em; text-transform: uppercase; color: var(--travertine-3);
 }
-.pieza__marida b { color: var(--travertine); font-weight: 400; }
+.pieza__marida span { color: rgba(239,230,214,.32); }
+.pieza__marida b { color: var(--travertine-2); font-weight: 400; }
 .pieza__texto .link-x {
-  margin-top: 1.3rem; color: var(--travertine); font-size: .66rem;
+  margin-top: 1.4rem; color: var(--travertine); font-size: .64rem;
   border-bottom: 1px solid var(--ember);
 }
 .pieza:hover .pieza__texto .link-x { color: var(--ember); }
+
+/* --- las tres composiciones ---------------------------------------------- */
+@media (min-width: 900px) {
+  .pieza { grid-template-columns: repeat(12, 1fr); align-items: center; column-gap: clamp(2rem, 4vw, 4rem); }
+
+  /* a · retrato grande a la derecha, el texto respira a la izquierda */
+  .pieza--a .pieza__foto { grid-column: 7 / 12; aspect-ratio: 4 / 5; }
+  .pieza--a .pieza__texto { grid-column: 1 / 6; grid-row: 1; }
+  .pieza--a .pieza__cifra { left: 0; }
+
+  /* b · la foto se encoge y se descuelga; el nombre manda */
+  .pieza--b .pieza__foto { grid-column: 2 / 6; aspect-ratio: 1 / 1; transform: translateY(clamp(1rem, 3vw, 2.6rem)); }
+  .pieza--b .pieza__texto { grid-column: 7 / 13; }
+  .pieza--b .pieza__cifra { right: 0; top: auto; bottom: clamp(1rem, 3vw, 2.6rem); }
+
+  /* c · la lámina apaisada, y el texto colgando debajo como un pie de foto */
+  .pieza--c { row-gap: clamp(1.2rem, 2.5vw, 2rem); }
+  .pieza--c .pieza__foto { grid-column: 3 / 10; aspect-ratio: 3 / 2; }
+  .pieza--c .pieza__texto { grid-column: 3 / 9; }
+  .pieza--c .pieza__desc, .pieza--c .pieza__pie { max-width: 46ch; }
+  .pieza--c .pieza__cifra { left: 0; top: 50%; transform: translateY(-50%); }
+}
+
+/* En estrecho no hay composición que valga: manda la tipografía y el aire.
+   La cifra sale del margen —donde quedaría tapada por la foto— y encabeza la
+   pieza, como el número de capítulo de un cuadernillo. */
+@media (max-width: 899px) {
+  .pieza { gap: 1rem; }
+  .pieza__foto { aspect-ratio: 4 / 5; }
+  .pieza--b .pieza__foto { aspect-ratio: 1 / 1; }
+  .pieza--c .pieza__foto { aspect-ratio: 3 / 2; }
+  .pieza__cifra {
+    position: static; font-size: 3.2rem; line-height: 1;
+    color: rgba(239,230,214,.16); margin-bottom: -.3rem;
+  }
+  .pieza__texto h3 { margin-top: .2rem; }
+}

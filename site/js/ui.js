@@ -229,27 +229,33 @@ function piezaFirma(item, i) {
   const pairItem = item.pair ? store.item(item.pair) : null;
   const dieta = item.tags.filter((t) => TAGS[t]?.kind === 'diet').slice(0, 2);
 
+  // Tres composiciones que se turnan. Con una sola, repetida seis veces, la
+  // página se lee como una lista de características; con tres, como un
+  // cuadernillo donde cada página está compuesta aparte.
+  const compas = ['a', 'b', 'c'][i % 3];
+
   return `
-  <article class="pieza${i % 2 ? ' pieza--vuelta' : ''} reveal" data-d="${i % 3}" data-item="${item.id}">
-    <div class="pieza__foto">
+  <article class="pieza pieza--${compas} reveal" data-d="${i % 3}" data-item="${item.id}">
+    <span class="pieza__cifra" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>
+
+    <figure class="pieza__foto">
       ${item.img
         ? `<img src="img/${esc(item.img)}" alt="${esc(item.name)}" width="520" height="520"
              loading="lazy" decoding="async">`
         : '<span class="pieza__sinfoto" aria-hidden="true">乙</span>'}
-      <span class="pieza__n">${String(i + 1).padStart(2, '0')}</span>
-    </div>
+      <figcaption class="pieza__lomo">${esc(categoria)}</figcaption>
+    </figure>
 
     <div class="pieza__texto">
-      <p class="eyebrow eyebrow--plain">${esc(categoria)}</p>
       <h3 class="display">${esc(item.name)}</h3>
       <p class="pieza__desc">${esc(item.desc)}</p>
 
-      <div class="pieza__meta">
+      <div class="pieza__pie">
         <span class="pieza__precio price">${sub ? `<small>${sub}</small>` : ''}${esc(main)}</span>
-        ${dieta.map(tagChip).join('')}
+        ${dieta.length ? `<span class="pieza__dieta">${dieta.map(tagChip).join('')}</span>` : ''}
       </div>
 
-      ${pairItem ? `<p class="pieza__marida">Marida con
+      ${pairItem ? `<p class="pieza__marida"><span>Marida con</span>
         <b>${esc(pairItem.name)}</b></p>` : ''}
 
       <button class="link-x" data-open="${item.id}">Ver el plato</button>
