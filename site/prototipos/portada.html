@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="es" class="claro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>ZHUBA · prototipo de portada</title>
+<script>
+  /* Una sola portada, dos pieles: ?tema=claro o ?tema=oscuro. Así lo único
+     que cambia al comparar es la luz, no el diseño. */
+  (function () {
+    var t = new URLSearchParams(location.search).get('tema');
+    document.documentElement.className = t === 'oscuro' ? 'oscuro' : 'claro';
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Nada de lo que delataba a la versión actual: sin grano, sin
+     resplandores, sin kanji, sin números decorativos, sin etiquetas en
+     mayúsculas, sin filetes alrededor de las fotos y sin tres cajas en fila. */
+  .claro {
+    --fondo: #EDE5D6;
+    --banda: #E3D8C5;
+    --tinta: #1D1813;
+    --tinta-suave: #5E5449;
+    --acento: #8E531F;
+    --boton-fondo: #1D1813;
+    --boton-texto: #EDE5D6;
+  }
+  .oscuro {
+    --fondo: #15120F;
+    --banda: #1F1B17;
+    --tinta: #ECE3D2;
+    --tinta-suave: #A89C8D;
+    --acento: #D6A050;
+    --boton-fondo: #D6A050;
+    --boton-texto: #15120F;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--fondo); color: var(--tinta);
+    font-family: "Hanken Grotesk", system-ui, sans-serif;
+    font-size: 17px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  img { display: block; max-width: 100%; }
+  a { color: inherit; }
+  h1, h2, h3 { font-family: "Newsreader", Georgia, serif; font-weight: 400; margin: 0; }
+
+  .medida { max-width: 1180px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 64px); }
+
+  .boton {
+    display: inline-block; padding: 14px 24px; border-radius: 2px;
+    background: var(--boton-fondo); color: var(--boton-texto);
+    font-weight: 600; font-size: 15px; text-decoration: none;
+  }
+  .enlace {
+    font-weight: 500; font-size: 15px; text-decoration: underline;
+    text-underline-offset: 5px; text-decoration-thickness: 1px;
+  }
+  .suave { color: var(--tinta-suave); }
+
+  /* --- cabecera --------------------------------------------------------- */
+  .cab {
+    display: flex; align-items: center; gap: 32px;
+    padding-top: 22px; padding-bottom: 22px;
+  }
+  .marca { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .marca svg { width: 30px; height: 30px; }
+  .marca span { font-family: "Newsreader", Georgia, serif; font-size: 24px; letter-spacing: .01em; }
+  .nav { display: flex; gap: 28px; margin-left: auto; }
+  .nav a { text-decoration: none; font-size: 15px; }
+  .nav a:hover { text-decoration: underline; text-underline-offset: 5px; }
+
+  /* --- portada ---------------------------------------------------------- */
+  .portada { padding-top: clamp(40px, 7vw, 96px); padding-bottom: clamp(40px, 6vw, 80px); }
+  .portada .antes { margin: 0 0 18px; font-size: 15px; }
+  .portada h1 {
+    font-size: clamp(2.9rem, 6.6vw, 5.9rem); line-height: 1.0; letter-spacing: -.025em;
+    max-width: 13ch;
+  }
+  .portada .entrada { margin: 26px 0 0; max-width: 46ch; font-size: 19px; }
+  .acciones { display: flex; align-items: center; gap: 26px; margin-top: 34px; flex-wrap: wrap; }
+  .portada .nota { margin: 30px 0 0; font-size: 15px; }
+
+  /* --- las fotos, de lado a lado ---------------------------------------- */
+  .tira { display: grid; grid-template-columns: repeat(4, 1fr); }
+  .tira img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
+
+  /* --- el chef ---------------------------------------------------------- */
+  .chef {
+    display: grid; gap: clamp(28px, 5vw, 72px); align-items: center;
+    padding-top: clamp(64px, 10vw, 140px); padding-bottom: clamp(64px, 10vw, 140px);
+  }
+  .chef img { width: 100%; max-width: 460px; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 30%; }
+  .chef h2 { font-size: clamp(2.2rem, 4.2vw, 3.4rem); line-height: 1.05; letter-spacing: -.02em; }
+  .chef .cargo { margin: 8px 0 26px; font-size: 16px; }
+  .chef p { max-width: 50ch; margin: 0 0 16px; }
+
+  /* --- las dos casas ---------------------------------------------------- */
+  .casas {
+    display: grid; gap: clamp(48px, 6vw, 64px);
+    padding-bottom: clamp(64px, 10vw, 140px);
+  }
+  .casas > h2 { font-size: clamp(2.2rem, 4.2vw, 3.4rem); letter-spacing: -.02em; }
+  .casas__par { display: grid; gap: clamp(48px, 6vw, 56px); }
+  .casa img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+  .casa h3 { margin: 26px 0 0; font-size: clamp(1.9rem, 3vw, 2.4rem); letter-spacing: -.015em; }
+  .casa .desc { margin: 10px 0 0; max-width: 44ch; }
+  .casa .horas { margin: 18px 0 0; font-size: 15px; }
+  .casa .acciones { margin-top: 24px; }
+
+  /* --- una reseña, grande ----------------------------------------------- */
+  .cita { background: var(--banda); padding: clamp(64px, 10vw, 130px) 0; }
+  .cita blockquote { margin: 0; }
+  .cita blockquote > p {
+    margin: 0; font-family: "Newsreader", Georgia, serif; font-style: italic;
+    font-size: clamp(1.9rem, 3.8vw, 3.2rem); line-height: 1.15; letter-spacing: -.015em;
+    max-width: 26ch;
+  }
+  .cita footer { margin-top: 28px; font-size: 16px; }
+  .cita .puntuacion { margin: 6px 0 0; font-size: 15px; }
+
+  /* --- visítanos -------------------------------------------------------- */
+  .visita {
+    display: grid; gap: 32px;
+    padding-top: clamp(64px, 9vw, 120px); padding-bottom: clamp(48px, 7vw, 90px);
+  }
+  .visita h2 { font-size: clamp(2.2rem, 4.2vw, 3.4rem); letter-spacing: -.02em; }
+  .visita__datos { display: grid; gap: 28px; }
+  .visita__datos h3 { font-family: "Hanken Grotesk", system-ui, sans-serif; font-weight: 600; font-size: 16px; }
+  .visita__datos p { margin: 6px 0 0; }
+
+  .pie { padding-top: 26px; padding-bottom: 40px; font-size: 14px; }
+
+  @media (min-width: 900px) {
+    .chef { grid-template-columns: 5fr 7fr; }
+    .casas__par { grid-template-columns: 1fr 1fr; }
+    .visita__datos { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 700px) {
+    .nav { display: none; }
+    .cab .boton { margin-left: auto; padding: 11px 16px; font-size: 14px; }
+    .tira { grid-template-columns: repeat(2, 1fr); }
+    body { font-size: 16px; }
+    .portada .entrada { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="cab medida">
+  <a class="marca" href="#">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="27" fill="none" stroke="currentColor" stroke-width="2" opacity=".35"/>
+      <circle cx="32" cy="32" r="22.5" fill="none" stroke="var(--acento)" stroke-width="2.4"/>
+      <path d="M22 23.5h20L23 40.5h20" fill="none" stroke="var(--acento)" stroke-width="3.4"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>ZHUBA</span>
+  </a>
+  <nav class="nav" aria-label="Principal">
+    <a href="#chef">El chef</a>
+    <a href="#casas">Las casas</a>
+    <a href="#visita">Visítanos</a>
+  </nav>
+  <a class="boton" href="../pedir">Pedir en línea</a>
+</header>
+
+<main>
+  <section class="portada medida">
+    <p class="antes suave">Restaurante y café en La Floresta, Maracay</p>
+    <h1>Cocina asiática y café de autor</h1>
+    <p class="entrada">Barra fría con salmón noruego y atún saku, fuego vivo en el wok, y al lado un café
+      con pastelería fina y gelato artesanal.</p>
+    <div class="acciones">
+      <a class="boton" href="../pedir">Pedir en línea</a>
+      <a class="enlace" href="#visita">Cómo llegar</a>
+    </div>
+    <p class="nota suave">4,8 en Google · 768 reseñas · Abierto todos los días desde las 12:00 m.</p>
+  </section>
+
+  <section class="tira" aria-label="Algunos de sus platos">
+    <img src="../img/sashimi-especial-zhuba.webp" alt="Sashimi especial" width="520" height="520">
+    <img src="../img/bubble-waffle-al-gelato.webp" alt="Bubble waffle con gelato" width="520" height="520">
+    <img src="../img/fukkatsu-zhuba-roll.webp" alt="Fukkatsu ZHUBA Roll" width="520" height="520">
+    <img src="../img/cafe-latte.webp" alt="Café latte" width="520" height="520">
+  </section>
+
+  <section class="chef medida" id="chef">
+    <img src="../img/alta-pasteleria.webp" alt="Ali Makki J. emplatando un postre" width="520" height="520">
+    <div>
+      <h2>Ali Makki J.</h2>
+      <p class="cargo suave">CEO y chef-curador</p>
+      <p>Bajo su visión, ZHUBA es un solo complejo con cuatro oficios: restaurante de alta gama, café,
+        pastelería fina y un laboratorio de gelato artesanal. Cocina de autor que cruza Asia con el
+        Mediterráneo.</p>
+      <p>El salón principal y el rooftop se renovaron hace poco: travertino, mármol y luz cálida,
+        ordenados según los principios del Feng Shui.</p>
+    </div>
+  </section>
+
+  <section class="casas medida" id="casas">
+    <h2>Las dos casas</h2>
+    <div class="casas__par">
+      <article class="casa">
+        <img src="../img/volcan-okanoba.webp" alt="Volcán Okanoba" width="520" height="520">
+        <h3>ZHUBA Restaurant</h3>
+        <p class="desc">Cocina asiática con acento nikkei y tailandés. Salmón noruego, atún saku, escolar
+          y anguila en la barra fría; el wok, al fuego.</p>
+        <p class="horas suave">Domingo a miércoles, 12:00 m. a 12:00 a. m.<br>Jueves a sábado, hasta la 1:00 a. m.</p>
+        <div class="acciones">
+          <a class="boton" href="../pedir?sede=restaurante">Ver la carta</a>
+          <a class="enlace" href="https://www.google.com/maps/search/?api=1&query=Zhuba+Restaurant+17+Calle+Los+Clubes+Maracay+Aragua">Cómo llegar</a>
+        </div>
+      </article>
+      <article class="casa">
+        <img src="../img/barquilla.webp" alt="Barquilla de gelato" width="520" height="520">
+        <h3>ZHUBA Café</h3>
+        <p class="desc">Waffle hongkonesa hecha al momento, brioche siciliana rellena, alta pastelería
+          con ingredientes italianos y paninis prensados al instante.</p>
+        <p class="horas suave">Domingo a miércoles, 12:00 m. a 12:00 a. m.<br>Jueves a sábado, hasta la 1:00 a. m.</p>
+        <div class="acciones">
+          <a class="boton" href="../pedir?sede=cafe">Ver la carta</a>
+          <a class="enlace" href="https://www.google.com/maps/search/?api=1&query=Zhuba+Restaurant+17+Calle+Los+Clubes+Maracay+Aragua">Cómo llegar</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="cita">
+    <div class="medida">
+      <blockquote>
+        <p>“Tenía 11 años sin venir a Venezuela, amante del sushi, y me recomendaron Zhuba. Sin duda…”</p>
+        <footer>
+          Mariangela Dargenio, en Google
+          <p class="puntuacion suave">ZHUBA tiene 4,8 de 5 con 768 reseñas</p>
+        </footer>
+      </blockquote>
+    </div>
+  </section>
+
+  <section class="visita medida" id="visita">
+    <h2>Visítanos</h2>
+    <div class="visita__datos">
+      <div>
+        <h3>Dirección</h3>
+        <p class="suave">17 Calle Los Clubes, casa nro. 10<br>Urb. La Floresta, Maracay</p>
+      </div>
+      <div>
+        <h3>Horario</h3>
+        <p class="suave">Todos los días desde las 12:00 m.<br>Hasta la 1:00 a. m. de jueves a sábado</p>
+      </div>
+      <div>
+        <h3>Reservas y pedidos</h3>
+        <p class="suave"><a href="tel:+584124554207">+58 412-4554207</a><br>
+          <a href="https://wa.me/584124554207">Escribir por WhatsApp</a></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="pie medida suave">ZHUBA · Maracay, Venezuela</footer>
+
+</body>
+</html>
