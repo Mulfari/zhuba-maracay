@@ -26,6 +26,18 @@ function pintarTono() {
 /* ================================================================ héroe */
 /* La vitrina se redibuja al cambiar de sede: el restaurante enseña barra
    fría y wok; el café, gelato y vitrina. */
+/* Dónde cae cada foto del collage, sobre una retícula de 3 columnas × 6 filas:
+   fila de inicio / columna de inicio / fila de fin / columna de fin. Dos
+   grandes en esquinas opuestas, una alta, una ancha y seis sueltas. */
+const AREAS = [
+  '1 / 1 / 3 / 3', '1 / 3 / 2 / 4', '2 / 3 / 3 / 4',
+  '3 / 1 / 5 / 2', '3 / 2 / 4 / 4', '4 / 2 / 5 / 3', '4 / 3 / 5 / 4',
+  '5 / 1 / 6 / 2', '5 / 2 / 7 / 4', '6 / 1 / 7 / 2'
+];
+/* Las que se ven al abrir: la grande, la alta y la ancha. La cortina de carga
+   espera a estas, igual que antes esperaba a la primera de cada columna. */
+const PRIMERAS = [0, 3, 4];
+
 function renderHero() {
   const kicker = $('#heroKicker');
   if (kicker) kicker.textContent = COMPLEJO.kicker;
@@ -41,26 +53,27 @@ function renderHero() {
   const sub = $('#heroSub');
   if (sub) sub.textContent = COMPLEJO.sub;
 
-  // Una columna por casa: a la izquierda el restaurante, a la derecha el café.
-  // Las dos se ven a la vez, que es de lo que va la portada ahora.
-  const fotos = [BRANCHES[0].heroPhotos[0], BRANCHES[1].heroPhotos[0]];
-  const b = { heroPhotos: fotos };
-
+  // Un collage de las dos casas: tres columnas y seis filas cuadradas, con
+  // fotos que ocupan 1×1, 1×2, 2×1 o 2×2. El bloque cierra un rectángulo
+  // exacto, así que se repite debajo de sí mismo y la deriva no tiene costura.
   const mosaic = $('#heroMosaic');
-  if (!mosaic || !b.heroPhotos) return;
-  const duraciones = [66, 82];
-  mosaic.innerHTML = b.heroPhotos.map((col, i) => `
-    <div class="hero__col" data-col="${i}">
-      <div class="hero__track" style="--dur:${duraciones[i] || 72}s">
-        ${col.concat(col).map((n, j) => `
-          <figure><img src="img/${esc(n)}.webp" alt=""${j >= col.length ? ' loading="lazy"' : ''}
-            ${j === 0 ? 'data-primera fetchpriority="high"' : ''}
+  if (!mosaic) return;
+  const fotos = COMPLEJO.collage.slice(0, AREAS.length);
+  const bloque = (copia) => `
+      <div class="collage"${copia ? ' aria-hidden="true"' : ''}>
+        ${fotos.map((n, j) => `
+          <figure style="grid-area:${AREAS[j]}"><img src="img/${esc(n)}.webp" alt=""
+            ${copia ? 'loading="lazy"' : (PRIMERAS.includes(j) ? 'data-primera fetchpriority="high"' : '')}
             decoding="async" width="520" height="520"></figure>`).join('')}
-      </div>
-    </div>`).join('') + '<div class="hero__blend"></div><div class="hero__fade"></div>';
+      </div>`;
+  mosaic.innerHTML = `
+    <div class="hero__lienzo">
+      <div class="hero__track" style="--dur:80s">${bloque(false)}${bloque(true)}</div>
+    </div>
+    <div class="hero__blend"></div><div class="hero__fade"></div>`;
 
   // el scroll añade su propio desplazamiento sobre la deriva continua
-  $$('.hero__col', mosaic).forEach((col, i) => addParallax(col, i === 0 ? 90 : 150));
+  addParallax($('.hero__lienzo', mosaic), 110);
 }
 
 /* Estado real del local en hora de Venezuela: abre a las 12:00 m. y cierra a
@@ -100,7 +113,6 @@ function casa(b, i) {
         <figure class="casa__foto casa__foto--${j}">
           <img src="img/${esc(n)}.webp" alt="" loading="lazy" decoding="async" width="520" height="520">
         </figure>`).join('')}
-      <span class="casa__cifra" aria-hidden="true">0${i + 1}</span>
     </div>
 
     <div class="casa__texto">

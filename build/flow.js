@@ -75,6 +75,23 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   check('el enlace de cada casa abre su carta',
     abreCafe.sede === 'cafe' && abreCafe.titulo.includes('Gelato'), JSON.stringify(abreCafe));
 
+  /* ================================================ el collage del héroe */
+  await ir('/');
+  const collage = await ev(`(()=>{
+    const bloque = document.querySelector('#heroMosaic .collage');
+    const figs = bloque ? [...bloque.querySelectorAll('figure')] : [];
+    const tam = figs.map((f) => { const r = f.getBoundingClientRect(); return Math.round(r.width) + 'x' + Math.round(r.height); });
+    const fotos = figs.map((f) => f.querySelector('img').getAttribute('src'));
+    const casas = [...document.querySelectorAll('#casas img')].map((i) => i.getAttribute('src'));
+    return { piezas: figs.length, tamanos: new Set(tam).size, distintas: new Set(fotos).size,
+             repetidas: fotos.filter((src) => casas.includes(src)).length,
+             sinCifras: !document.querySelector('.casa__cifra') };
+  })()`);
+  check('el héroe es un collage de fotos de tamaños distintos',
+    collage.piezas === 10 && collage.distintas === 10 && collage.tamanos >= 3, JSON.stringify(collage));
+  check('el collage no repite fotos de las casas, y las casas van sin número',
+    collage.repetidas === 0 && collage.sinCifras, JSON.stringify(collage));
+
   /* ====================================================== pedido en línea */
   await ir('/pedir.html');
   await ev(`document.querySelector('#sedes .venue-pill[data-branch="restaurante"]')?.click()`);
@@ -234,7 +251,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const chef = await ev(`(async()=>{
     const cafe = await import(new URL('data/menu-cafe.js', location.href).href);
     const { BRANCHES } = await import(new URL('js/store.js', location.href).href);
-    const mosaicos = BRANCHES.flatMap((b) => b.heroPhotos.flat());
+    const mosaicos = [...document.querySelectorAll('#heroMosaic img')].map((i) => i.getAttribute('src'));
     const sec = document.getElementById('chef');
     return {
       seccion: !!sec,
@@ -244,7 +261,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       alt: sec?.querySelector('img')?.getAttribute('alt') || '',
       enlace: !!document.querySelector('a[href="#chef"]'),
       // El retrato no puede volver a colarse como foto de un plato ni al mosaico.
-      enMosaico: mosaicos.includes('alta-pasteleria'),
+      enMosaico: mosaicos.some((src) => src.includes('alta-pasteleria')),
       comoPlato: cafe.ITEMS.some((i) => i.img === 'alta-pasteleria.webp'),
       // Y no queda rastro de la sección que sustituye.
       sinPiedraBrasa: !document.body.textContent.includes('Piedra, brasa')

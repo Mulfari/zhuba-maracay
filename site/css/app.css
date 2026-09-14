@@ -422,21 +422,36 @@ h1, h2, h3 { margin: 0; }
   -webkit-mask-image: linear-gradient(180deg, #000 0 70%, transparent 99%);
   mask-image: linear-gradient(180deg, #000 0 70%, transparent 99%);
   position: relative; z-index: 0; align-self: stretch; height: 100%; min-height: 0;
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(6px,.6vw,10px); overflow: hidden; }
-.hero__col { min-height: 0; overflow: hidden; will-change: transform; }
-.hero__col:nth-child(2) { margin-top: -11%; }
+  overflow: hidden;
+  /* Las filas del collage miden lo mismo que sus columnas: para eso tienen
+     que conocer el ancho de la vitrina, y lo conocen por consulta de
+     contenedor, sin JavaScript. */
+  container-type: inline-size;
+  --g: clamp(6px, .6vw, 10px);
+}
+/* Sin margen de sobra arriba: mientras el héroe está en pantalla, el paralaje
+   solo sube el collage, así que nunca descubre un hueco sobre la primera fila.
+   El margen que hubo escondía media foto grande bajo la cabecera. */
+.hero__lienzo { will-change: transform; }
 
-/* La pista lleva su juego de fotos duplicado y recorre justo el 50 %, así que
-   el último fotograma es idéntico al primero y el bucle no tiene costura.
-   `flow-root` evita que el margen de la última ficha se escape de la pista:
-   si se escapa, el 50 % cae medio hueco antes y el salto se ve. */
-.hero__track { display: flow-root; animation: deriva var(--dur, 72s) linear infinite;
-  will-change: transform; }
-.hero__track figure { margin: 0 0 clamp(6px,.6vw,10px); overflow: hidden; }
-.hero__track img { width: 100%; height: auto; display: block; object-fit: cover;
-  aspect-ratio: 4/5; filter: saturate(.96) contrast(1.03) brightness(.88); }
-.hero__track figure:nth-child(even) img { aspect-ratio: 1; }
-.hero__col:nth-child(2) .hero__track { animation-direction: reverse; }
+/* La pista lleva el bloque del collage dos veces y recorre justo el 50 %: el
+   último fotograma es idéntico al primero. El hueco entre los dos bloques va
+   como relleno inferior de cada bloque y no como `gap` de la pista, para que
+   las dos mitades midan exactamente lo mismo. */
+.hero__track { animation: deriva var(--dur, 80s) linear infinite; will-change: transform; }
+.collage {
+  --u: calc((100cqw - 2 * var(--g)) / 3);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(6, var(--u));
+  gap: var(--g);
+  padding-bottom: var(--g);
+}
+.collage figure { margin: 0; overflow: hidden; }
+.collage img {
+  width: 100%; height: 100%; display: block; object-fit: cover;
+  filter: saturate(.96) contrast(1.03) brightness(.88);
+}
 @keyframes deriva { from { transform: translate3d(0,0,0); } to { transform: translate3d(0,-50%,0); } }
 
 /* el borde izquierdo de la vitrina se funde con el panel oscuro */
@@ -464,7 +479,6 @@ h1, h2, h3 { margin: 0; }
   .hero__mosaic { grid-row: 1; grid-column: 1; align-self: stretch; }
   .hero__panel { grid-row: 2; grid-column: 1; align-self: center;
     padding-block: clamp(2rem,5vh,3rem) clamp(2.5rem,7vh,4rem); }
-  .hero__col:nth-child(2) { margin-top: -18%; }
   .hero__blend { background:
     linear-gradient(180deg, rgba(11,9,8,.55) 0%, transparent 22%, transparent 58%, var(--void) 97%); }
   .hero__credit { display: none; }
@@ -984,7 +998,7 @@ h1, h2, h3 { margin: 0; }
   }
   .reveal { opacity: 1; transform: none; }
   .grain { animation: none; }
-  .hero__col, .hero__grid, .story__media video, .story__media img { transform: none !important; }
+  .hero__lienzo, .hero__grid, .story__media video, .story__media img { transform: none !important; }
   .hero__track { animation: none !important; }
   .hero__grid, .hero__credit { opacity: 1 !important; }
   .hero__line, .kanji-mark { transform: none !important; }
@@ -1378,7 +1392,7 @@ img[data-suave].is-cargada { opacity: 1; transition: opacity .45s var(--ease-out
 
 /* El hueco de cada foto del mosaico ya tiene color: mientras cae la imagen
    se lee como una rejilla, no como agujeros negros. */
-.hero__track figure { background: var(--stone-800); }
+.collage figure { background: var(--stone-800); }
 
 @media (prefers-reduced-motion: reduce) {
   .cortina__hilo i { animation: none; transform: scaleX(1); }
@@ -1563,12 +1577,6 @@ img[data-suave].is-cargada { opacity: 1; transition: opacity .45s var(--ease-out
 .casa__foto--0 { grid-row: 1 / 3; aspect-ratio: 4 / 5; }
 .casa__foto--1, .casa__foto--2 { aspect-ratio: 1 / 1; }
 
-.casa__cifra {
-  position: absolute; right: -.12em; bottom: -.28em; z-index: 2; pointer-events: none;
-  font-family: var(--display); font-weight: 500; line-height: .78;
-  font-size: clamp(4rem, 11vw, 8.5rem);
-  color: var(--acento); opacity: .15;
-}
 
 /* --- el texto ------------------------------------------------------------ */
 .casa__texto { min-width: 0; }

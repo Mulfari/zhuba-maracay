@@ -17,7 +17,21 @@ export const COMPLEJO = {
   sub: 'Un complejo gastronómico en La Floresta: barra fría con salmón noruego y atún saku, '
      + 'fuego vivo en el wok, y al lado un café con pastelería fina y gelato artesanal.',
   tagline: 'Donde cada plato cuenta una historia y cada detalle refleja nuestro buen gusto.',
-  direccion: '17 Calle Los Clubes, casa nro 10, Urb. La Floresta, Maracay 2101, Aragua'
+  direccion: '17 Calle Los Clubes, casa nro 10, Urb. La Floresta, Maracay 2101, Aragua',
+  // Fotos del collage del héroe, de las dos casas. Ninguna se repite en el
+  // bloque de las casas, que ya enseña las suyas más abajo.
+  collage: [
+    'degustacion-de-nigiris',
+    'brownie-con-gelato',
+    'coquitos-de-salmon',
+    'cafes-frios',
+    'unadon-kabayaki',
+    'croissants-rellenos',
+    'tartar-zhuba',
+    'roast-beef-schiacciata',
+    'crispy-al-caesar',
+    'osaka-roll'
+  ]
 };
 
 export const BRANCHES = [
