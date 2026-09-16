@@ -124,6 +124,12 @@
   .kds__steps button:hover { color: var(--travertine); border-color: rgba(239,230,214,.32); }
   .kds__steps button.is-on { background: var(--st); border-color: var(--st); color: var(--ink-on-accent); }
 
+  /* Mover un pedido de estado es lo que más se toca aquí, y se toca de pie
+     con el teléfono en una mano: 28 px de alto se fallan. */
+  @media (pointer: coarse), (max-width: 899px) {
+    .kds__steps button { min-height: 38px; padding-inline: .9rem; }
+  }
+
   .toplist { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; }
   .toplist li { display: flex; align-items: center; gap: .7rem; font-size: .86rem;
     padding-bottom: .55rem; border-bottom: var(--hair-soft); }
