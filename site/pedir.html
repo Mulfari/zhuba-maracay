@@ -78,7 +78,13 @@
     <a class="ped-back" href="./">Ver la web</a>
   </div>
 
-  <div class="ped-pegado">
+</header>
+
+<!-- Fuera de la cabecera a propósito: `position: sticky` sólo sujeta
+     mientras el padre está en pantalla, y la cabecera mide 215 px. Aquí el
+     padre es la página entera, así que el buscador y el índice acompañan
+     toda la carta, que es para lo que están. -->
+<div class="ped-pegado">
   <div class="wrap ped-buscar">
     <label class="sr-only" for="buscar">Buscar en la carta</label>
     <svg class="ped-buscar__lupa" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"
@@ -94,7 +100,7 @@
     <div class="wrap"><div class="pills" id="indice" role="tablist" aria-label="Categorías"></div></div>
   </div>
   </div>
-</header>
+
 
 <main class="wrap ped-main">
   <div id="lista"></div>

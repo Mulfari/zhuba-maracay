@@ -695,6 +695,29 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     movilPedir.chicos.length === 0 && movilPedir.campos.length === 0,
     JSON.stringify(movilPedir));
 
+  // El buscador y el índice dicen ser fijos. `position: sticky` sólo sujeta
+  // mientras el padre está en pantalla: dentro de la cabecera se soltaban al
+  // primer deslizamiento y había que volver arriba para cambiar de sección.
+  const pegado = await ev(`(async () => {
+    const w = (ms) => new Promise((r) => setTimeout(r, ms));
+    const barra = () => document.querySelector('.ped-pegado').getBoundingClientRect();
+    scrollTo(0, 3000); await w(700);
+    const arriba = Math.round(barra().top);
+    const chips = document.querySelectorAll('#indice .pill').length;
+    const activa = document.querySelector('.pill.is-active')?.textContent.trim() || '';
+    document.querySelectorAll('#indice .pill')[3]?.click(); await w(1200);
+    const destino = document.querySelector('.cat');
+    const bajo = Math.round(barra().bottom);
+    const primera = Math.min(...[...document.querySelectorAll('.cat')]
+      .map((c) => c.getBoundingClientRect().top).filter((t) => t > 0));
+    scrollTo(0, 0);
+    return { arriba, chips, activa, bajo, primera: Math.round(primera) };
+  })()`);
+  check('el buscador y el índice siguen a la carta y llevan a su sección',
+    pegado.arriba === 0 && pegado.chips >= 6 && pegado.activa !== '' &&
+    pegado.primera >= pegado.bajo - 2,
+    JSON.stringify(pegado));
+
   await send('Emulation.setTouchEmulationEnabled', { enabled: false });
   await send('Emulation.setDeviceMetricsOverride',
     { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });

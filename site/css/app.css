@@ -1066,8 +1066,9 @@ h1, h2, h3 { margin: 0; }
    empezaba a los 447: media pantalla antes de ver comida. Ahora la fila de
    marca y sede se desplaza fuera con la página y solo se quedan pegados el
    buscador y el índice, que son las dos cosas que se usan al recorrer. */
-.ped-head { background: var(--void); border-bottom: var(--hair); }
-.ped-pegado { position: sticky; top: 0; z-index: 45; background: var(--void); }
+.ped-head { background: var(--void); }
+.ped-pegado { position: sticky; top: 0; z-index: 45;
+  background: var(--void); border-bottom: var(--hair); }
 
 .ped-head__top { display: flex; align-items: center; gap: .8rem; padding-block: .55rem; }
 .ped-head__top .logo__sub { display: block; color: var(--ember); }
@@ -1642,4 +1643,16 @@ img[data-suave].is-cargada { opacity: 1; transition: opacity .45s var(--ease-out
      derecha. Con menos espaciado cabe, y si aun así no cupiera parte en dos
      líneas en vez de salirse. */
   .hero__rule span { letter-spacing: .16em; white-space: normal; }
+}
+
+@media (max-width: 420px) {
+  /* De aquí para abajo el logotipo y las dos sedes no caben en la misma
+     línea: la pastilla del café se salía 38 px por la derecha en una
+     pantalla de 320 px, y a 360 pasaba a dos del borde. Las sedes bajan a
+     su propia línea y se reparten el ancho, que además las deja cómodas de
+     tocar. Esta parte de la cabecera no es pegajosa: se va con el scroll y
+     no le quita altura a la carta. */
+  .ped-head__top { flex-wrap: wrap; }
+  .venue-pills--barra { flex: 1 0 100%; gap: .4rem; }
+  .venue-pills--barra .venue-pill { flex: 1; text-align: center; padding-inline: .5rem; }
 }
