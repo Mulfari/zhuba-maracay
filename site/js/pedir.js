@@ -646,6 +646,11 @@ function bloqueEntrega() {
 /* ----------------------------------------------------------------- pago */
 function bloquePago() {
   const metodos = store.metodosDisponibles();
+  // Con un solo método no hay nada que elegir. Pedir un toque para confirmar
+  // lo único posible es fricción, y el aviso «elige cómo vas a pagar» no
+  // significa nada cuando no hay dónde elegir. Hoy, sin datos de pago
+  // publicados, ese es justo el caso: efectivo y punto.
+  if (metodos.length === 1 && !store.pago.metodo) store.pago.metodo = metodos[0].id;
   const elegido = store.pago.metodo;
   const m = METODOS_PAGO.find((x) => x.id === elegido);
   const datos = elegido ? store.datosPago(elegido) : {};
@@ -795,7 +800,8 @@ function renderCart() {
     ${falta ? `<p class="falta">${esc(falta)}</p>` : ''}
     ${paso === 'pago'
       ? `<button class="btn btn--wa" data-enviar ${falta ? 'disabled' : ''}>${ICON.wa} ${
-          store.pago.metodo === 'efectivo' ? 'Enviar pedido por WhatsApp' : 'Ya pagué · enviar por WhatsApp'}</button>`
+          !store.pago.metodo || store.pago.metodo === 'efectivo'
+            ? 'Enviar pedido por WhatsApp' : 'Ya pagué · enviar por WhatsApp'}</button>`
       : `<button class="btn btn--solid" data-siguiente ${falta ? 'disabled' : ''}>
            ${paso === 'pedido' ? 'Continuar' : 'Continuar al pago'}</button>`}
     ${paso !== 'pedido' ? '<button class="link-x" data-atras>Volver</button>' : ''}

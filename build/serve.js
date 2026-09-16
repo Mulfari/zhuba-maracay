@@ -22,7 +22,10 @@ const TYPES = {
 http.createServer((req, res) => {
   let p = decodeURIComponent(req.url.split('?')[0]);
   if (p.endsWith('/')) p += 'index.html';
-  const file = path.join(ROOT, path.normalize(p).replace(/^(\.\.[/\\])+/, ''));
+  let file = path.join(ROOT, path.normalize(p).replace(/^(\.\.[/\\])+/, ''));
+  // Vercel sirve /pedir desde pedir.html («cleanUrls»). Aquí igual, o las
+  // pruebas locales recorren rutas que en producción no existen.
+  if (!path.extname(file) && fs.existsSync(file + '.html')) file += '.html';
   fs.readFile(file, (err, buf) => {
     if (err) { res.writeHead(404, { 'Content-Type': 'text/plain' }); return res.end('404'); }
     res.writeHead(200, { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream' });
