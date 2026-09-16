@@ -656,6 +656,49 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     JSON.stringify(salida));
   check('tras enviar, el pedido queda limpio',
     salida.carroVacio && salida.cajonCerrado, JSON.stringify(salida));
+  /* ================================================ el teléfono de verdad */
+  /* Un teléfono estrecho y con dedo: dos familias de fallo que en el
+     escritorio no existen. Una, que algo que no parte estire su columna y
+     recorte la página. Otra, que un campo con letra de menos de 16 px haga
+     que Safari amplíe la página entera al tocarlo, y no vuelva. */
+  await send('Emulation.setDeviceMetricsOverride',
+    { width: 360, height: 640, deviceScaleFactor: 2, mobile: true });
+  await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+
+  const MEDIDA = `(() => {
+    const doc = document.documentElement.clientWidth;
+    const seVe = (el) => { const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden'; };
+    const fuera = [...document.querySelectorAll('body *')].filter(seVe)
+      .filter((el) => !el.classList.contains('grain'))
+      .filter((el) => { const r = el.getBoundingClientRect(); return r.right > doc + 1 || r.left < -1; })
+      .map((el) => el.tagName.toLowerCase() + '.' + String(el.className).split(' ')[0]);
+    const chicos = [...document.querySelectorAll('button, .btn, a.btn')].filter(seVe)
+      .filter((el) => el.getBoundingClientRect().height < 40)
+      .map((el) => String(el.className).split(' ')[0] || el.tagName.toLowerCase());
+    const campos = [...document.querySelectorAll('input, select, textarea')].filter(seVe)
+      .map((el) => ({ id: el.id, px: parseFloat(getComputedStyle(el).fontSize) }))
+      .filter((c) => c.px < 16);
+    return { doc, ancho: document.documentElement.scrollWidth,
+             fuera: [...new Set(fuera)], chicos: [...new Set(chicos)], campos };
+  })()`;
+
+  await ir('/');
+  const movilPortada = await ev(MEDIDA);
+  check('en un teléfono de 360 px nada se sale de la pantalla',
+    movilPortada.ancho <= movilPortada.doc + 1 && movilPortada.fuera.length === 0,
+    JSON.stringify(movilPortada));
+
+  await ir('/pedir.html');
+  const movilPedir = await ev(MEDIDA);
+  check('en el pedido ningún botón baja de 40 px ni ningún campo de 16',
+    movilPedir.chicos.length === 0 && movilPedir.campos.length === 0,
+    JSON.stringify(movilPedir));
+
+  await send('Emulation.setTouchEmulationEnabled', { enabled: false });
+  await send('Emulation.setDeviceMetricsOverride',
+    { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+
   console.log('\n=== RECORRIDO FUNCIONAL ===');
   out.forEach((r) => console.log(`${r.ok ? 'OK  ' : 'FALLA'} ${r.name}${r.ok ? '' : '  → ' + r.detail}`));
   const bad = out.filter((r) => !r.ok).length;
