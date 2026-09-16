@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ZHUBA · Panel de cocina</title>
+<title>ZHUBA · Informe de la web</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0B0908">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230B0908'/%3E%3Ccircle cx='32' cy='32' r='23' fill='none' stroke='%23D6A050' stroke-width='2.4'/%3E%3Cpath d='M22 23h20L23 41h20' fill='none' stroke='%23D6A050' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
@@ -13,122 +13,90 @@
 <link rel="stylesheet" href="../css/app.css">
 <style>
   body { padding-bottom: 4rem; }
+
+  /* --- cabecera --------------------------------------------------------- */
   .adm-head {
     position: sticky; top: 0; z-index: 20;
     background: rgba(11,9,8,.88); backdrop-filter: blur(16px);
-    border-bottom: var(--hair); padding-block: .9rem;
+    border-bottom: var(--hair);
   }
-  .adm-head__row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
-  .adm-title { font-family: var(--display); font-size: 1.35rem; font-weight: 500; letter-spacing: -.01em; }
+  .adm-head__row { display: flex; align-items: center; gap: .7rem; padding-block: .7rem; }
+  .adm-title { font-family: var(--display); font-size: 1.35rem; font-weight: 500; letter-spacing: -.01em; margin: 0; }
   .adm-title span { font-family: var(--mono); font-size: .56rem; letter-spacing: .24em;
     text-transform: uppercase; color: var(--ember); display: block; margin-bottom: .2rem; }
-
-  .seg { display: flex; gap: .3rem; flex-wrap: wrap; }
-  .seg button {
-    padding: .42rem .85rem; border-radius: 2px; border: var(--hair); cursor: pointer;
-    background: transparent; color: var(--travertine-3);
-    font-size: .72rem; font-weight: 600; letter-spacing: .03em;
-    transition: color .2s, background .2s, border-color .2s;
-  }
-  .seg button:hover { color: var(--travertine); border-color: rgba(239,230,214,.3); }
-  .seg button.is-on { background: var(--ember); border-color: var(--ember); color: var(--ink-on-accent); }
-
-  .cols { display: grid; gap: 2.4rem; align-items: start; }
-  @media (min-width: 1000px) { .cols { grid-template-columns: 1.15fr .85fr; } }
-
-  h2.adm { font-family: var(--mono); font-size: .62rem; letter-spacing: .22em; text-transform: uppercase;
-    color: var(--travertine-3); font-weight: 400; margin: 0 0 1rem; display: flex; justify-content: space-between; gap: 1rem; }
-
-  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px;
-    background: rgba(239,230,214,.1); border: var(--hair); margin-bottom: .7rem; }
-  @media (min-width: 620px) { .stats { grid-template-columns: repeat(4, 1fr); } }
-  .stat { background: var(--void); padding: .7rem .8rem; display: grid; gap: .15rem; }
-  .stat span { font-family: var(--mono); font-size: .52rem; letter-spacing: .14em;
-    text-transform: uppercase; color: var(--travertine-3); }
-  .stat b { font-family: var(--display); font-size: 1.15rem; font-weight: 600; letter-spacing: -.02em; }
-  .stat--ojo b { color: var(--ember); }
-  .stats-mas { margin: 0 0 2rem; font-family: var(--mono); font-size: .6rem;
-    letter-spacing: .06em; color: var(--travertine-3); line-height: 1.7; }
-
-  /* --- cabecera y pestañas ---------------------------------------------
-     Antes: tres botones de sede y «Salir» ocupaban una pantalla entera del
-     teléfono antes de ver un solo pedido. */
-  .adm-head__row { display: flex; align-items: center; gap: .7rem; padding-block: .7rem; }
   .adm-sede {
     margin-left: auto; max-width: 11.5rem; padding: .4rem .6rem; border-radius: 2px;
     border: var(--hair); background: var(--stone-900); color: var(--travertine);
     font: inherit; font-size: 16px; min-height: 40px;
   }
   .adm-sede:focus { outline: none; border-color: var(--ember); }
-  .adm-tabs { display: flex; gap: 0; border-top: var(--hair-soft); }
-  .adm-tabs button {
+
+  /* El periodo se cambia a cada rato, y con el pulgar: botones de verdad. */
+  .seg { display: flex; gap: 0; border-top: var(--hair-soft); }
+  .seg button {
     flex: 1; padding: .8rem .4rem; background: none; border: 0; cursor: pointer;
     font-family: var(--mono); font-size: .62rem; letter-spacing: .16em; text-transform: uppercase;
-    color: var(--travertine-3); border-bottom: 2px solid transparent;
+    color: var(--travertine-3); border-bottom: 2px solid transparent; min-height: 44px;
   }
-  .adm-tabs button[aria-selected="true"] { color: var(--travertine); border-bottom-color: var(--ember); }
-  .adm-main { padding-top: 1.6rem; }
-  .adm-tab[hidden] { display: none !important; }
-  .adm-tabla { max-height: none; overflow: visible; margin-top: .8rem; }
-  @media (min-width: 900px) { .adm-tabla { max-height: 62vh; overflow: auto; } }
-  .demo-botones { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .8rem; }
-  .caja--riesgo { border-color: color-mix(in srgb, var(--vermillion) 35%, transparent); }
+  .seg button[aria-selected="true"] { color: var(--travertine); border-bottom-color: var(--ember); }
 
-  /* --- filas de la carta -------------------------------------------------
-     Con el nombre y la sede partiéndose en dos líneas cada uno, cabían cinco
-     platos de ciento tres por pantalla. Cada dato en su renglón y sin
-     partirse: el nombre completo se ve al buscar. */
-  td > b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  td > .muted { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  @media (max-width: 560px) {
-    td { padding: .5rem .35rem; }
-    td:first-child { max-width: 0; width: 100%; }
-    .toggle span { display: none; }          /* basta el interruptor */
-    input[type=number] { width: 64px; }
-  }
+  .adm-main { padding-top: 1.4rem; }
+  h2.adm { font-family: var(--mono); font-size: .62rem; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--travertine-3); font-weight: 400; margin: 0 0 1rem;
+    display: flex; justify-content: space-between; gap: 1rem; }
+
+  /* --- de dónde salen los números --------------------------------------- */
+  /* Un informe que no dice de dónde vienen sus cifras no vale nada: no es lo
+     mismo «lo que ha pedido la gente» que «lo que se pidió en este teléfono». */
+  .origen { display: flex; align-items: center; gap: .55rem; margin: 0 0 1.2rem;
+    font-family: var(--mono); font-size: .6rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--travertine-3); }
+  .origen i { width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--travertine-3); }
+  .origen.is-compartido i { background: var(--jade); }
+  .origen.is-error i { background: var(--vermillion); }
+
+  /* --- cifras ----------------------------------------------------------- */
+  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px;
+    background: rgba(239,230,214,.1); border: var(--hair); margin-bottom: .7rem; }
+  @media (min-width: 620px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+  .stat { background: var(--void); padding: .8rem .85rem; display: grid; gap: .15rem; }
   .stat span { font-family: var(--mono); font-size: .56rem; letter-spacing: .16em;
     text-transform: uppercase; color: var(--travertine-3); }
-  .stat b { font-family: var(--display); font-size: 1.6rem; font-weight: 600; letter-spacing: -.02em; }
+  .stat b { font-family: var(--display); font-size: 1.5rem; font-weight: 600; letter-spacing: -.02em; }
+  .stat b small { display: block; font-family: var(--mono); font-size: .58rem;
+    font-weight: 400; letter-spacing: .04em; color: var(--travertine-3); margin-top: .1rem; }
+  .stat--ojo b { color: var(--ember); }
+  .stats-mas { margin: 0 0 2.4rem; font-family: var(--mono); font-size: .6rem;
+    letter-spacing: .06em; color: var(--travertine-3); line-height: 1.7; }
 
-  .kds { border: var(--hair); border-left: 3px solid var(--st); border-radius: 4px;
-    padding: .95rem 1rem; margin-bottom: .8rem; background: var(--stone-900); }
-  .kds__head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
-  .kds__id { font-family: var(--mono); font-size: .82rem; color: var(--travertine); }
-  .kds__meta { display: block; font-family: var(--mono); font-size: .58rem; letter-spacing: .1em;
-    text-transform: uppercase; color: var(--travertine-3); margin-top: .15rem; }
-  .kds__state { font-family: var(--mono); font-size: .58rem; letter-spacing: .16em;
-    text-transform: uppercase; color: var(--st); }
-  .kds__marcas { display: grid; gap: .25rem; justify-items: end; text-align: right; }
-  /* Si el dinero ya entró o hay que cobrarlo en la puerta se ve antes que nada:
-     es lo primero que pregunta quien despacha. */
-  .kds__cobro { font-family: var(--mono); font-size: .52rem; letter-spacing: .14em;
-    text-transform: uppercase; padding: .12rem .4rem; border-radius: 2px; white-space: nowrap; }
-  .kds__cobro.is-cobrado { color: #0B0B0B; background: var(--jade); }
-  .kds__cobro.is-pendiente { color: var(--ember); border: 1px solid color-mix(in srgb, var(--ember) 45%, transparent); }
-  .kds__who { margin: .6rem 0 0; font-size: .76rem; color: var(--travertine-2); }
-  .kds__who b { font-family: var(--mono); font-size: .58rem; letter-spacing: .12em;
-    text-transform: uppercase; color: var(--travertine-3); font-weight: 400; }
-  .kds__lines { list-style: none; margin: .7rem 0 0; padding: 0; display: grid; gap: .45rem; font-size: .85rem; }
-  .kds__lines b { font-family: var(--mono); color: var(--ember); font-weight: 400; }
-  .kds__lines em { color: var(--travertine-3); font-style: normal; }
-  .kds__mods { display: block; font-family: var(--mono); font-size: .6rem; color: var(--travertine-3); margin-top: .1rem; }
-  .kds__note { display: block; font-size: .72rem; font-style: italic; color: var(--ember-hi); margin: .25rem 0 0; }
-  .kds__foot { display: flex; justify-content: space-between; align-items: center; gap: 1rem;
-    flex-wrap: wrap; margin-top: .9rem; padding-top: .7rem; border-top: var(--hair-soft); }
-  .kds__total { font-family: var(--display); font-size: 1.05rem; font-weight: 600; }
-  .kds__steps { display: flex; gap: .25rem; flex-wrap: wrap; }
-  .kds__steps button { padding: .34rem .7rem; border-radius: 2px; border: var(--hair);
-    background: transparent; color: var(--travertine-3); cursor: pointer;
-    font-family: var(--mono); font-size: .58rem; letter-spacing: .1em; text-transform: uppercase;
-    transition: color .2s, border-color .2s, background .2s; }
-  .kds__steps button:hover { color: var(--travertine); border-color: rgba(239,230,214,.32); }
-  .kds__steps button.is-on { background: var(--st); border-color: var(--st); color: var(--ink-on-accent); }
+  .cols { display: grid; gap: 2.6rem; align-items: start; }
+  @media (min-width: 1000px) { .cols { grid-template-columns: 1.1fr .9fr; } }
 
-  /* Mover un pedido de estado es lo que más se toca aquí, y se toca de pie
-     con el teléfono en una mano: 28 px de alto se fallan. */
-  @media (pointer: coarse), (max-width: 899px) {
-    .kds__steps button { min-height: 38px; padding-inline: .9rem; }
-  }
+  /* --- pedidos por día --------------------------------------------------- */
+  /* Barras de CSS: para siete o treinta días no hace falta traerse una
+     librería de gráficas, y el panel sigue pesando lo que pesa. */
+  .barras { display: flex; align-items: flex-end; gap: 3px; height: 130px;
+    margin-bottom: 1.6rem; padding-bottom: 1.2rem; border-bottom: var(--hair-soft); }
+  .barra { flex: 1; position: relative; background: color-mix(in srgb, var(--ember) 32%, transparent);
+    border-radius: 1px 1px 0 0; min-height: 2px; transition: background .2s; }
+  .barra:hover { background: var(--ember); }
+  .barra b { position: absolute; inset: auto 0 calc(100% + 3px) 0; text-align: center;
+    font-family: var(--mono); font-size: .54rem; color: var(--travertine-3); font-weight: 400; }
+  .barra i { position: absolute; inset: calc(100% + .35rem) -1.4rem auto -1.4rem; text-align: center;
+    font-family: var(--mono); font-size: .5rem; letter-spacing: .04em; font-style: normal;
+    color: var(--travertine-3); white-space: nowrap; }
+  /* La primera y la última etiqueta se centran sobre una barra de trece
+     píxeles y se salían de la pantalla: en los extremos se alinean hacia
+     dentro. */
+  .barra:first-child i { inset-inline: 0 auto; text-align: left; }
+  .barra:last-child i { inset-inline: auto 0; text-align: right; }
+
+  /* --- repartos ---------------------------------------------------------- */
+  .reparto { list-style: none; margin: 0; padding: 0; display: grid; gap: .8rem; }
+  .reparto li { display: grid; grid-template-columns: 1fr auto; gap: .25rem .8rem; font-size: .86rem; }
+  .reparto b { font-family: var(--mono); font-weight: 400; color: var(--ember); }
+  .reparto .linea { grid-column: 1 / -1; height: 3px; background: rgba(239,230,214,.1); border-radius: 2px; }
+  .reparto .linea i { display: block; height: 100%; background: var(--ember-hi); border-radius: 2px; }
 
   .toplist { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; }
   .toplist li { display: flex; align-items: center; gap: .7rem; font-size: .86rem;
@@ -136,97 +104,51 @@
   .toplist li b { margin-left: auto; font-family: var(--mono); color: var(--ember); font-weight: 400; }
   .rank { font-family: var(--mono); font-size: .6rem; color: var(--travertine-3); width: 1.1rem; }
 
+  /* --- tabla de pedidos --------------------------------------------------- */
+  .adm-tabla { margin-top: .8rem; }
+  @media (min-width: 900px) { .adm-tabla { max-height: 62vh; overflow: auto; } }
   table { width: 100%; border-collapse: collapse; }
   td { padding: .6rem .5rem; border-bottom: var(--hair-soft); vertical-align: middle; }
   td:first-child { padding-left: 0; }
   td.num { text-align: right; white-space: nowrap; width: 1%; }
   td b { font-weight: 600; font-size: .88rem; display: block; }
-  /* Etiqueta corta: versalita monoespaciada. Una frase entera en versalitas
-     no se lee, así que las frases van en la letra del texto. */
+  td b small { display: block; font-family: var(--mono); font-size: .56rem; font-weight: 400;
+    letter-spacing: .06em; color: var(--travertine-3); margin-top: .1rem; text-transform: uppercase; }
   .muted { color: var(--travertine-3); font-family: var(--mono); font-size: .58rem;
     letter-spacing: .1em; text-transform: uppercase; }
   p.muted, li.muted { font-family: var(--sans); font-size: .82rem; letter-spacing: 0;
     text-transform: none; line-height: 1.6; }
-  tr.is-out b { text-decoration: line-through; color: var(--travertine-3); }
-  input[type=number] { width: 82px; padding: .35rem .5rem; border-radius: 3px; border: var(--hair);
-    background: rgba(239,230,214,.05); color: var(--travertine); font-family: var(--mono); font-size: .8rem; text-align: right; }
-  input[type=number]:focus { outline: none; border-color: var(--ember); }
-  .reset { background: none; border: 0; color: var(--travertine-3); cursor: pointer; font-size: .9rem; padding: 0 .2rem; }
-  .reset:hover { color: var(--ember); }
+  @media (max-width: 560px) {
+    td { padding: .5rem .35rem; }
+    td:first-child { max-width: 0; width: 100%; }
+    td > b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    /* Cuatro columnas en 390 px dejan el nombre de la casa en «ZHUBA …».
+       El número de platos es lo primero que sobra. */
+    .solo-ancho { display: none; }
+  }
 
-  .toggle { display: inline-flex; align-items: center; gap: .5rem; cursor: pointer;
-    background: transparent; border: var(--hair); border-radius: 2px; padding: .3rem .7rem .3rem .35rem;
-    font-family: var(--mono); font-size: .58rem; letter-spacing: .1em; text-transform: uppercase;
-    color: var(--travertine-3); transition: border-color .2s, color .2s; }
-  .toggle i { width: 26px; height: 14px; border-radius: 100px; background: rgba(239,230,214,.16);
-    position: relative; transition: background .25s; flex: none; }
-  .toggle i::after { content: ''; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px;
-    border-radius: 50%; background: var(--travertine-3); transition: transform .25s var(--ease), background .25s; }
-  .toggle.is-on { color: var(--jade); border-color: color-mix(in srgb, var(--jade) 40%, transparent); }
-  .toggle.is-on i { background: color-mix(in srgb, var(--jade) 45%, transparent); }
-  .toggle.is-on i::after { transform: translateX(12px); background: var(--jade); }
+  /* --- cajas del pie ------------------------------------------------------ */
+  .caja { background: var(--void); padding: 1.2rem 1.15rem; border: var(--hair); margin-top: 2.6rem; }
+  .caja h3 { font-family: var(--display); font-size: 1.2rem; font-weight: 500; margin: 0 0 .8rem; }
+  .caja--riesgo { border-color: color-mix(in srgb, var(--vermillion) 35%, transparent); margin-top: 1px; }
+  .pista { font-size: .74rem; line-height: 1.55; color: var(--travertine-3); margin: .8rem 0 0; }
+  .pista b { color: var(--travertine-2); }
+  .demo-botones { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .8rem; }
+  .adm-note { font-size: .74rem; color: var(--travertine-3); line-height: 1.6; margin-top: 2.4rem;
+    padding-top: 1.2rem; border-top: var(--hair-soft); }
 
+  /* --- acceso -------------------------------------------------------------- */
   .gate { min-height: 100svh; display: grid; place-items: center; padding: var(--pad); }
   .gate form { width: min(340px, 100%); display: grid; gap: 1rem; text-align: center; }
-  .gate input { text-align: center; font-family: var(--mono); font-size: 1.5rem; letter-spacing: .4em;
+  #gateCampos { display: grid; gap: .6rem; }
+  .gate input { width: 100%; font-family: var(--mono); font-size: 16px;
     padding: .8rem; border-radius: 2px; border: var(--hair); background: rgba(239,230,214,.05); color: var(--travertine); }
+  /* El código son cuatro cifras y se escriben mirando: letra grande y
+     separada. Un correo no, que hay que leerlo entero. */
+  .gate #pin { text-align: center; font-size: 1.5rem; letter-spacing: .4em; }
   .gate input:focus { outline: none; border-color: var(--ember); }
   .gate .err { color: var(--vermillion); font-family: var(--mono); font-size: .66rem;
     letter-spacing: .1em; text-transform: uppercase; min-height: 1em; }
-
-  /* --- cobro y envío --- */
-  .cobro-panel { margin-top: 3rem; }
-  .cobro-grid { display: grid; gap: 1px; background: rgba(239,230,214,.1); border: var(--hair); margin-bottom: 1px; }
-  @media (min-width: 860px) { .cobro-grid { grid-template-columns: 1fr 1fr; } }
-  .caja { background: var(--void); padding: 1.2rem 1.15rem; border: var(--hair); margin-top: 1px; }
-  .cobro-grid .caja { border: 0; margin: 0; }
-  .caja h3 { font-family: var(--display); font-size: 1.2rem; font-weight: 500; margin: 0 0 .8rem; }
-  .campo { display: grid; gap: .3rem; margin: .8rem 0; }
-  .campo span { font-family: var(--mono); font-size: .56rem; letter-spacing: .14em;
-    text-transform: uppercase; color: var(--travertine-3); }
-  .campo input { padding: .55rem .7rem; border-radius: 2px; border: var(--hair);
-    background: rgba(239,230,214,.05); color: var(--travertine); font-size: .88rem; }
-  .campo input:focus { outline: none; border-color: var(--ember); }
-  /* La regla estrecha de arriba es para la rejilla de precios; aquí los
-     campos numéricos tienen que dejar leer lo que ponen. */
-  #tasaManual { width: 220px; }
-  #maxKm { width: 110px; }
-  .pista { font-size: .74rem; line-height: 1.55; color: var(--travertine-3); margin: .8rem 0 0; }
-  .pista b { color: var(--travertine-2); }
-  .tasa-estado { display: grid; gap: .2rem; margin: 0; }
-  .tasa-estado b { font-family: var(--display); font-size: 1.35rem; font-weight: 600; }
-
-  .metodos { display: grid; gap: 1rem; margin-top: 1rem; }
-  @media (min-width: 700px) { .metodos { grid-template-columns: repeat(2, 1fr); } }
-  .metodo { border: var(--hair); border-radius: 2px; padding: .9rem 1rem; margin: 0; }
-  .metodo.is-listo { border-color: color-mix(in srgb, var(--jade) 40%, transparent); }
-  .metodo legend { font-family: var(--mono); font-size: .58rem; letter-spacing: .14em;
-    text-transform: uppercase; color: var(--travertine-2); padding-inline: .4rem; }
-  .metodo legend span { color: var(--travertine-3); }
-  .metodo.is-listo legend span { color: var(--jade); }
-  .metodo label { display: grid; gap: .25rem; margin-top: .6rem; }
-  .metodo label span { font-family: var(--mono); font-size: .54rem; letter-spacing: .12em;
-    text-transform: uppercase; color: var(--travertine-3); }
-  .metodo input { padding: .5rem .65rem; border-radius: 2px; border: var(--hair);
-    background: rgba(239,230,214,.05); color: var(--travertine); font-size: .85rem; }
-  .metodo input:focus { outline: none; border-color: var(--ember); }
-
-  .anillo { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1rem;
-    padding: .5rem 0; border-bottom: var(--hair-soft); }
-  .anillo span { font-size: .85rem; }
-  .anillo input { width: 130px; padding: .35rem .5rem; border-radius: 2px; border: var(--hair);
-    background: rgba(239,230,214,.05); color: var(--travertine); font-family: var(--mono);
-    font-size: .8rem; text-align: right; }
-
-  .kds__pago { margin: .6rem 0 0; font-size: .76rem; color: var(--ember-hi); }
-  .kds__geo { margin: .3rem 0 0; font-size: .76rem; color: var(--travertine-3); }
-  .kds__geo a { border-bottom: 1px solid rgba(239,230,214,.25); }
-  .kds__total small { display: block; font-family: var(--mono); font-size: .58rem;
-    font-weight: 400; color: var(--travertine-3); }
-  .stat b small { display: block; font-family: var(--mono); font-size: .58rem;
-    font-weight: 400; letter-spacing: .04em; color: var(--travertine-3); margin-top: .1rem; }
-  .adm-note { font-size: .74rem; color: var(--travertine-3); line-height: 1.6; margin-top: 2.4rem;
-    padding-top: 1.2rem; border-top: var(--hair-soft); }
 </style>
 </head>
 <body>
@@ -244,13 +166,15 @@
       <path d="M22 23.5h20L23 40.5h20" fill="none" stroke="#D6A050" stroke-width="3.2"
             stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    <h1 class="display" style="font-size:1.7rem">Panel de cocina</h1>
+    <h1 class="display" style="font-size:1.7rem">Informe de la web</h1>
     <p class="muted" style="letter-spacing:.16em">Acceso restringido</p>
-    <label class="sr-only" for="pin">Código de acceso</label>
-    <input id="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="••••">
+    <div id="gateCampos">
+      <label class="sr-only" for="pin">Código de acceso</label>
+      <input id="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="••••">
+    </div>
     <p class="err" id="gateError"></p>
     <button class="btn btn--solid" type="submit">Entrar</button>
-    <p style="font-size:.7rem;color:var(--travertine-3)">Demostración · código por defecto <b style="color:var(--ember)">1108</b></p>
+    <p id="gatePista" style="font-size:.7rem;color:var(--travertine-3)">Demostración · código por defecto <b style="color:var(--ember)">1108</b></p>
   </form>
 </section>
 
@@ -258,111 +182,73 @@
 <div id="panel" hidden>
   <header class="adm-head">
     <div class="wrap adm-head__row">
-      <h1 class="adm-title"><span>ZHUBA</span>Panel</h1>
+      <h1 class="adm-title"><span>ZHUBA</span>Informe</h1>
       <label class="sr-only" for="sede">Sede</label>
       <select id="sede" class="adm-sede"></select>
       <button class="btn btn--sm btn--ghost" id="logout">Salir</button>
     </div>
-    <!-- El trabajo va primero: se entra en Pedidos, y lo demás se busca. -->
-    <nav class="wrap adm-tabs" role="tablist" aria-label="Secciones del panel">
-      <button role="tab" data-tab="pedidos" aria-selected="true">Pedidos</button>
-      <button role="tab" data-tab="carta" aria-selected="false">Carta</button>
-      <button role="tab" data-tab="ajustes" aria-selected="false">Ajustes</button>
+    <nav class="wrap seg" id="periodo" role="tablist" aria-label="Periodo">
+      <button role="tab" data-dias="1" aria-selected="true">Hoy</button>
+      <button role="tab" data-dias="7" aria-selected="false">7 días</button>
+      <button role="tab" data-dias="30" aria-selected="false">30 días</button>
+      <button role="tab" data-dias="0" aria-selected="false">Todo</button>
     </nav>
   </header>
 
   <main class="wrap adm-main">
-    <!-- ------------------------------------------------------- pedidos -->
-    <section id="tab-pedidos" class="adm-tab">
-      <div class="stats" id="metrics"></div>
-      <p class="stats-mas" id="metricsMas"></p>
-      <h2 class="adm"><span>Entrantes</span></h2>
-      <div id="orders"></div>
-    </section>
+    <p class="origen" id="origen"><i></i><span>Cargando…</span></p>
 
-    <!-- --------------------------------------------------------- carta -->
-    <section id="tab-carta" class="adm-tab" hidden>
-      <h2 class="adm"><span>Carta e inventario</span><span id="stockCount" class="muted"></span></h2>
-      <div class="field" style="margin-top:0">
-        <label class="sr-only" for="search">Buscar plato</label>
-        <input id="search" type="search" placeholder="Buscar plato…">
+    <div class="stats" id="metrics"></div>
+    <p class="stats-mas" id="metricsMas"></p>
+
+    <div class="cols">
+      <section>
+        <h2 class="adm"><span id="barrasTitulo">Pedidos</span><span class="muted" id="barrasNota"></span></h2>
+        <div class="barras" id="barras"></div>
+
+        <h2 class="adm"><span>Últimos pedidos</span><span class="muted" id="listaNota"></span></h2>
+        <div class="adm-tabla"><table><tbody id="lista"></tbody></table></div>
+      </section>
+
+      <aside>
+        <h2 class="adm"><span>Lo más pedido</span></h2>
+        <ul class="toplist" id="top"></ul>
+
+        <h2 class="adm" style="margin-top:2.8rem"><span>Cómo lo piden</span></h2>
+        <ul class="reparto" id="porServicio"></ul>
+
+        <h2 class="adm" style="margin-top:2.4rem"><span>Cómo pagan</span></h2>
+        <ul class="reparto" id="porPago"></ul>
+
+        <h2 class="adm" style="margin-top:2.4rem"><span>Por casa</span></h2>
+        <ul class="reparto" id="porSede"></ul>
+      </aside>
+    </div>
+
+    <div class="caja">
+      <h3>Datos de muestra</h3>
+      <p class="pista">Carga pedidos inventados para ver el informe con números. Solo existen en
+         este navegador y no los ve nadie más. Bórralos antes de mirar los de verdad.</p>
+      <div class="demo-botones">
+        <button class="btn btn--sm btn--solid" id="demoCargar">Cargar datos de muestra</button>
+        <button class="btn btn--sm btn--ghost" id="demoBorrar">Borrar la demostración</button>
       </div>
-      <div class="adm-tabla"><table><tbody id="stock"></tbody></table></div>
+      <p class="pista" id="demoEstado"></p>
+    </div>
 
-      <h2 class="adm" style="margin-top:2.4rem"><span>Más vendidos hoy</span></h2>
-      <ul class="toplist" id="top"></ul>
-    </section>
+    <div class="caja caja--riesgo">
+      <h3>Vaciar lo de este dispositivo</h3>
+      <p class="pista">Borra los pedidos guardados en este navegador. No toca el registro
+         compartido y no se puede deshacer.</p>
+      <button class="btn btn--sm btn--ghost" id="clearOrders">Vaciar</button>
+    </div>
 
-    <!-- ------------------------------------------------------- ajustes -->
-    <section id="tab-ajustes" class="adm-tab" hidden>
-      <div id="cobro" class="cobro-panel">
-        <div class="cobro-grid">
-          <div class="caja">
-            <h3>Tasa del día</h3>
-            <p class="tasa-estado" id="tasaEstado"></p>
-            <label class="campo"><span>Fijar tasa a mano (opcional)</span>
-              <input id="tasaManual" type="number" step="0.01" min="0" placeholder="en blanco = la oficial"></label>
-            <button class="btn btn--sm btn--ghost" id="tasaRefrescar">Volver a la tasa oficial</button>
-            <p class="pista">La carta está en dólares y la web muestra el equivalente en bolívares.
-               Si la consulta falla se usa la última tasa conocida; nunca se inventa una.</p>
-          </div>
-
-          <div class="caja">
-            <h3>Envío por distancia</h3>
-            <div id="anillos"></div>
-            <label class="campo"><span>Máximo que se reparte (km)</span>
-              <input id="maxKm" type="number" step="1" min="1"></label>
-            <p class="pista">Precios en dólares. Un anillo sin precio se muestra como
-               «por confirmar»; más allá del máximo, la web no deja pedir delivery.</p>
-          </div>
-        </div>
-
-        <div class="caja">
-          <h3>Datos de pago</h3>
-          <p class="pista">Solo se le ofrecen al cliente los métodos con todos sus datos rellenos.
-             Mientras estén vacíos, la web pide los datos por WhatsApp en lugar de enseñar nada inventado.</p>
-          <div id="metodos" class="metodos"></div>
-        </div>
-
-        <div class="caja">
-          <h3>Aviso interno</h3>
-          <label class="campo"><span>Dirección donde avisar (https://…)</span>
-            <input id="aviso" type="url" placeholder="https://… webhook de Make, Zapier, Google Apps Script…"></label>
-          <button class="btn btn--sm btn--ghost" id="avisoProbar">Enviar aviso de prueba</button>
-          <p class="pista"><b>Esto importa.</b> El pedido se manda aquí en cuanto el cliente marca que
-             pagó, <em>antes</em> de abrir WhatsApp. Es la red de seguridad para quien paga y no llega a
-             enviar el mensaje. Sin esta dirección, ese caso se pierde: un sitio sin servidor no puede
-             avisar por su cuenta.</p>
-        </div>
-
-        <div class="caja">
-          <h3>Demostración</h3>
-          <p class="pista">Carga pedidos, datos de pago y precios de envío inventados para ver el
-             panel funcionando. Los datos llevan la marca <b>DEMO</b> y solo existen en este
-             navegador. Bórralos antes de usar el panel de verdad.</p>
-          <div class="demo-botones">
-            <button class="btn btn--sm btn--solid" id="demoCargar">Cargar datos de muestra</button>
-            <button class="btn btn--sm btn--ghost" id="demoBorrar">Borrar la demostración</button>
-          </div>
-          <p class="pista" id="demoEstado"></p>
-        </div>
-
-        <!-- Borrar no es una acción de todos los días: vive al final y avisa. -->
-        <div class="caja caja--riesgo">
-          <h3>Vaciar el historial</h3>
-          <p class="pista">Borra los pedidos guardados en este dispositivo. No se puede deshacer.</p>
-          <button class="btn btn--sm btn--ghost" id="clearOrders">Vaciar historial</button>
-        </div>
-      </div>
-
-      <p class="adm-note">
-        Los pedidos, el inventario y los precios editados se guardan en el almacenamiento local de
-        <strong style="color:var(--travertine-2)">este dispositivo y este navegador</strong>: es un panel de
-        demostración, sin servidor. Lo que apagues aquí se ve agotado en la carta pública abierta en este mismo
-        equipo. El precio original del menú oficial se recupera con el botón ↺.
-        <a href="../" style="color:var(--ember)">Volver a la web</a>
-      </p>
-    </section>
+    <p class="adm-note">
+      Esto cuenta <strong style="color:var(--travertine-2)">pedidos enviados desde la web</strong>, que no
+      es lo mismo que ventas confirmadas: el pedido se cierra por WhatsApp y ahí todavía puede caerse.
+      El pedido en sí no pasa por este panel — llega al WhatsApp del local y se trabaja allí.
+      <a href="../" style="color:var(--ember)">Volver a la web</a>
+    </p>
   </main>
 </div>
 

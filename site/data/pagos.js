@@ -6,9 +6,9 @@
  * la tasa, con qué se puede pagar y cuánto cuesta llevarlo.
  *
  * IMPORTANTE — lo que va vacío va vacío a propósito. Los datos de pago del
- * restaurante y las tarifas de envío son suyos, no míos: se rellenan desde
- * /admin. Mientras estén vacíos, la web lo dice y remite a WhatsApp en vez
- * de enseñar una cifra inventada.
+ * restaurante y las tarifas de envío son suyos, no míos: se escriben aquí y
+ * se despliegan. Mientras estén vacíos, la web lo dice y remite a WhatsApp
+ * en vez de enseñar una cifra inventada.
  */
 
 export const TASA = {
@@ -21,9 +21,27 @@ export const TASA = {
 };
 
 /**
- * Métodos de cobro. `campos` son los datos que el restaurante publica para
- * que el cliente pague; los rellena el panel. Un método sin todos sus campos
- * no se le ofrece a nadie.
+ * Los datos con los que el local cobra, tal y como los verá el cliente.
+ *
+ * Van aquí, en el sitio, y se despliegan: así los ve todo el mundo. Antes
+ * se escribían en el panel, que solo los guardaba en ese navegador — y el
+ * cliente, en su teléfono, seguía viendo «solo efectivo».
+ *
+ * Un método sin todos sus campos no se le ofrece a nadie, así que dejar
+ * esto vacío es seguro: se cobra en efectivo y el resto se acuerda por
+ * WhatsApp. Lo que no se sabe, no se inventa.
+ */
+export const PAGOS_PUBLICADOS = {
+  // 'pago-movil':   { banco: '', telefono: '', documento: '' },
+  // 'transferencia': { banco: '', cuenta: '', titular: '', documento: '' },
+  // 'zelle':        { correo: '', titular: '' },
+  // 'binance':      { usuario: '' }
+};
+
+/**
+ * Métodos de cobro. `campos` son los datos que hacen falta para ofrecer cada
+ * uno; sus valores están arriba, en PAGOS_PUBLICADOS. Un método al que le
+ * falte un campo no se le ofrece a nadie.
  */
 export const METODOS_PAGO = [
   {

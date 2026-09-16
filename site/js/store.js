@@ -5,7 +5,8 @@
 import { BRANCHES, getBranch, COMPLEJO, CONTACT } from '../data/branches.js';
 import * as REST from '../data/menu-restaurante.js';
 import * as CAFE from '../data/menu-cafe.js';
-import { TASA, METODOS_PAGO, ENVIO } from '../data/pagos.js';
+import { TASA, METODOS_PAGO, ENVIO, PAGOS_PUBLICADOS } from '../data/pagos.js';
+import { apuntar } from './registro.js';
 
 const MENUS = { restaurante: REST, cafe: CAFE };
 
@@ -64,7 +65,7 @@ class Store {
     this.orders = read(K.orders, []);
     // Lo que el restaurante configura desde /admin y aquí no se inventa.
     this.config = Object.assign(
-      { pagos: {}, anillos: {}, maxKm: ENVIO.maxKm, minimoPedido: ENVIO.minimoPedido, aviso: '', tasaManual: null },
+      { pagos: { ...PAGOS_PUBLICADOS }, anillos: {}, maxKm: ENVIO.maxKm, minimoPedido: ENVIO.minimoPedido, aviso: '', tasaManual: null },
       read(K.config, {})
     );
     this.tasa = read(K.tasa, null);       // { valor, fecha, fuente }
@@ -174,11 +175,14 @@ class Store {
   }
 
   /* ------------------------------------------------------------ pedidos */
-  /** Se registra al confirmar por WhatsApp; alimenta el panel de cocina. */
+  /** Se registra al confirmar por WhatsApp; alimenta el informe. */
   recordOrder(order) {
     this.orders = [{ ...order, id: uid().toUpperCase().slice(0, 6), at: Date.now(), state: 'nuevo' }, ...this.orders].slice(0, 200);
     write(K.orders, this.orders);
     this.emit('orders');
+    // El apunte para el resumen del panel. Dispara y se olvida: si la red
+    // falla se pierde la estadística, nunca el pedido.
+    apuntar(this.orders[0]);
     return this.orders[0];
   }
   setOrderState(id, state) {

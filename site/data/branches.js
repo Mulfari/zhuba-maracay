@@ -4,7 +4,7 @@
  * digitales oficiales (app-menuqr.web.app, ids `zhuba1108` y `zhubacafe`).
  *
  * Para añadir una sede nueva basta con agregar un objeto a este array:
- * toda la UI (selector, WhatsApp, mapa, horarios, panel de cocina) se enlaza
+ * toda la UI (selector, WhatsApp, mapa, horarios, informe) se enlaza
  * dinámicamente a la sede activa. No hay nada codificado en la vista.
  */
 /**

@@ -84,7 +84,7 @@ export function whatsappLink(store, extra = {}) {
   return `https://wa.me/${store.branch.whatsapp}?text=${encodeURIComponent(buildTicket(store, extra))}`;
 }
 
-/** Resumen compacto que guarda el panel de cocina. */
+/** Resumen compacto que se guarda de cada pedido. */
 export function orderSnapshot(store) {
   const b = store.branch;
   return {
