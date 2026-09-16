@@ -1285,6 +1285,8 @@ h1, h2, h3 { margin: 0; }
   letter-spacing: .08em; color: var(--travertine-3); }
 .geo__hueco:empty { display: none; }
 .geo__mapa { height: 190px; margin-top: .9rem; border: var(--hair-soft); background: var(--stone-900); }
+/* Con el dedo hace falta sitio para acercar, arrastrar y atinar. */
+@media (pointer: coarse), (max-width: 899px) { .geo__mapa { height: 260px; } }
 .geo__mapa.leaflet-container { background: var(--stone-900); font-family: var(--sans); }
 
 .geo__datos { display: flex; flex-wrap: wrap; gap: .6rem 1.6rem; margin: .9rem 0 0; }

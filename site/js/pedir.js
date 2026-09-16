@@ -456,7 +456,15 @@ async function pintarMapa(lat, lng) {
     const p = marcador.getLatLng();
     fijarUbicacion(p.lat, p.lng, true);
   });
-  requestAnimationFrame(() => mapa.invalidateSize());
+  // Con el dedo, arrastrar una chincheta de 22 px sobre un mapa que también
+  // se arrastra es imposible. Tocar el sitio la pone ahí y ya.
+  mapa.on('click', (e) => fijarUbicacion(e.latlng.lat, e.latlng.lng, true));
+  requestAnimationFrame(() => {
+    mapa.invalidateSize();
+    // El cajón tiene el pie fijo abajo; el mapa nacía debajo de él y había
+    // que adivinar que estaba ahí. Se trae a la vista al abrirlo.
+    cont.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  });
 }
 
 /* --------------------------------------------------------- direcciones

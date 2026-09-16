@@ -84,6 +84,22 @@ export const METODOS_PAGO = [
  * hay delivery — más vale decirlo antes que dejar a alguien esperando.
  */
 export const ENVIO = {
+  /**
+   * Tarifa por distancia: una salida fija más tanto por kilómetro, con un
+   * suelo opcional. Se calcula en cuanto el cliente marca a dónde va, y la
+   * web enseña la cifra ahí mismo.
+   *
+   * Mientras `base` o `porKm` estén en null no hay tarifa y se cae a los
+   * anillos de más abajo; si esos tampoco tienen precio, la web dice «por
+   * confirmar». Nunca se inventa una cifra: el envío lo cobra el local.
+   */
+  tarifa: {
+    base: null,        // dólares por salir a repartir
+    porKm: null,       // dólares por kilómetro, en línea recta
+    minimo: null,      // suelo opcional, en dólares
+    redondearA: 0.5    // se redondea hacia arriba a este múltiplo (0 = sin redondeo)
+  },
+
   // Centroide de la urbanización La Floresta según OpenStreetMap. La calle
   // exacta no está cartografiada; para medir anillos de kilómetros sobra.
   origen: { lat: 10.270717, lng: -67.587758 },

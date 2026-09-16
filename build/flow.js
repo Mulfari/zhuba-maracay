@@ -718,6 +718,58 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     pegado.primera >= pegado.bajo - 2,
     JSON.stringify(pegado));
 
+  // Marcar la ubicación a mano, con el dedo. Dos cosas que en el escritorio
+  // no se ven: que la chincheta solo se pudiera arrastrar —imposible sobre un
+  // mapa que también se arrastra— y que el mapa naciera debajo del pie fijo
+  // del cajón, fuera de la pantalla.
+  await ir('/pedir.html');
+  const mapaMovil = await ev(`(async () => {
+    const w = (ms) => new Promise((r) => setTimeout(r, ms));
+    localStorage.clear();
+    document.querySelector('.row__add').click(); await w(700);
+    const add = [...document.querySelectorAll('.modal.is-open button')].find((b) => b.textContent.includes('Añadir'));
+    if (add) add.click(); await w(600);
+    document.querySelector('#cartPill').click(); await w(800);
+    document.querySelector('[data-siguiente]').click(); await w(800);
+    const dl = [...document.querySelectorAll('.svc button')].find((b) => /deliv/i.test(b.textContent));
+    if (dl) dl.click(); await w(800);
+    document.querySelector('[data-mapa]').click(); await w(3600);
+    const m = document.querySelector('.leaflet-container');
+    if (!m) return { mapa: false };
+    const r = m.getBoundingClientRect();
+    const pie = document.querySelector('.drawer__foot').getBoundingClientRect().top;
+    const x = Math.round(r.left + r.width * 0.7);
+    const y = Math.round(r.top + r.height * 0.3);
+    const el = document.elementFromPoint(x, y);
+    ['mousedown', 'mouseup', 'click'].forEach((t) => el.dispatchEvent(
+      new MouseEvent(t, { bubbles: true, cancelable: true, clientX: x, clientY: y, view: window })));
+    await w(1800);
+    const { store } = await import(new URL('js/store.js', location.href).href);
+    return { mapa: true, sobreElPie: Math.round(r.top) >= 0 && Math.round(r.bottom) <= Math.round(pie) + 1,
+             alto: Math.round(r.height), tocado: String(el.className).includes('leaflet'),
+             marcado: !!store.entrega, km: store.entrega ? store.entrega.km : null };
+  })()`);
+  check('con el dedo, el mapa se ve entero y la ubicación se marca tocándolo',
+    mapaMovil.mapa && mapaMovil.sobreElPie && mapaMovil.marcado && mapaMovil.km >= 0,
+    JSON.stringify(mapaMovil));
+
+  // El envío sale de la distancia. Con la tarifa puesta, cada dirección tiene
+  // su cifra; sin ella se cae a los anillos, y sin anillos, «por confirmar».
+  const tarifa = await ev(`(async () => {
+    const d = await import(new URL('data/pagos.js', location.href).href);
+    const { store } = await import(new URL('js/store.js', location.href).href);
+    const antes = { ...d.ENVIO.tarifa };
+    Object.assign(d.ENVIO.tarifa, { base: 2, porKm: 0.8, minimo: 0, redondearA: 0.5 });
+    const con = [0.4, 3, 7].map((km) => store.precioEnvio(km));
+    Object.assign(d.ENVIO.tarifa, antes);
+    return { con, sinTarifa: store.precioEnvio(3) };
+  })()`);
+  // 2 + 0,8/km redondeado hacia arriba a 0,5: 0,4 km → 2,50 · 3 km → 4,50 ·
+  // 7 km → 8. Y al quitar la tarifa vuelve el anillo de ese tramo, 3,50.
+  check('el envío se calcula por distancia cuando hay tarifa, y si no, por anillo',
+    tarifa.con[0] === 2.5 && tarifa.con[1] === 4.5 && tarifa.con[2] === 8 && tarifa.sinTarifa === 3.5,
+    JSON.stringify(tarifa));
+
   await send('Emulation.setTouchEmulationEnabled', { enabled: false });
   await send('Emulation.setDeviceMetricsOverride',
     { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });

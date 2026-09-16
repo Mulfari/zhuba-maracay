@@ -260,16 +260,36 @@ class Store {
     return this.anillos.find((a) => km <= a.hasta) || null;
   }
 
+  /**
+   * Lo que cuesta llevarlo a `km` de distancia.
+   *
+   * Primero la tarifa —salida más tanto por kilómetro—, que es la que da una
+   * cifra distinta para cada dirección. Si no está puesta, los anillos. Si
+   * tampoco, null: la web dirá «por confirmar» en vez de inventarse nada.
+   */
+  precioEnvio(km) {
+    const t = ENVIO.tarifa || {};
+    if (t.base != null && t.porKm != null) {
+      const bruto = Math.max(Number(t.base) + Number(t.porKm) * km, Number(t.minimo ?? 0));
+      const paso = Number(t.redondearA) || 0;
+      // Hacia arriba: cobrar de menos por redondear sale del bolsillo del local.
+      return paso ? Math.ceil(bruto / paso) * paso : Math.round(bruto * 100) / 100;
+    }
+    const anillo = this.anilloPara(km);
+    return anillo ? anillo.precio : null;
+  }
+
   /** Fija la ubicación de entrega y calcula distancia, anillo y precio. */
   setEntrega(lat, lng, direccion = '') {
     const km = Math.round(distanciaKm(ENVIO.origen, { lat, lng }) * 100) / 100;
+    const fuera = km > this.maxKm;
     const anillo = this.anilloPara(km);
     this.entrega = {
       lat, lng, direccion, km,
       anillo: anillo ? anillo.id : null,
       etiqueta: anillo ? anillo.etiqueta : null,
-      precio: anillo ? anillo.precio : null,
-      fuera: !anillo
+      precio: fuera ? null : this.precioEnvio(km),
+      fuera
     };
     this.emit('entrega');
     return this.entrega;
