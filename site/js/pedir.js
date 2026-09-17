@@ -22,6 +22,15 @@ const ICON = {
   table: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5v5a1.7 1.7 0 003.4 0v-5M7.7 7.5V17.5"/><path d="M14.3 2.5c-1.3 0-2.1 1.5-2.1 3.6s.8 3.4 2.1 3.4v8"/></svg>',
   bag: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12l-1 11H5L4 6zM7.5 6V4.6a2.5 2.5 0 015 0V6"/></svg>',
   moped: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="14.5" r="2.2"/><circle cx="15.5" cy="14.5" r="2.2"/><path d="M7.2 14.5h6.1M4.5 12V8.2a2 2 0 012-2H9l3.2 5.3h2.6"/></svg>',
+  // métodos de pago: trazos genéricos, sin logotipos de terceros
+  movil: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="2" width="9" height="16" rx="1.8"/><path d="M9 15h2"/></svg>',
+  banco: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l7-4.5L17 8M4.5 8v7M8.2 8v7M11.8 8v7M15.5 8v7M3 17h14"/></svg>',
+  envio: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3L8.5 11.5M17 3l-5 14-3.5-5.5L3 8l14-5z"/></svg>',
+  moneda: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5l3 3-3 3-3-3 3-3zM4.5 7l3 3-3 3-3-3 3-3zM15.5 7l3 3-3 3-3-3 3-3zM10 11.5l3 3-3 3-3-3 3-3z"/></svg>',
+  billete: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="16" height="10" rx="1.5"/><circle cx="10" cy="10" r="2.2"/><path d="M5 8v4M15 8v4"/></svg>',
+  copiar: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M13 7V4.5A1.5 1.5 0 0011.5 3h-7A1.5 1.5 0 003 4.5v7A1.5 1.5 0 004.5 13H7"/></svg>',
+  hecho: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg>',
+  info: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="10" cy="10" r="7.5"/><path d="M10 9v5M10 6.2v.1"/></svg>',
   wa: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.2-.2.3-.7 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5 0-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.4.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.4M12 2a10 10 0 00-8.6 15L2 22l5.2-1.4A10 10 0 1012 2z"/></svg>'
 };
 
@@ -58,6 +67,38 @@ function estadoLocal() {
   if (hora >= 12) return { abierto: true, nota: alarga(dia) ? 'cierra a la 1:00 a.m.' : 'cierra a las 12:00 a.m.' };
   if (hora < 1 && alarga((dia + 6) % 7)) return { abierto: true, nota: 'cierra a la 1:00 a.m.' };
   return { abierto: false, nota: 'abre a las 12:00 m.' };
+}
+
+/**
+ * Las horas que se pueden elegir para recoger: «lo antes posible» y cuartos de
+ * hora de hoy, dentro del horario real (hora de Venezuela). Antes era un
+ * <input type="time">: en el teléfono, vacío y sobre fondo oscuro, se veía
+ * como una caja en blanco, y parecía que no había dónde poner la hora.
+ */
+function franjasRecogida() {
+  const partes = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'America/Caracas', hour12: false, weekday: 'short', hour: '2-digit', minute: '2-digit'
+  }).formatToParts(new Date());
+  const val = (t) => partes.find((x) => x.type === t).value;
+  const dia = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }[val('weekday')];
+  const ahora = (+val('hour') % 24) * 60 + +val('minute');
+  const alarga = (d) => d >= 4 && d <= 6;               // jueves a sábado, hasta la 1:00 a.m.
+
+  let abierto, cierre, desde;
+  if (ahora < 60 && alarga((dia + 6) % 7)) { abierto = true; cierre = 60; }
+  else if (ahora >= 720) { abierto = true; cierre = alarga(dia) ? 1500 : 1440; }
+  else { abierto = false; cierre = alarga(dia) ? 1500 : 1440; }
+  // Cerrado, «en cuanto abramos» ya es las 12:00: las franjas empiezan después.
+  desde = abierto ? Math.ceil((ahora + 20) / 15) * 15 : 750;
+
+  const etiqueta = (t) => {
+    const h = Math.floor(t / 60) % 24, mm = String(t % 60).padStart(2, '0');
+    if (h === 12 && mm === '00') return '12:00 m.';
+    return `${h % 12 || 12}:${mm} ${h < 12 ? 'a.m.' : 'p.m.'}`;
+  };
+  const franjas = [];
+  for (let t = desde; t <= cierre - 15 && franjas.length < 12; t += 15) franjas.push(etiqueta(t));
+  return { pronto: abierto ? 'Lo antes posible' : 'En cuanto abramos', franjas };
 }
 
 function pintarEstado() {
@@ -619,6 +660,21 @@ function bloqueEntrega() {
   const f = store.service.fields || {};
 
   const campo = (fl) => {
+    if (fl.type === 'hora') {
+      // Nunca vacío: de entrada, lo antes posible. El local lo confirma por WhatsApp.
+      if (!f.hora) { f.hora = 'Lo antes posible'; store.service.fields = f; guardarServicio(); }
+      const { pronto, franjas } = franjasRecogida();
+      const boton = (valor, texto, extra = '') => `<button type="button" class="hora${extra}" data-hora="${esc(valor)}"
+          aria-pressed="${f.hora === valor}">${esc(texto)}</button>`;
+      return `<div class="field" data-field="${fl.id}">
+        <span class="field__titulo" id="t-${fl.id}">${esc(fl.label)}</span>
+        <div class="horas" role="group" aria-labelledby="t-${fl.id}">
+          ${boton('Lo antes posible', pronto, ' hora--pronto')}
+          ${franjas.map((h) => boton(h, h)).join('')}
+        </div>
+        <p class="field__pista">El restaurante te confirma la hora por WhatsApp.</p>
+      </div>`;
+    }
     // La dirección del delivery se puede escribir y elegir de una lista; al
     // elegirla, el punto cae solo en el mapa.
     const busca = fl.id === 'direccion' && store.service.mode === 'delivery';
@@ -653,27 +709,73 @@ function bloqueEntrega() {
 }
 
 /* ----------------------------------------------------------------- pago */
-function bloquePago() {
-  const metodos = store.metodosDisponibles();
-  // Con un solo método no hay nada que elegir. Pedir un toque para confirmar
-  // lo único posible es fricción, y el aviso «elige cómo vas a pagar» no
-  // significa nada cuando no hay dónde elegir. Hoy, sin datos de pago
-  // publicados, ese es justo el caso: efectivo y punto.
-  if (metodos.length === 1 && !store.pago.metodo) store.pago.metodo = metodos[0].id;
-  const elegido = store.pago.metodo;
-  const m = METODOS_PAGO.find((x) => x.id === elegido);
-  const datos = elegido ? store.datosPago(elegido) : {};
+const ICONO_METODO = {
+  'pago-movil': ICON.movil, transferencia: ICON.banco, zelle: ICON.envio, binance: ICON.moneda, efectivo: ICON.billete
+};
+
+/** Lo que se paga con cada método, en su moneda: bolívares o dólares. */
+function montoMetodo(m) {
   const total = store.total;
   const enBs = store.aBs(total);
+  if (m.enDolares || m.id === 'efectivo' || enBs == null) return money(total);
+  return bolivares(enBs);
+}
 
+/*
+ * El pago como una pasarela: cada método es una tarjeta que, al elegirla, se
+ * despliega debajo con lo que hay que hacer, en dos pasos numerados —pagar a
+ * estos datos, y contarnos el pago—. Un botón de copiar por dato, porque en
+ * la app del banco se pegan uno a uno. Y ningún campo para subir el
+ * comprobante: el enlace de WhatsApp solo lleva texto, así que el archivo no
+ * le llegaba al restaurante aunque el mensaje dijera que sí.
+ */
+function bloquePago() {
+  const metodos = store.metodosDisponibles();
+  // Con un solo método no hay nada que elegir: se marca solo.
+  if (metodos.length === 1 && !store.pago.metodo) store.pago.metodo = metodos[0].id;
+  const elegido = store.pago.metodo;
+  const total = store.total;
+  const enBs = store.aBs(total);
   const soloEfectivo = metodos.length === 1 && metodos[0].id === 'efectivo';
+
+  const panel = (m) => {
+    if (!m.campos.length) {
+      return `<div class="metodo__panel">
+        <p class="nota-pago">${ICON.info}<span>Pagas al recibir el pedido. El restaurante te confirma el total por WhatsApp.</span></p>
+      </div>`;
+    }
+    const datos = store.datosPago(m.id);
+    const monto = montoMetodo(m);
+    return `<div class="metodo__panel">
+      <p class="metodo__paso"><span>1</span>Paga ${esc(monto)} a estos datos</p>
+      <dl class="datos-pago">
+        ${m.campos.map((c) => `
+          <div><dt>${esc(c.label)}</dt><dd>${esc(datos[c.id] || '')}</dd>
+            <button type="button" class="copiar" data-copiar="${esc(c.id)}" aria-label="Copiar ${esc(c.label.toLowerCase())}">${ICON.copiar}</button></div>`).join('')}
+        <div><dt>Monto</dt><dd>${esc(monto)}</dd>
+          <button type="button" class="copiar" data-copiar="_monto" aria-label="Copiar el monto">${ICON.copiar}</button></div>
+      </dl>
+      <p class="metodo__paso"><span>2</span>Cuéntanos el pago</p>
+      <div class="field" data-field="referencia">
+        <label for="p-ref">Número de referencia</label>
+        <input id="p-ref" data-pago="referencia" type="text" inputmode="numeric" autocomplete="off"
+               placeholder="Ej. 012345678" value="${esc(store.pago.referencia)}">
+      </div>
+      <div class="field" data-field="telefono">
+        <label for="p-tel">Teléfono de quien paga</label>
+        <input id="p-tel" data-pago="telefono" type="tel" autocomplete="tel"
+               placeholder="Ej. 0412-1234567" value="${esc(store.pago.telefono)}">
+      </div>
+      <p class="nota-pago">${ICON.info}<span>Al abrir WhatsApp, envía también la captura del pago en el chat.</span></p>
+    </div>`;
+  };
 
   return `
   <div class="paso-cuerpo">
     <div class="cobro">
       <div class="cobro__fila"><span>Total a pagar</span>${dobleImporte(total, 'cobro__total')}</div>
       ${enBs != null
-        ? `<p class="cobro__nota">Se cobra en bolívares. ${lineaTasa()}</p>`
+        ? `<p class="cobro__nota">${lineaTasa()}</p>`
         : '<p class="cobro__nota">No pudimos leer la tasa oficial ahora mismo; el restaurante te confirma el monto en bolívares.</p>'}
     </div>
 
@@ -681,41 +783,21 @@ function bloquePago() {
       <p class="pago-vacio">Todavía no hay datos de pago publicados en la web.
         Envía tu pedido y el restaurante te pasa los datos por WhatsApp.</p>` : ''}
 
-    <h4 class="paso-titulo">¿Cómo vas a pagar?</h4>
-    <div class="opts" role="radiogroup" aria-label="Método de pago">
-      ${metodos.map((x) => `
-        <button class="opt" role="radio" data-metodo="${x.id}" aria-checked="${x.id === elegido}">
-          <span class="opt__mark"><i></i></span>
-          <span class="opt__label">${esc(x.nombre)}<br><span class="opt__nota">${esc(x.nota)}</span></span>
-        </button>`).join('')}
+    <h4 class="paso-titulo">Método de pago</h4>
+    <div class="metodos" role="radiogroup" aria-label="Método de pago">
+      ${metodos.map((m) => {
+        const abierto = m.id === elegido;
+        return `<div class="metodo${abierto ? ' is-open' : ''}">
+          <button type="button" class="metodo__cab" role="radio" data-metodo="${m.id}" aria-checked="${abierto}">
+            <span class="opt__mark"><i></i></span>
+            <span class="metodo__icono" aria-hidden="true">${ICONO_METODO[m.id] || ''}</span>
+            <span class="metodo__nombre">${esc(m.nombre)}<small>${esc(m.nota)}</small></span>
+            <span class="metodo__monto">${esc(montoMetodo(m))}</span>
+          </button>
+          ${abierto ? panel(m) : ''}
+        </div>`;
+      }).join('')}
     </div>
-
-    ${m && m.campos.length ? `
-      <div class="datos-pago">
-        <h4 class="paso-titulo">Paga a estos datos</h4>
-        <dl>
-          ${m.campos.map((c) => `<div><dt>${esc(c.label)}</dt><dd>${esc(datos[c.id] || '')}</dd></div>`).join('')}
-          <div><dt>Monto</dt><dd>${m.enDolares ? money(total) : (enBs != null ? bolivares(enBs) : 'a confirmar')}</dd></div>
-        </dl>
-        <button class="btn btn--sm btn--ghost" data-copiar>Copiar los datos</button>
-      </div>
-
-      <h4 class="paso-titulo">Cuando ya pagaste</h4>
-      <div class="field" data-field="referencia">
-        <label for="p-ref">Referencia del pago</label>
-        <input id="p-ref" data-pago="referencia" type="text" inputmode="numeric"
-               placeholder="Últimos dígitos o referencia completa" value="${esc(store.pago.referencia)}">
-      </div>
-      <div class="field" data-field="telefono">
-        <label for="p-tel">Teléfono de quien paga</label>
-        <input id="p-tel" data-pago="telefono" type="tel" placeholder="Ej. 0412-0000000"
-               value="${esc(store.pago.telefono)}">
-      </div>
-      <div class="field">
-        <label for="p-comp">Comprobante <span class="opcional">opcional</span></label>
-        <input id="p-comp" data-pago="comprobante" type="file" accept="image/*">
-        ${store.pago.comprobante ? `<p class="svc-hint">Adjuntado: ${esc(store.pago.comprobante.nombre)}</p>` : ''}
-      </div>` : ''}
   </div>`;
 }
 
@@ -878,15 +960,39 @@ function bindDrawer() {
     }
 
     const met = e.target.closest('[data-metodo]');
-    if (met) { store.pago.metodo = met.dataset.metodo; return renderCart(); }
-
-    if (e.target.closest('[data-copiar]')) {
-      const m = METODOS_PAGO.find((x) => x.id === store.pago.metodo);
-      const d = store.datosPago(store.pago.metodo);
-      const txt = m.campos.map((c) => `${c.label}: ${d[c.id] || ''}`).join('\n');
-      try { await navigator.clipboard.writeText(txt); toast('Datos copiados'); }
-      catch { toast('Cópialos a mano'); }
+    if (met) {
+      store.pago.metodo = met.dataset.metodo;
+      renderCart();
+      // La tarjeta abierta sube a la vista: sus datos quedan debajo, enteros.
+      requestAnimationFrame(() => {
+        const cuerpo = $('#drawerBody');
+        const abierta = cuerpo?.querySelector('.metodo.is-open');
+        if (!abierta) return;
+        const arriba = cuerpo.scrollTop + abierta.getBoundingClientRect().top - cuerpo.getBoundingClientRect().top - 12;
+        cuerpo.scrollTo({ top: Math.max(0, arriba), behavior: 'smooth' });
+      });
       return;
+    }
+
+    const copia = e.target.closest('[data-copiar]');
+    if (copia) {
+      const m = METODOS_PAGO.find((x) => x.id === store.pago.metodo);
+      const campo = copia.dataset.copiar;
+      const txt = campo === '_monto' ? montoMetodo(m) : (store.datosPago(m.id)[campo] || '');
+      try {
+        await navigator.clipboard.writeText(txt);
+        copia.classList.add('is-hecho'); copia.innerHTML = ICON.hecho;
+        setTimeout(() => { copia.classList.remove('is-hecho'); copia.innerHTML = ICON.copiar; }, 1400);
+      } catch { toast('Cópialo a mano'); }
+      return;
+    }
+
+    const hora = e.target.closest('[data-hora]');
+    if (hora) {
+      store.service.fields.hora = hora.dataset.hora;
+      guardarServicio();
+      $$('.hora').forEach((b) => b.setAttribute('aria-pressed', String(b === hora)));
+      return actualizarPie();
     }
 
     if (e.target.closest('[data-siguiente]')) {
@@ -915,24 +1021,12 @@ function bindDrawer() {
       return actualizarPie();
     }
     const pago = e.target.closest('[data-pago]');
-    if (pago && pago.type !== 'file') {
+    if (pago) {
       store.pago[pago.dataset.pago] = pago.value;
       return actualizarPie();
     }
   });
 
-  drawer.addEventListener('change', (e) => {
-    const f = e.target.closest('input[type="file"][data-pago]');
-    if (!f || !f.files?.[0]) return;
-    const file = f.files[0];
-    if (file.size > 3 * 1024 * 1024) { toast('El comprobante pesa más de 3 MB'); f.value = ''; return; }
-    const lector = new FileReader();
-    lector.onload = () => {
-      store.pago.comprobante = { nombre: file.name, tipo: file.type, datos: lector.result };
-      renderCart();
-    };
-    lector.readAsDataURL(file);
-  });
 }
 
 /** Refresca solo el pie, para no perder el foco mientras se escribe. */

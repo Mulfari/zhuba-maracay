@@ -1666,3 +1666,77 @@ img[data-suave].is-cargada { opacity: 1; transition: opacity .45s var(--ease-out
   .venue-pills--barra { flex: 1 0 100%; gap: .4rem; }
   .venue-pills--barra .venue-pill { flex: 1; text-align: center; padding-inline: .5rem; }
 }
+
+/* ======================================================= el pago, en tarjetas ===
+   Una pasarela se entiende sin leer: eliges un método, se abre debajo lo que
+   hay que hacer, y el resto espera cerrado. Tarjetas de esquinas suaves (4 px),
+   el ámbar de la casa para lo elegido, y nada de etiquetas en versalitas dentro
+   del formulario: en un campo se lee mejor «Número de referencia» que
+   «NÚMERO DE REFERENCIA». Las versalitas se quedan para los títulos de sección. */
+.metodos { display: grid; gap: .55rem; }
+.metodo { border: 1px solid rgba(239,230,214,.14); border-radius: 4px; background: rgba(239,230,214,.02);
+  transition: border-color .2s var(--ease), background .2s var(--ease), box-shadow .2s var(--ease); }
+.metodo:hover { border-color: rgba(239,230,214,.26); }
+.metodo.is-open { border-color: color-mix(in srgb, var(--ember) 72%, transparent);
+  background: rgba(214,160,80,.045); box-shadow: 0 0 0 3px rgba(214,160,80,.09); }
+.metodo__cab { width: 100%; min-height: 60px; display: flex; align-items: center; gap: .75rem;
+  padding: .85rem .95rem; background: none; border: 0; color: inherit; cursor: pointer; text-align: left; font: inherit; }
+.metodo__icono { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 4px;
+  background: rgba(239,230,214,.06); color: var(--travertine-2); transition: color .2s, background .2s; }
+.metodo__icono svg { width: 19px; height: 19px; }
+.metodo.is-open .metodo__icono { color: var(--ember-hi); background: rgba(214,160,80,.13); }
+.metodo__nombre { flex: 1; min-width: 0; font-size: .95rem; font-weight: 600; line-height: 1.3; }
+.metodo__nombre small { display: block; margin-top: .12rem; font-size: .74rem; font-weight: 400; color: var(--travertine-3); }
+.metodo__monto { flex: none; font-size: .86rem; font-weight: 600; color: var(--travertine-3); white-space: nowrap; }
+.metodo.is-open .metodo__monto { color: var(--travertine); }
+/* el punto del radio, marcado en la tarjeta abierta */
+.metodo__cab[aria-checked='true'] .opt__mark { border-color: var(--ember); }
+.metodo__cab[aria-checked='true'] .opt__mark i { transform: scale(1); }
+
+.metodo__panel { padding: .2rem .95rem 1rem; border-top: 1px solid rgba(239,230,214,.08);
+  animation: desplegar .32s var(--ease) both; }
+@keyframes desplegar { from { opacity: 0; transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .metodo__panel { animation: none; } }
+
+.metodo__paso { display: flex; align-items: baseline; gap: .6rem; margin: 1rem 0 .6rem;
+  font-size: .86rem; font-weight: 600; color: var(--travertine); }
+.metodo__paso span { font-family: var(--mono); font-size: .66rem; font-weight: 400; color: var(--ember); }
+
+.metodo__panel .datos-pago { margin: 0; padding: 0; display: grid; border: 1px solid rgba(239,230,214,.1);
+  border-radius: 4px; background: rgba(11,9,8,.5); }
+.metodo__panel .datos-pago > div { display: grid; grid-template-columns: auto 1fr auto; align-items: center;
+  gap: .5rem; padding: .35rem .35rem .35rem .8rem; border-bottom: 1px solid rgba(239,230,214,.07); }
+.metodo__panel .datos-pago > div:last-child { border-bottom: 0; }
+.metodo__panel .datos-pago dt { font-family: var(--sans); font-size: .76rem; letter-spacing: 0;
+  text-transform: none; color: var(--travertine-3); }
+.metodo__panel .datos-pago dd { margin: 0; font-size: .92rem; font-weight: 600; text-align: right;
+  overflow-wrap: anywhere; }
+.copiar { width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 4px;
+  background: transparent; color: var(--travertine-3); cursor: pointer; transition: color .2s, background .2s; }
+.copiar svg { width: 17px; height: 17px; }
+.copiar:hover { color: var(--travertine); background: rgba(239,230,214,.06); }
+.copiar.is-hecho { color: var(--jade); background: color-mix(in srgb, var(--jade) 14%, transparent); }
+
+.nota-pago { display: flex; gap: .55rem; align-items: flex-start; margin: .9rem 0 0;
+  font-size: .8rem; line-height: 1.5; color: var(--travertine-2); }
+.nota-pago svg { width: 16px; height: 16px; flex: none; margin-top: .12rem; color: var(--ember-hi); }
+
+/* Los campos del cajón: etiqueta legible, y el foco se nota. */
+.drawer .field label, .field__titulo { font-family: var(--sans); font-size: .8rem; font-weight: 500;
+  letter-spacing: 0; text-transform: none; color: var(--travertine-2); }
+.drawer .field input:focus, .drawer .field textarea:focus { box-shadow: 0 0 0 3px rgba(214,160,80,.16); }
+.cobro__nota { margin-top: .55rem; }
+
+/* --- la hora de recogida ------------------------------------------------ */
+.horas { display: flex; gap: .45rem; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity;
+  margin-inline: calc(var(--pad) * -1); padding: .15rem var(--pad) .25rem;
+  /* sin esto el imán del desplazamiento pega el primer botón al borde */
+  scroll-padding-inline: var(--pad); }
+.horas::-webkit-scrollbar { display: none; }
+.hora { flex: none; min-height: 44px; padding: 0 .95rem; border: 1px solid rgba(239,230,214,.16);
+  border-radius: 4px; background: rgba(239,230,214,.03); color: var(--travertine-2); font: inherit;
+  font-size: .86rem; font-weight: 500; white-space: nowrap; cursor: pointer; scroll-snap-align: start;
+  transition: border-color .2s, background .2s, color .2s; }
+.hora:hover { border-color: rgba(239,230,214,.3); color: var(--travertine); }
+.hora[aria-pressed='true'] { border-color: var(--ember); background: rgba(214,160,80,.13); color: var(--ember-hi); }
+.hora--pronto { font-weight: 600; }

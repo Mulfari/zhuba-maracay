@@ -71,9 +71,7 @@ export function buildTicket(store, extra = {}) {
     } else {
       if (pago.referencia) L.push(`Referencia: ${pago.referencia}`);
       if (pago.telefono) L.push(`Teléfono de quien paga: ${pago.telefono}`);
-      L.push(pago.conComprobante
-        ? 'Comprobante: se adjunta en este chat.'
-        : 'Sin comprobante adjunto.');
+      L.push('Comprobante: te envío la captura en este chat.');
     }
   }
 

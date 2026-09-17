@@ -94,7 +94,7 @@ export const SERVICE_MODES = [
     hint: 'Lo preparamos y lo retiras en el 17 de Calle Los Clubes.',
     fields: [
       { id: 'nombre', label: 'Nombre de quien retira', type: 'text', placeholder: 'Ej. Andrea', required: true },
-      { id: 'hora', label: 'Hora estimada', type: 'time', required: true }
+      { id: 'hora', label: 'Hora de recogida', type: 'hora', required: true }
     ]
   },
   {
