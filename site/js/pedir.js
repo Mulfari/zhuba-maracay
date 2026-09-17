@@ -9,6 +9,7 @@
 import { store, money, bolivares, kilometros, BRANCHES, MENUS, CONTACT, METODOS_PAGO, ENVIO } from './store.js';
 import { TAGS, AJUSTES, ADJUSTMENT_MAP, ADJUSTMENT_NOTE, SERVICE_MODES } from '../data/modifiers.js';
 import { whatsappLink, orderSnapshot } from './ticket.js';
+import { buscar } from './busqueda.js';
 import { cortina, fotosSuaves } from './carga.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -1186,39 +1187,23 @@ function refBs(item) {
 }
 
 /** Sin tildes y en minúsculas: quien busca «salmon» quiere el salmón. */
-const plano = (t) => String(t ?? '').toLowerCase()
-  .normalize('NFD').replace(/\p{Diacritic}/gu, '');
-
-/** Todo lo que describe un plato, junto: nombre, descripción, categoría,
-    variantes y etiquetas. Así «vegano» o «nigiri» encuentran algo. */
-function pajar(i) {
-  if (!i._pajar) {
-    const cat = store.categories.find((c) => c.id === i.cat)?.name || '';
-    i._pajar = plano([i.name, i.desc, cat,
-      (i.variants || []).map((v) => v.name).join(' '),
-      (i.tags || []).map((t) => TAGS[t]?.label || t).join(' ')].join(' '));
-  }
-  return i._pajar;
-}
-
-function coincide(item, palabras) {
-  const heno = pajar(item);
-  return palabras.every((p) => heno.includes(p));   // todas las palabras, en cualquier orden
-}
+/* La búsqueda vive en js/busqueda.js: entiende «sushi», «postre» o «camarones»
+   aunque la carta diga rolls, gelato o ebi, ordena por relevancia y corrige
+   erratas. Aquí solo se le pasa la carta de la sede que toca. */
+let ultimaBusqueda = { items: [], correccion: null };
 
 function platosVisibles() {
-  const palabras = plano(filtro).split(/\s+/).filter(Boolean);
-  if (!palabras.length) return store.items;
-  return store.items.filter((i) => coincide(i, palabras));
+  if (!filtro.trim()) return store.items;
+  ultimaBusqueda = buscar(store.items, filtro);
+  return ultimaBusqueda.items;
 }
 
 /** Cuántos encajan en la otra sede: buscar «cappuccino» en el restaurante no
     puede devolver un vacío mudo si el café los tiene. */
-function otraSede(palabras) {
+function otraSede() {
   const otra = BRANCHES.find((b) => b.id !== store.branchId);
-  if (!otra || !palabras.length) return null;
-  const items = MENUS[otra.menu].ITEMS;
-  const n = items.filter((i) => coincide(i, palabras)).length;
+  if (!otra || !filtro.trim()) return null;
+  const n = buscar(MENUS[otra.menu].ITEMS, filtro).items.length;
   return n ? { sede: otra, n } : null;
 }
 
@@ -1238,14 +1223,16 @@ function renderLista() {
       ? `<section class="cat">
            <header class="cat__head"><div>
              <h3>${items.length} ${items.length === 1 ? 'resultado' : 'resultados'}</h3>
-             <p>para «${esc(filtro.trim())}»</p>
+             <p>${ultimaBusqueda.correccion
+               ? `para «${esc(ultimaBusqueda.correccion.a)}» · escribiste «${esc(ultimaBusqueda.correccion.de)}»`
+               : `para «${esc(filtro.trim())}»`}</p>
            </div></header>
            <div class="rows">${items.map(fila).join('')}</div>
          </section>`
       : (() => {
           // Buscar «cappuccino» en el restaurante no puede acabar en un vacío
           // mudo si la otra sede sí lo tiene.
-          const otra = otraSede(plano(filtro).split(/\s+/).filter(Boolean));
+          const otra = otraSede();
           return `<div class="empty"><span aria-hidden="true">乙</span>
             <p>Nada con «${esc(filtro.trim())}» en ${esc(store.branch.name)}.</p>
             ${otra

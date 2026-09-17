@@ -249,6 +249,36 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     JSON.stringify(busca));
   check('la búsqueda mira etiquetas y admite varias palabras',
     hallar.etiqueta.filas > 0 && hallar.dosPalabras.filas > 0, JSON.stringify(busca));
+  // Buscar como busca un cliente: con sus palabras, no con las de la carta.
+  const intencion = await ev(`(async()=>{
+    const { buscar } = await import(new URL('js/busqueda.js', location.href).href);
+    const R = (await import(new URL('data/menu-restaurante.js', location.href).href)).ITEMS;
+    const C = (await import(new URL('data/menu-cafe.js', location.href).href)).ITEMS;
+    const nombres = (items, q) => buscar(items, q).items.map((i) => i.name);
+    const sushi = nombres(R, 'sushi');
+    const typo = buscar(R, 'salmom');
+    return {
+      sushiConRolls: sushi.some((n) => /roll/i.test(n)) && sushi.some((n) => /nigiri|sashimi/i.test(n)),
+      sushiSinAlitas: !sushi.includes('Edamame') && !sushi.includes('Umami Wings'),
+      ramen: nombres(R, 'ramen').length,
+      cervezaPrimero: nombres(R, 'cerveza')[0] || '',
+      camarones: nombres(R, 'camarones').slice(0, 2),
+      postresCafe: nombres(C, 'postres').length,
+      helado: nombres(C, 'helado').some((n) => /gelato/i.test(n)),
+      typo: typo.correccion, typoPrimero: typo.items[0]?.name || '',
+      sinPicante: nombres(R, 'sin picante').some((n) => /spicy/i.test(n))
+    };
+  })()`);
+  check('«sushi» trae rolls y nigiris, no los aperitivos de la categoría',
+    intencion.sushiConRolls && intencion.sushiSinAlitas, JSON.stringify(intencion));
+  check('se busca por palabras enteras y por relevancia («ramen» no es «ligeramente»)',
+    intencion.ramen === 0 && /cerveza/i.test(intencion.cervezaPrimero) &&
+    intencion.camarones.every((n) => /ebi|camar/i.test(n)), JSON.stringify(intencion));
+  check('«postres» y «helado» encuentran el gelato del café, y «sin picante» quita lo picante',
+    intencion.postresCafe > 3 && intencion.helado && !intencion.sinPicante, JSON.stringify(intencion));
+  check('una errata se corrige con la palabra más parecida de la carta',
+    intencion.typo?.a === 'salmón' && /salm/i.test(intencion.typoPrimero), JSON.stringify(intencion));
+
   check('lo que no está en esta sede se ofrece en la otra',
     hallar.otraSede.filas === 0 && hallar.otraSede.otra, JSON.stringify(hallar.otraSede));
 
