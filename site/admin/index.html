@@ -54,6 +54,8 @@
   .origen i { width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--travertine-3); }
   .origen.is-compartido i { background: var(--jade); }
   .origen.is-error i { background: var(--vermillion); }
+  .origen.is-muestra { color: var(--ember); }
+  .origen.is-muestra i { background: var(--ember); }
 
   /* --- cifras ----------------------------------------------------------- */
   .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px;
@@ -227,8 +229,9 @@
 
     <div class="caja">
       <h3>Datos de muestra</h3>
-      <p class="pista">Carga pedidos inventados para ver el informe con números. Solo existen en
-         este navegador y no los ve nadie más. Bórralos antes de mirar los de verdad.</p>
+      <p class="pista">Carga pedidos inventados para enseñar el informe con números. Mientras estén
+         puestos, el informe muestra la muestra y no los pedidos reales; al borrarla vuelve a los de
+         verdad. Solo existe en este navegador.</p>
       <div class="demo-botones">
         <button class="btn btn--sm btn--solid" id="demoCargar">Cargar datos de muestra</button>
         <button class="btn btn--sm btn--ghost" id="demoBorrar">Borrar la demostración</button>

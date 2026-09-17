@@ -15,8 +15,10 @@
  * ningún archivo del sitio.
  */
 export const REMOTO = {
-  url: '',            // https://xxxxxxxx.supabase.co
-  clave: '',          // clave anónima / publishable
+  // Proyecto «zhuba-maracay» en Supabase. La tabla y sus reglas están en
+  // supabase/pedidos.sql.
+  url: 'https://xxvtauynujapaejejmyd.supabase.co',
+  clave: 'sb_publishable_9GkkfsxE9EFqTjW7Tfwrrg_dol_HJyZ',   // publicable
   tabla: 'pedidos'
 };
 

@@ -39,6 +39,11 @@ export async function entrar(correo, clave) {
       return r.status === 400 ? 'Correo o contraseña incorrectos.'
         : `No se pudo entrar (${d.error_description || d.msg || r.status}).`;
     }
+    // La tabla solo deja leer a quien lleva la marca de dueño del informe. Sin
+    // ella entraría a un informe vacío sin saber por qué: mejor decirlo aquí.
+    if (d.user?.app_metadata?.rol !== 'informe') {
+      return 'Este usuario existe pero no tiene acceso al informe.';
+    }
     sessionStorage.setItem(CLAVE, JSON.stringify({
       access_token: d.access_token,
       // un minuto de margen para no quedarse con un token recién caducado

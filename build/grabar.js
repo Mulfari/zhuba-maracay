@@ -73,6 +73,12 @@ const suave = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 
   await new Promise((r) => ws.addEventListener('open', r));
   await send('Page.enable');
+  // Estas pruebas mandan pedidos de mentira. Con el registro compartido
+  // conectado acabarían en el informe real del negocio: se corta el paso a
+  // Supabase para esta pestaña, y el apunte falla en silencio como está
+  // hecho para fallar.
+  await send('Network.enable');
+  await send('Network.setBlockedURLs', { urls: ['*supabase.co/*'] });
   await send('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: DSF, mobile: true });
 
   const guion = require(path.resolve(GUION));

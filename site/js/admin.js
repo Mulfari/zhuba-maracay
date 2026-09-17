@@ -27,6 +27,11 @@ const SESSION_KEY = 'zhuba.admin.ok';
 let dias = 1;              // 1 = hoy · 7 · 30 · 0 = todo
 let sede = 'todas';
 let pedidos = [];          // los del periodo, ya filtrados por sede
+/* Con el registro conectado, el informe enseña los pedidos reales, que al
+   principio son cero. Para enseñarle el panel a alguien hace falta poder
+   poner la muestra encima, y quitarla, sin mezclar una cosa con la otra. */
+const MUESTRA_KEY = 'zhuba.admin.muestra';
+let muestra = sessionStorage.getItem(MUESTRA_KEY) === '1';
 
 /* ------------------------------------------------------------------ acceso */
 /* Dos puertas. Sin registro compartido esto es una demostración con los
@@ -227,7 +232,10 @@ function pintarOrigen(origen, error) {
   const el = $('#origen');
   el.classList.toggle('is-compartido', origen === 'compartido');
   el.classList.toggle('is-error', origen === 'error');
-  const texto = origen === 'sin-sesion'
+  el.classList.toggle('is-muestra', origen === 'muestra');
+  const texto = origen === 'muestra'
+    ? 'Datos de muestra · inventados, no son pedidos de la web'
+    : origen === 'sin-sesion'
     ? 'Sesión caducada · vuelve a entrar para ver el registro compartido'
     : origen === 'compartido'
     ? 'Registro compartido · todos los pedidos de la web'
@@ -240,7 +248,9 @@ function pintarOrigen(origen, error) {
 /* ------------------------------------------------------------------ pintar */
 async function pintar() {
   const locales = store.orders.filter((o) => o.at >= desde());
-  const { origen, error, pedidos: todos } = await listar(desde(), locales);
+  const { origen, error, pedidos: todos } = muestra
+    ? { origen: 'muestra', pedidos: locales }
+    : await listar(desde(), locales);
   pedidos = todos.filter((o) => sede === 'todas' || o.branch === sede);
   pintarOrigen(origen, error);
   pintarCifras();
@@ -271,14 +281,21 @@ function boot() {
       : 'No hay nada guardado en este navegador.';
   };
 
+  const ponerMuestra = (si) => {
+    muestra = si;
+    if (si) sessionStorage.setItem(MUESTRA_KEY, '1'); else sessionStorage.removeItem(MUESTRA_KEY);
+  };
+
   $('#demoCargar').addEventListener('click', () => {
     store.orders = [...PEDIDOS_DEMO];
     localStorage.setItem('zhuba.orders.v1', JSON.stringify(store.orders));
+    ponerMuestra(true);
     estadoDemo(); pintar();
   });
 
   $('#demoBorrar').addEventListener('click', () => {
     store.clearOrders();
+    ponerMuestra(false);
     estadoDemo(); pintar();
   });
 

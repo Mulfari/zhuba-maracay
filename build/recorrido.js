@@ -30,6 +30,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   };
   await new Promise((r) => ws.addEventListener('open', r));
   await send('Page.enable');
+  // Estas pruebas mandan pedidos de mentira. Con el registro compartido
+  // conectado acabarían en el informe real del negocio: se corta el paso a
+  // Supabase para esta pestaña, y el apunte falla en silencio como está
+  // hecho para fallar.
+  await send('Network.enable');
+  await send('Network.setBlockedURLs', { urls: ['*supabase.co/*'] });
   await send('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: 2, mobile: true });
   await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
   await send('Browser.grantPermissions', { origin: BASE, permissions: ['geolocation'] });
