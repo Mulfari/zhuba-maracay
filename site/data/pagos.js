@@ -93,10 +93,14 @@ export const ENVIO = {
    * anillos de más abajo; si esos tampoco tienen precio, la web dice «por
    * confirmar». Nunca se inventa una cifra: el envío lo cobra el local.
    */
+  // PROVISIONAL (16/09/2026): cifras para tantear, a falta de que el dueño
+  // confirme cuánto le paga al motorizado por viaje. Calibradas para que
+  // Maracay caiga entre $2 y $4 —centro 2,50 · Las Delicias 3,50 · El Castaño
+  // 4,00— y el borde de los 12 km ronde los 6,50.
   tarifa: {
-    base: null,        // dólares por salir a repartir
-    porKm: null,       // dólares por kilómetro, en línea recta
-    minimo: null,      // suelo opcional, en dólares
+    base: 1.5,         // dólares por salir a repartir
+    porKm: 0.4,        // dólares por kilómetro, en línea recta
+    minimo: 2,         // suelo, en dólares
     redondearA: 0.5    // se redondea hacia arriba a este múltiplo (0 = sin redondeo)
   },
 

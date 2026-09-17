@@ -267,13 +267,22 @@ class Store {
    * cifra distinta para cada dirección. Si no está puesta, los anillos. Si
    * tampoco, null: la web dirá «por confirmar» en vez de inventarse nada.
    */
+  /** ¿Se cobra por kilómetro? Entonces los anillos no le dicen nada al cliente. */
+  get hayTarifa() {
+    const t = ENVIO.tarifa || {};
+    return t.base != null && t.porKm != null;
+  }
+
   precioEnvio(km) {
     const t = ENVIO.tarifa || {};
-    if (t.base != null && t.porKm != null) {
+    if (this.hayTarifa) {
       const bruto = Math.max(Number(t.base) + Number(t.porKm) * km, Number(t.minimo ?? 0));
       const paso = Number(t.redondearA) || 0;
       // Hacia arriba: cobrar de menos por redondear sale del bolsillo del local.
-      return paso ? Math.ceil(bruto / paso) * paso : Math.round(bruto * 100) / 100;
+      // El redondeo previo a seis decimales evita que 3,5 guardado como
+      // 3,5000000000000004 suba a 4 por un error de coma flotante.
+      return paso ? Math.ceil(Math.round((bruto / paso) * 1e6) / 1e6) * paso
+        : Math.round(bruto * 100) / 100;
     }
     const anillo = this.anilloPara(km);
     return anillo ? anillo.precio : null;
@@ -283,7 +292,8 @@ class Store {
   setEntrega(lat, lng, direccion = '') {
     const km = Math.round(distanciaKm(ENVIO.origen, { lat, lng }) * 100) / 100;
     const fuera = km > this.maxKm;
-    const anillo = this.anilloPara(km);
+    // Con tarifa por kilómetro el tramo no explica el precio: no se enseña.
+    const anillo = this.hayTarifa ? null : this.anilloPara(km);
     this.entrega = {
       lat, lng, direccion, km,
       anillo: anillo ? anillo.id : null,

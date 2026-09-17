@@ -463,7 +463,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
              listaCerrada: !document.getElementById('sugeDir') || document.getElementById('sugeDir').hidden };
   })()`);
   check('elegir una dirección la marca en el mapa y cobra el envío',
-    elegida.direccion.includes('Las Delicias') && elegida.km < 1 && elegida.envio === 2 &&
+    elegida.direccion.includes('Las Delicias') && elegida.km < 1 && elegida.envio > 0 &&
     elegida.mapa && elegida.listaCerrada, JSON.stringify(elegida));
 
   // 2) Usar la ubicación: la dirección se escribe sola en el formulario.
@@ -556,8 +556,9 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
              lejos:{km:lejos.km, fuera:lejos.fuera},
              metodos: store.metodosDisponibles().map(m=>m.id) };
   })()`);
-  check('el envío se cobra por anillo de distancia',
-    zonas.cerca.precio === 2 && zonas.medio.precio > 2 && !zonas.cerca.fuera, JSON.stringify(zonas));
+  check('el envío se cobra y sube con la distancia',
+    zonas.cerca.precio > 0 && zonas.medio.precio > zonas.cerca.precio && !zonas.cerca.fuera,
+    JSON.stringify(zonas));
   check('fuera de cobertura no hay delivery', zonas.lejos.fuera && zonas.lejos.km > 12, JSON.stringify(zonas.lejos));
   check('con datos publicados aparece el método de pago',
     zonas.metodos.includes('pago-movil'), JSON.stringify(zonas.metodos));
@@ -611,7 +612,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     cobro.sinMetodo && cobro.sinRef && cobro.listo, JSON.stringify(cobro));
   check('los datos de pago publicados se muestran al cliente', cobro.datos >= 4, `${cobro.datos} campos`);
   check('el envío entra en el total',
-    Math.abs(cobro.total - (cobro.subtotal + cobro.envio)) < 0.001 && cobro.envio === 2, JSON.stringify(cobro));
+    Math.abs(cobro.total - (cobro.subtotal + cobro.envio)) < 0.001 && cobro.envio > 0, JSON.stringify(cobro));
 
   const ticketPago = await ev(`(async()=>{
     const {store}=await import(new URL('js/store.js', location.href).href);
@@ -652,7 +653,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     salida.abierto.startsWith('https://wa.me/') && salida.pedidos === 1 &&
     salida.estado === 'nuevo' && salida.metodoPago === 'pago-movil' &&
     salida.referencia === '012345678' &&
-    salida.enBs > 0 && salida.envio === 2 && salida.conUbicacion,
+    salida.enBs > 0 && salida.envio > 0 && salida.conUbicacion,
     JSON.stringify(salida));
   check('tras enviar, el pedido queda limpio',
     salida.carroVacio && salida.cajonCerrado, JSON.stringify(salida));
@@ -759,15 +760,26 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     const d = await import(new URL('data/pagos.js', location.href).href);
     const { store } = await import(new URL('js/store.js', location.href).href);
     const antes = { ...d.ENVIO.tarifa };
+    const anillosAntes = store.config.anillos;
     Object.assign(d.ENVIO.tarifa, { base: 2, porKm: 0.8, minimo: 0, redondearA: 0.5 });
     const con = [0.4, 3, 7].map((km) => store.precioEnvio(km));
+    const sinZona = store.setEntrega(10.2755, -67.5910).etiqueta;
+    d.ENVIO.tarifa.base = null;
+    store.config.anillos = { a1: 2, a2: 3.5, a3: 5, a4: 7 };
+    const porAnillo = store.precioEnvio(3);
+    store.config.anillos = {};
+    const nada = store.precioEnvio(3);
+    store.config.anillos = anillosAntes;
     Object.assign(d.ENVIO.tarifa, antes);
-    return { con, sinTarifa: store.precioEnvio(3) };
+    store.limpiarEntrega();
+    return { con, sinZona, porAnillo, nada };
   })()`);
   // 2 + 0,8/km redondeado hacia arriba a 0,5: 0,4 km → 2,50 · 3 km → 4,50 ·
-  // 7 km → 8. Y al quitar la tarifa vuelve el anillo de ese tramo, 3,50.
-  check('el envío se calcula por distancia cuando hay tarifa, y si no, por anillo',
-    tarifa.con[0] === 2.5 && tarifa.con[1] === 4.5 && tarifa.con[2] === 8 && tarifa.sinTarifa === 3.5,
+  // 7 km → 8, y sin enseñar tramo. Sin tarifa, el anillo de ese tramo (3,50);
+  // sin anillos tampoco, nada: la web dirá «por confirmar».
+  check('el envío se calcula por distancia; sin tarifa, por anillo; sin nada, por confirmar',
+    tarifa.con[0] === 2.5 && tarifa.con[1] === 4.5 && tarifa.con[2] === 8 && tarifa.sinZona === null &&
+    tarifa.porAnillo === 3.5 && tarifa.nada === null,
     JSON.stringify(tarifa));
 
   await send('Emulation.setTouchEmulationEnabled', { enabled: false });

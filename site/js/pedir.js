@@ -374,7 +374,8 @@ function bloqueUbicacion() {
     <div class="geo__hueco" data-mapa-hueco></div>
     <dl class="geo__datos">
       <div><dt>Distancia</dt><dd>${e.km.toFixed(1)} km</dd></div>
-      <div><dt>Zona</dt><dd>${e.fuera ? 'Fuera de cobertura' : esc(e.etiqueta)}</dd></div>
+      ${e.fuera || e.etiqueta
+        ? `<div><dt>Zona</dt><dd>${e.fuera ? 'Fuera de cobertura' : esc(e.etiqueta)}</dd></div>` : ''}
       <div><dt>Envío</dt><dd>${e.fuera ? '—'
         : precio == null ? 'Por confirmar' : money(precio)}</dd></div>
     </dl>
