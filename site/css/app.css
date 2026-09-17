@@ -809,6 +809,14 @@ h1, h2, h3 { margin: 0; }
 .drawer__body { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 1.1rem var(--pad) 1.4rem; }
 .drawer__foot { flex: none; padding: 1rem var(--pad) max(1rem, env(safe-area-inset-bottom));
   border-top: var(--hair-soft); background: rgba(11,9,8,.5); display: grid; gap: .8rem; }
+/* En el teléfono el cajón ocupa toda la pantalla: detrás no hay nada que
+   entrever. Opaco y sin desenfoque — el desenfoque de fondo es caro en un
+   Android modesto, y donde no se aplica deja leer la carta por detrás del
+   total, un 7 % de opacidad que ensucia justo la cifra que importa. */
+@media (max-width: 520px) {
+  .drawer { background: #131010; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .drawer__foot { background: #0F0C0B; }
+}
 
 .icon-btn {
   width: 34px; height: 34px; border-radius: 2px; display: grid; place-items: center;
