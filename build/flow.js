@@ -539,15 +539,31 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   })()`);
   await ir('/pedir.html');
 
+  // La regla, no las cifras: los datos publicados cambian (hoy son de prueba).
   const tasa = await ev(`(async()=>{
     const {store}=await import(new URL('js/store.js', location.href).href);
+    const d=await import(new URL('data/pagos.js', location.href).href);
     await store.cargarTasa();
-    return { valor: store.tasa?.valor || 0, enBs: store.aBs(10), metodos: store.metodosDisponibles().map(m=>m.id) };
+    const guardado = store.config.pagos;
+    store.config.pagos = {};
+    const sinDatos = store.metodosDisponibles().map(m=>m.id);
+    store.config.pagos = { 'pago-movil': { banco: 'X', telefono: '0412' } };   // le falta el documento
+    const incompleto = store.metodosDisponibles().map(m=>m.id);
+    store.config.pagos = guardado;
+    const publicados = Object.keys(d.PAGOS_PUBLICADOS).filter((id) => {
+      const m = d.METODOS_PAGO.find((x) => x.id === id);
+      return m && m.campos.every((c) => String(d.PAGOS_PUBLICADOS[id][c.id] || '').trim());
+    });
+    return { valor: store.tasa?.valor || 0, enBs: store.aBs(10), sinDatos, incompleto, publicados,
+             ofrecidos: store.metodosDisponibles().map(m=>m.id) };
   })()`);
   check('la tasa oficial se consulta y convierte',
     tasa.valor > 1 && Math.abs(tasa.enBs - tasa.valor * 10) < 0.02, JSON.stringify(tasa));
-  check('sin datos publicados solo se ofrece efectivo',
-    tasa.metodos.length === 1 && tasa.metodos[0] === 'efectivo', JSON.stringify(tasa.metodos));
+  check('sin datos de pago solo se ofrece efectivo, y un método a medias no se ofrece',
+    tasa.sinDatos.join() === 'efectivo' && tasa.incompleto.join() === 'efectivo', JSON.stringify(tasa));
+  check('los métodos con todos sus datos publicados se ofrecen al cliente',
+    tasa.publicados.every((id) => tasa.ofrecidos.includes(id)) && tasa.ofrecidos.includes('efectivo'),
+    JSON.stringify(tasa));
 
   const zonas = await ev(`(async()=>{
     const {store}=await import(new URL('js/store.js', location.href).href);

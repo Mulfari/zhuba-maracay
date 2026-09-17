@@ -32,10 +32,15 @@ export const TASA = {
  * WhatsApp. Lo que no se sabe, no se inventa.
  */
 export const PAGOS_PUBLICADOS = {
-  // 'pago-movil':   { banco: '', telefono: '', documento: '' },
+  // DATOS DE PRUEBA (17/09/2026), para enseñarle la web al local con el paso
+  // de pago completo. Están hechos para que NADIE pueda pagar a ellos, porque
+  // la web es pública: teléfono y RIF en ceros, un correo del dominio
+  // reservado example.com (no admite Zelle) y un Pay ID de Binance inválido.
+  // Se sustituyen por los del local antes de usarla de verdad.
+  'pago-movil': { banco: 'Banesco (0134)', telefono: '0412-000 00 00', documento: 'J-00000000-0' },
+  'zelle':      { correo: 'pagos@example.com', titular: 'ZHUBA Restaurant & Café' },
+  'binance':    { usuario: '000000000' }
   // 'transferencia': { banco: '', cuenta: '', titular: '', documento: '' },
-  // 'zelle':        { correo: '', titular: '' },
-  // 'binance':      { usuario: '' }
 };
 
 /**

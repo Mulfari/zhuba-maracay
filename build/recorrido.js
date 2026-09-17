@@ -144,6 +144,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     let abierto = '';
     const real = window.open;
     window.open = (u) => { abierto = u; return { closed: false }; };
+    // con varios métodos no hay ninguno marcado: el cliente elige efectivo
+    if (!document.querySelector('[data-metodo][aria-checked="true"]')) {
+      document.querySelector('[data-metodo="efectivo"]')?.click();
+      await new Promise((r) => setTimeout(r, 900));
+    }
     const boton = document.querySelector('[data-enviar]');
     const bloqueado = boton.disabled;
     boton.click();
