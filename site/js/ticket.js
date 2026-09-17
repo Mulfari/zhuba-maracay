@@ -5,7 +5,7 @@
  * El ticket lleva el pago dentro a propósito: quien lo recibe tiene que poder
  * cotejar la referencia sin salir del chat.
  */
-import { money, bolivares } from './store.js';
+import { money, bolivares, kilometros } from './store.js';
 import { SERVICE_MODES } from '../data/modifiers.js';
 
 const pad = (n) => String(n).padStart(2, '0');
@@ -35,7 +35,7 @@ export function buildTicket(store, extra = {}) {
   if (entrega) {
     L.push(`Ubicación: ${entrega.lat.toFixed(5)}, ${entrega.lng.toFixed(5)}`);
     if (entrega.direccion) L.push(`Referencia: ${entrega.direccion}`);
-    L.push(`Distancia: ${entrega.km.toFixed(1)} km${entrega.etiqueta ? ` (${entrega.etiqueta})` : ''}`);
+    L.push(`Distancia: ${kilometros(entrega.km)}${entrega.etiqueta ? ` (${entrega.etiqueta})` : ''}`);
     L.push(`Mapa: https://www.google.com/maps?q=${entrega.lat},${entrega.lng}`);
   }
   L.push('');

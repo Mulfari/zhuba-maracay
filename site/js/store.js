@@ -41,6 +41,10 @@ export const money = (n) =>
 export const bolivares = (n, decimales = 2) =>
   `Bs ${Number(n).toLocaleString('es-VE', { minimumFractionDigits: decimales, maximumFractionDigits: decimales })}`;
 
+/* Los kilómetros con coma, como los precios: «3,6 km», no «3.6 km». */
+export const kilometros = (n) =>
+  `${Number(n).toLocaleString('es-VE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} km`;
+
 /** Distancia en línea recta, en kilómetros. */
 export function distanciaKm(a, b) {
   const R = 6371;

@@ -25,7 +25,9 @@ const FPS = 30;
 const W = 390, H = 844, DSF = 2;
 
 const CONFIG = {
-  pagos: { 'pago-movil': { banco: 'Banesco · 0134', telefono: '0412-455 42 07', documento: 'J-40123456-7' } },
+  // Sin datos de pago: son del local y todavía no los ha dado. Un vídeo que
+  // enseñe un RIF inventado miente, aunque sea en una esquina.
+  pagos: {},
   anillos: { a1: 2, a2: 3.5, a3: 5, a4: 7 }, maxKm: 12, aviso: ''
 };
 
@@ -82,6 +84,20 @@ const suave = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
   await send('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: DSF, mobile: true });
 
   const guion = require(path.resolve(GUION));
+  // `hora: '20:30'` graba la página como si fuera esa hora en Caracas, hoy.
+  // Sirve para lo que depende del reloj —«Abierto ahora» o «Cerrado»—: grabar
+  // de madrugada no puede decidir cómo se ve el local en un vídeo.
+  if (guion.hora) {
+    const [hh, mm] = guion.hora.split(':').map(Number);
+    const hoyCaracas = new Date(Date.now() - 4 * 3600000).toISOString().slice(0, 10);
+    const objetivo = Date.parse(`${hoyCaracas}T${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:00-04:00`);
+    await send('Page.addScriptToEvaluateOnNewDocument', { source: `(function(){
+      var D = Date, delta = ${objetivo} - D.now();
+      function F() { return arguments.length ? new (Function.prototype.bind.apply(D, [null].concat([].slice.call(arguments))))() : new D(D.now() + delta); }
+      F.now = function(){ return D.now() + delta; }; F.UTC = D.UTC; F.parse = D.parse; F.prototype = D.prototype;
+      window.Date = F;
+    })();` });
+  }
   await send('Page.navigate', { url: BASE + guion.ruta });
   await sleep(4500);
   await ev(`localStorage.clear();

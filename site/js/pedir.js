@@ -6,7 +6,7 @@
  * todo desde el móvil, así que manda la rapidez: buscador, lista compacta con
  * miniatura y un botón de añadir siempre a la vista.
  */
-import { store, money, bolivares, BRANCHES, MENUS, CONTACT, METODOS_PAGO, ENVIO } from './store.js';
+import { store, money, bolivares, kilometros, BRANCHES, MENUS, CONTACT, METODOS_PAGO, ENVIO } from './store.js';
 import { TAGS, AJUSTES, ADJUSTMENT_MAP, ADJUSTMENT_NOTE, SERVICE_MODES } from '../data/modifiers.js';
 import { whatsappLink, orderSnapshot } from './ticket.js';
 import { cortina, fotosSuaves } from './carga.js';
@@ -373,7 +373,7 @@ function bloqueUbicacion() {
   <div class="geo${e.fuera ? ' is-fuera' : ''}">
     <div class="geo__hueco" data-mapa-hueco></div>
     <dl class="geo__datos">
-      <div><dt>Distancia</dt><dd>${e.km.toFixed(1)} km</dd></div>
+      <div><dt>Distancia</dt><dd>${kilometros(e.km)}</dd></div>
       ${e.fuera || e.etiqueta
         ? `<div><dt>Zona</dt><dd>${e.fuera ? 'Fuera de cobertura' : esc(e.etiqueta)}</dd></div>` : ''}
       <div><dt>Envío</dt><dd>${e.fuera ? '—'
@@ -381,7 +381,7 @@ function bloqueUbicacion() {
     </dl>
     ${e.direccion ? `<p class="geo__dir">${esc(e.direccion)}</p>` : ''}
     ${e.fuera
-      ? `<p class="geo__error">Esa dirección queda a ${e.km.toFixed(1)} km y solo llevamos hasta ${tope} km.
+      ? `<p class="geo__error">Esa dirección queda a ${kilometros(e.km)} y solo llevamos hasta ${tope} km.
          Puedes pedirlo para <b>pick-up</b> o escribirnos por WhatsApp.</p>`
       : precio == null
         ? '<p class="geo__nota">El restaurante confirma el costo del envío al recibir tu pedido.</p>' : ''}
@@ -801,7 +801,7 @@ function renderCart() {
   foot.innerHTML = `
     <div class="totals">
       <div><span>Subtotal · ${store.count} ${store.count === 1 ? 'ítem' : 'ítems'}</span><b>${money(store.subtotal)}</b></div>
-      ${esDelivery ? `<div><span>Envío${store.entrega ? ` · ${store.entrega.km.toFixed(1)} km` : ''}</span><b>${
+      ${esDelivery ? `<div><span>Envío${store.entrega ? ` · ${kilometros(store.entrega.km)}` : ''}</span><b>${
         store.entrega?.fuera ? 'Fuera de zona'
         : store.entrega?.precio == null ? 'Por confirmar' : money(store.entrega.precio)}</b></div>` : ''}
       <div class="grand"><span>Total</span>${dobleImporte(store.total, 'price')}</div>

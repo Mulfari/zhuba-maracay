@@ -9,7 +9,7 @@
  * (`data/remoto.js`); si no, de lo que haya en este navegador. El panel dice
  * cuál de las dos cosas está mirando, porque no significan lo mismo.
  */
-import { store, money, bolivares, BRANCHES, METODOS_PAGO } from './store.js';
+import { store, money, bolivares, kilometros, BRANCHES, METODOS_PAGO } from './store.js';
 import { listar } from './registro.js';
 import { hayRegistro } from '../data/remoto.js';
 import { entrar, token, salir } from './sesion.js';
@@ -218,7 +218,7 @@ function pintarLista() {
       <tr>
         <td>
           <b>${esc(nombreSede(o.branch))}<small>${esc(o.id || '')} · ${
-            esc(nombreModo(o.mode))}${o.entrega?.km != null ? ` · ${o.entrega.km.toFixed(1)} km` : ''}</small></b>
+            esc(nombreModo(o.mode))}${o.entrega?.km != null ? ` · ${kilometros(o.entrega.km)}` : ''}</small></b>
         </td>
         <td class="num"><span class="muted">${fecha(o.at)} ${hora(o.at)}</span></td>
         <td class="num solo-ancho"><span class="muted">${itemsDe(o)} pl.</span></td>
