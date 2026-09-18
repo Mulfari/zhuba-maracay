@@ -38,9 +38,12 @@ const ICON = {
 /* ==================================================== utilidades de vista */
 const priceLabel = (item) => {
   const p = store.basePrice(item);
-  if (p == null) return { main: item.priceNote || 'Consultar', sub: '' };
+  // Lo de vitrina no tiene precio, tiene aviso: «$5 - $7 segun la pieza». Va
+  // marcado porque es una frase, y una frase se parte en renglones; un precio
+  // no.
+  if (p == null) return { main: item.priceNote || 'Consultar', sub: '', nota: true };
   const many = !item.price && item.variants?.length > 1;
-  return { main: money(p), sub: many ? 'desde' : '' };
+  return { main: money(p), sub: many ? 'desde' : '', nota: false };
 };
 
 const tagChip = (t) => {
@@ -1147,21 +1150,34 @@ function toast(msg) {
    lleva, sin recuadro de relleno que finja una imagen que no existe. */
 let filtro = '';
 
+/*
+ * Cada plato es una tarjeta con su foto grande, y van de dos en dos en el
+ * teléfono. La foto es lo que vende: en la fila de antes medía 68 px y se
+ * quedaba en un sello. La descripción no cabe en una tarjeta de 175 px y se
+ * queda donde se lee de verdad, en la ficha que abre el plato.
+ */
 function fila(item) {
   const out = store.isOut(item.id);
   const vitrina = item.orderable === false;
-  const { main, sub } = priceLabel(item);
+  const { main, sub, nota } = priceLabel(item);
   const opciones = item.variants?.length > 1 ? `${item.variants.length} opciones` : '';
-  const dieta = item.tags.filter((t) => TAGS[t]?.kind === 'diet').slice(0, 2);
+  const dieta = item.tags.filter((t) => TAGS[t]?.kind === 'diet').slice(0, 1);
+  // Sin foto, el kanji de su categoría: un hueco vacío en una cuadrícula canta.
+  const kanji = store.categories.find((c) => c.id === item.cat)?.kanji || '乙';
 
   return `
   <article class="row${out ? ' is-out' : ''}" data-item="${item.id}">
-    ${item.img
-      ? `<img class="row__thumb" src="img/${esc(item.img)}" alt="" loading="lazy" decoding="async" width="120" height="120">`
-      : '<span class="row__thumb row__thumb--none" aria-hidden="true"></span>'}
+    <div class="row__foto">
+      ${item.img
+        ? `<img src="img/${esc(item.img)}" alt="" loading="lazy" decoding="async" width="520" height="520">`
+        : `<span class="row__kanji${kanji.length > 2 ? ' row__kanji--largo' : ''}" aria-hidden="true">${esc(kanji)}</span>`}
+      ${vitrina
+        ? '<span class="row__case">En vitrina</span>'
+        : `<button class="row__add" data-open="${item.id}" ${out ? 'disabled' : ''}
+             aria-label="Anadir ${esc(item.name)}">${ICON.plus}</button>`}
+    </div>
     <div class="row__body">
       <h3>${esc(item.name)}</h3>
-      <p>${esc(item.desc)}</p>
       <div class="row__meta">
         ${opciones ? `<span class="tag tag--opts">${opciones}</span>` : ''}
         ${dieta.map(tagChip).join('')}
@@ -1169,12 +1185,11 @@ function fila(item) {
       </div>
     </div>
     <div class="row__end">
-      <span class="row__price price">${sub ? `<small>${sub}</small>` : ''}${esc(main)}
-        ${refBs(item)}</span>
-      ${vitrina
-        ? '<span class="row__case">En vitrina</span>'
-        : `<button class="row__add" data-open="${item.id}" ${out ? 'disabled' : ''}
-             aria-label="Anadir ${esc(item.name)}">${ICON.plus}</button>`}
+      ${sub ? `<span class="row__desde">${sub}</span>` : ''}
+      <div class="row__linea">
+        <span class="row__price price${nota ? ' row__price--nota' : ''}">${esc(main)}</span>
+        ${refBs(item)}
+      </div>
     </div>
   </article>`;
 }

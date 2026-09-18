@@ -1127,70 +1127,75 @@ h1, h2, h3 { margin: 0; }
 .ped-indice { position: static; border-top: var(--hair-soft); border-bottom: 0; }
 .ped-main { padding-top: .5rem; }
 
-/* --- la fila de plato ---------------------------------------------------- */
-.rows { display: grid; }
+/* --- la tarjeta de plato -------------------------------------------------
+   Dos por fila en el teléfono, tres en tableta y cuatro en escritorio. Antes
+   era una lista con la foto en 68 px: se leía rápido, pero de un restaurante
+   así la foto es media venta. La descripción se fue a la ficha del plato,
+   porque en 175 px de ancho solo caben cuatro palabras por línea. */
+.rows { display: grid; grid-template-columns: repeat(2, 1fr); gap: .85rem .7rem; padding: .2rem 0 .4rem; }
+@media (min-width: 620px) { .rows { grid-template-columns: repeat(3, 1fr); gap: 1rem .9rem; } }
+@media (min-width: 960px) { .rows { grid-template-columns: repeat(4, 1fr); } }
+
 .row {
-  display: grid; grid-template-columns: auto 1fr auto; gap: .9rem;
-  align-items: center; padding: .9rem 0; border-bottom: var(--hair-soft);
-  cursor: pointer; transition: background .25s var(--ease);
+  display: flex; flex-direction: column; border: var(--hair-soft); border-radius: 3px;
+  background: rgba(239,230,214,.022); overflow: hidden; cursor: pointer;
+  transition: border-color .25s var(--ease), background .25s var(--ease);
 }
-.row:hover { background: rgba(239,230,214,.028); }
-.row.is-out { opacity: .5; }
+.row:hover { border-color: rgba(239,230,214,.22); background: rgba(239,230,214,.045); }
+.row.is-out { opacity: .55; }
 
-.row__thumb { width: 68px; height: 68px; object-fit: cover; border-radius: 2px;
-  background: var(--stone-800); flex: none; filter: saturate(.96); }
-/* Sin foto no se pinta un hueco grande: solo una marca del tamaño de la
-   miniatura, para que la fila no se descuadre. */
-.row__thumb--none { display: block; border: 1px dashed rgba(239,230,214,.16);
-  background: transparent; position: relative; }
-.row__thumb--none::after {
-  content: ''; position: absolute; inset: 50% auto auto 50%; width: 16px; height: 1px;
-  transform: translate(-50%,-50%); background: rgba(239,230,214,.22);
+.row__foto { position: relative; aspect-ratio: 1; background: var(--stone-900); overflow: hidden; }
+.row__foto img { width: 100%; height: 100%; object-fit: cover; display: block;
+  filter: saturate(.97) contrast(1.02); }
+/* Sin foto, el kanji de la seccion hace de marca de agua. Algunos son una
+   palabra entera -«ジェラート»- y a 2,6 rem se salia del cuadro: esos van
+   mas pequenos. */
+.row__kanji { position: absolute; inset: 0; display: grid; place-items: center;
+  padding: .5rem; text-align: center; line-height: 1.12;
+  font-family: var(--display); font-size: 2.6rem; color: rgba(239,230,214,.09); }
+.row__kanji--largo { font-size: 1.15rem; letter-spacing: .08em; }
+
+/* El botón de añadir, en la esquina de la foto: el pulgar ya está ahí. */
+.row__add {
+  position: absolute; right: .45rem; bottom: .45rem; width: 40px; height: 40px;
+  border-radius: 3px; display: grid; place-items: center; cursor: pointer;
+  border: 1px solid rgba(239,230,214,.28); background: rgba(11,9,8,.78); color: var(--travertine);
+  transition: background .25s var(--ease), color .25s var(--ease), border-color .25s var(--ease);
 }
+.row__add svg { width: 16px; height: 16px; }
+.row__add:hover { background: var(--ember); border-color: var(--ember); color: var(--ink-on-accent); }
+.row__add[disabled] { opacity: .4; pointer-events: none; }
+.row__case { position: absolute; right: .45rem; bottom: .45rem; padding: .25rem .45rem;
+  border-radius: 2px; background: rgba(11,9,8,.78); border: 1px solid rgba(239,230,214,.2);
+  font-family: var(--mono); font-size: .5rem; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--travertine-2); }
 
-.row__body { min-width: 0; }
-.row__body h3 { margin: 0; font-family: var(--display); font-size: 1.05rem; font-weight: 500;
-  line-height: 1.25; letter-spacing: -.008em; }
-.row__body p { margin: .22rem 0 0; font-size: .8rem; line-height: 1.45; color: var(--travertine-3);
+.row__body { flex: 1; padding: .6rem .65rem .15rem; min-width: 0; }
+.row__body h3 { margin: 0; font-family: var(--display); font-size: .98rem; font-weight: 500;
+  line-height: 1.22; letter-spacing: -.008em;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.row__meta { display: flex; flex-wrap: wrap; gap: .28rem; margin-top: .4rem; }
+.row__meta { display: flex; flex-wrap: wrap; gap: .25rem; margin-top: .4rem; }
 .row__meta:empty { display: none; }
 .tag--out { color: var(--vermillion); border-color: color-mix(in srgb, var(--vermillion) 45%, transparent); }
 
-.row__end { display: grid; justify-items: end; gap: .45rem; flex: none; }
-.row__price { position: relative; font-size: 1.06rem; white-space: nowrap;
-  text-align: right; line-height: 1.15; }
-.row__price small { position: absolute; right: 0; bottom: 100%; margin-bottom: .06rem;
-  font-family: var(--mono); font-size: .5rem; letter-spacing: .14em;
-  text-transform: uppercase; color: var(--travertine-3); }
-.row__add {
-  width: 34px; height: 34px; border-radius: 2px; cursor: pointer; display: grid; place-items: center;
-  border: 1px solid rgba(239,230,214,.24); background: transparent; color: var(--travertine);
-  transition: background .25s var(--ease), color .25s var(--ease), border-color .25s var(--ease);
-}
-.row__add svg { width: 14px; height: 14px; }
-.row__add:hover { background: var(--ember); border-color: var(--ember); color: var(--ink-on-accent); }
-.row__add[disabled] { opacity: .35; pointer-events: none; }
-.row__case { font-family: var(--mono); font-size: .52rem; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--travertine-3); text-align: right; max-width: 6rem; }
+/* El precio y su referencia en bolivares, abajo del todo: como .row__body
+   crece, la linea del precio queda a la misma altura en las dos tarjetas de
+   la fila. El «desde» va en su propio renglon porque en 147 px de ancho
+   «desde $26,00  Bs 22.062» no cabe y se cortaba contra el borde. */
+.row__end { padding: .35rem .65rem .7rem; }
+.row__desde { display: block; font-family: var(--mono); font-size: .5rem; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--travertine-3); margin-bottom: .05rem; }
+.row__linea { display: flex; align-items: baseline; justify-content: space-between; gap: .35rem; }
+.row__price { font-size: 1.02rem; line-height: 1.15; white-space: nowrap; }
+/* El aviso de vitrina es una frase y si no se parte se corta contra el borde. */
+.row__price--nota { font-size: .74rem; line-height: 1.3; white-space: normal; }
+.row__end .row__bs { margin-top: 0; font-size: .68rem; letter-spacing: 0; }
 
-/* En pantalla ancha la lista no se estira hasta el borde: una carta con
-   renglones de 150 caracteres no se lee, y el precio queda a un palmo del
-   plato al que pertenece. Con la medida acotada, importe y nombre se miran. */
+/* En pantalla ancha la carta no se estira hasta el borde: con la medida
+   acotada las tarjetas no se vuelven sellos perdidos en metro y medio. */
 @media (min-width: 900px) {
   .rows, .pedir .cat__head { max-width: 60rem; }
-  /* Precio y botón en la misma línea: el importe queda a la altura del
-     nombre en vez de flotando encima del botón. */
-  .row__end { grid-auto-flow: column; align-items: center; gap: .85rem;
-    align-self: start; padding-top: .08rem; }
   .row__price { font-size: 1.12rem; }
-}
-
-@media (max-width: 520px) {
-  .row { gap: .75rem; padding: .8rem 0; }
-  .row__thumb { width: 58px; height: 58px; }
-  .row__body h3 { font-size: .98rem; }
-  .row__body p { -webkit-line-clamp: 2; font-size: .76rem; }
 }
 
 .ped-pie { margin: 2.5rem 0 0; padding-top: 1.2rem; border-top: var(--hair-soft);
@@ -1640,7 +1645,7 @@ img[data-suave].is-cargada { opacity: 1; transition: opacity .45s var(--ease-out
   .row__add { width: 40px; height: 40px; }
   .venue-pills--barra .venue-pill { min-height: 40px; align-content: center; }
   .btn--sm { min-height: 40px; }
-  .row__bs, .card__bs { font-size: .7rem; letter-spacing: .02em; }
+  .card__bs { font-size: .7rem; letter-spacing: .02em; }
   .row__price small { font-size: .56rem; }
   .icon-btn { width: 40px; height: 40px; }
   .tag { font-size: .6rem; }
