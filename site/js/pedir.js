@@ -409,6 +409,9 @@ function bloqueUbicacion() {
         <button class="btn btn--sm btn--ghost" data-mapa>Marcar en el mapa</button>
       </div>
       <p class="geo__aviso" id="geoAviso" hidden></p>
+      <p class="geo__privacidad">Tu ubicación viaja dentro del mensaje de WhatsApp al
+        restaurante y queda apuntada en su registro de pedidos. No se comparte con
+        nadie más ni se usa para publicidad.</p>
       <div class="geo__hueco" data-mapa-hueco></div>
     </div>`;
   }

@@ -153,6 +153,17 @@ export const REVIEWS = [
   }
 ];
 
-export const RATING = { score: '4,8', count: 768, source: 'Google' };
+/**
+ * La nota de su perfil público de Google. Se enseña siempre con enlace a la
+ * ficha, para que quien lo lea lo compruebe en un toque; y a propósito NO va
+ * en los datos estructurados (`build/ficha.mjs` explica por qué).
+ *
+ * PENDIENTE: confirmar con el local que sigue siendo 4,8 sobre 768. El día
+ * que cambie, cambia aquí y cambia en los dos sitios de la portada.
+ */
+export const RATING = {
+  score: '4,8', count: 768, source: 'Google',
+  url: 'https://www.google.com/maps/search/?api=1&query=Zhuba+Restaurant+17+Calle+Los+Clubes+Maracay+Aragua'
+};
 
 export const getBranch = (id) => BRANCHES.find((b) => b.id === id) || BRANCHES[0];

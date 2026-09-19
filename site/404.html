@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es-VE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Esta página no existe · ZHUBA Restaurant &amp; Café</title>
+<meta name="description" content="La página que buscabas no está. Vuelve a la portada o abre la carta para pedir.">
+<meta name="theme-color" content="#0B0908">
+<!-- Una página de error no tiene nada que hacer en Google. -->
+<meta name="robots" content="noindex, follow">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230B0908'/%3E%3Ccircle cx='32' cy='32' r='23' fill='none' stroke='%23D6A050' stroke-width='2.4'/%3E%3Cpath d='M22 23h20L23 41h20' fill='none' stroke='%23D6A050' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=DM+Mono:wght@400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+  /* La página de error no carga el JS del sitio, así que nada de lo que
+     depende de él —la cortina, las revelaciones al hacer scroll— aparece
+     aquí. Se dibuja entera y quieta. */
+  .perdida { min-height: 100svh; display: grid; place-items: center; padding: 2rem 1.2rem; }
+  .perdida__caja { max-width: 40rem; text-align: center; }
+  .perdida__sello { width: 78px; height: 78px; color: var(--travertine); opacity: .9; }
+  .perdida__num { margin: 1.4rem 0 0; font-family: var(--mono); font-size: .68rem;
+    letter-spacing: .34em; text-transform: uppercase; color: var(--ember); }
+  .perdida h1 { margin: .8rem 0 0; font-family: var(--display); font-weight: 600;
+    font-size: clamp(2.2rem, 7vw, 3.4rem); line-height: 1.08; }
+  .perdida p { margin: 1.1rem auto 0; max-width: 34ch; color: var(--travertine-2);
+    line-height: 1.65; }
+  .perdida__botones { display: flex; flex-wrap: wrap; gap: .7rem; justify-content: center;
+    margin-top: 2rem; }
+  .perdida__pie { margin-top: 2.6rem; font-family: var(--mono); font-size: .64rem;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--travertine-3); }
+  .perdida__pie a { color: inherit; }
+</style>
+</head>
+<body>
+<main class="perdida">
+  <div class="perdida__caja">
+    <svg class="perdida__sello" viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="27" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".38"/>
+      <circle cx="32" cy="32" r="22.5" fill="none" stroke="var(--ember)" stroke-width="2"/>
+      <path d="M22 23.5h20L23 40.5h20" fill="none" stroke="var(--ember)" stroke-width="3.2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+
+    <p class="perdida__num">Error 404</p>
+    <h1>Esta página no está en la carta.</h1>
+    <p>
+      El enlace que seguiste no lleva a ningún sitio. La casa sigue abierta:
+      vuelve a la portada o abre la carta y pide desde ahí.
+    </p>
+
+    <div class="perdida__botones">
+      <a class="btn btn--solid" href="/pedir">Ver la carta y pedir</a>
+      <a class="btn" href="/">Volver a la portada</a>
+    </div>
+
+    <p class="perdida__pie">
+      ZHUBA · La Floresta, Maracay ·
+      <a href="tel:+584124554207">0412-4554207</a>
+    </p>
+  </div>
+</main>
+</body>
+</html>

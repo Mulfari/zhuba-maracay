@@ -26,6 +26,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230B0908'/%3E%3Ccircle cx='32' cy='32' r='23' fill='none' stroke='%23D6A050' stroke-width='2.4'/%3E%3Cpath d='M22 23h20L23 41h20' fill='none' stroke='%23D6A050' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230B0908'/%3E%3Ccircle cx='32' cy='32' r='23' fill='none' stroke='%23D6A050' stroke-width='2.4'/%3E%3Cpath d='M22 23h20L23 41h20' fill='none' stroke='%23D6A050' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 
+<link rel="manifest" href="/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=DM+Mono:wght@400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -37,31 +38,9 @@
     --grain-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E"); }
 </style>
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Restaurant",
-  "name": "ZHUBA Restaurant",
-  "servesCuisine": ["Japonesa", "Tailandesa", "Nikkei", "Asiática contemporánea"],
-  "telephone": "+58-412-4554207",
-  "email": "atencion@zhubarestaurant.com",
-  "url": "https://www.zhubarestaurant.com",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "17 Calle Los Clubes, casa nro 10, Urb. La Floresta",
-    "addressLocality": "Maracay",
-    "addressRegion": "Aragua",
-    "postalCode": "2101",
-    "addressCountry": "VE"
-  },
-  "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "768" },
-  "openingHoursSpecification": [
-    { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Sunday","Monday","Tuesday","Wednesday"], "opens": "12:00", "closes": "00:00" },
-    { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Thursday","Friday","Saturday"], "opens": "12:00", "closes": "01:00" }
-  ],
-  "sameAs": ["https://www.instagram.com/zhubarestaurant/", "https://www.facebook.com/zhubarestaurant/"]
-}
-</script>
+<!-- ficha:inicio · la genera build/ficha.mjs; no se edita a mano -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Restaurant","@id":"https://zhuba-maracay.vercel.app/#restaurante","name":"ZHUBA Restaurant","description":"Cocina asiática con acento nikkei y tailandés. Salmón noruego, atún saku, escolar y anguila en la barra fría; fuego vivo en el wok.","url":"https://zhuba-maracay.vercel.app","image":["https://zhuba-maracay.vercel.app/img/sashimi-especial-zhuba.webp","https://zhuba-maracay.vercel.app/img/moscow-mule.webp","https://zhuba-maracay.vercel.app/img/volcan-okanoba.webp","https://zhuba-maracay.vercel.app/img/coquitos-de-salmon.webp"],"telephone":"+584124554207","address":{"@type":"PostalAddress","streetAddress":"17 Calle Los Clubes, casa nro 10, Urb. La Floresta","addressLocality":"Maracay","addressRegion":"Aragua","postalCode":"2101","addressCountry":"VE"},"geo":{"@type":"GeoCoordinates","latitude":10.270717,"longitude":-67.587758},"hasMap":"https://www.google.com/maps/search/?api=1&query=Zhuba+Restaurant+17+Calle+Los+Clubes+Maracay+Aragua","areaServed":[{"@type":"City","name":"Maracay","addressRegion":"Aragua","addressCountry":"VE"},{"@type":"Place","name":"La Floresta, Maracay"},{"@type":"Place","name":"El Bosque, Maracay"},{"@type":"Place","name":"Las Delicias, Maracay"},{"@type":"Place","name":"Base Aragua, Maracay"},{"@type":"Place","name":"San Jacinto, Maracay"}],"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Sunday","Monday","Tuesday","Wednesday"],"opens":"12:00","closes":"00:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":["Thursday","Friday","Saturday"],"opens":"12:00","closes":"01:00"}],"priceRange":"$3.50–$59.50","currenciesAccepted":"USD, VES","acceptsReservations":"https://wa.me/584124554207","hasMenu":{"@id":"https://zhuba-maracay.vercel.app/pedir#carta-restaurante"},"sameAs":["https://www.instagram.com/zhubarestaurant/","https://www.facebook.com/zhubarestaurant/","https://www.zhubarestaurant.com"],"potentialAction":{"@type":"OrderAction","name":"Pedir en línea","target":{"@type":"EntryPoint","urlTemplate":"https://zhuba-maracay.vercel.app/pedir?sede=restaurante","actionPlatform":["https://schema.org/DesktopWebPlatform","https://schema.org/MobileWebPlatform"]},"deliveryMethod":["https://schema.org/OnSitePickup","https://schema.org/ParcelService"]},"servesCuisine":["Japonesa","Tailandesa","Nikkei","Asiática contemporánea"]},{"@type":"CafeOrCoffeeShop","@id":"https://zhuba-maracay.vercel.app/#cafe","name":"ZHUBA Café","description":"Waffle hongkonesa hecha al momento, brioche siciliana rellena, alta pastelería con ingredientes italianos y paninis prensados al instante.","url":"https://zhuba-maracay.vercel.app","image":["https://zhuba-maracay.vercel.app/img/bubble-waffle-al-gelato.webp","https://zhuba-maracay.vercel.app/img/cafe-latte.webp","https://zhuba-maracay.vercel.app/img/barquillon.webp","https://zhuba-maracay.vercel.app/img/crispy-al-caesar.webp"],"telephone":"+584124554207","address":{"@type":"PostalAddress","streetAddress":"17 Calle Los Clubes, casa nro 10, Urb. La Floresta","addressLocality":"Maracay","addressRegion":"Aragua","postalCode":"2101","addressCountry":"VE"},"geo":{"@type":"GeoCoordinates","latitude":10.270717,"longitude":-67.587758},"hasMap":"https://www.google.com/maps/search/?api=1&query=Zhuba+Restaurant+17+Calle+Los+Clubes+Maracay+Aragua","areaServed":[{"@type":"City","name":"Maracay","addressRegion":"Aragua","addressCountry":"VE"},{"@type":"Place","name":"La Floresta, Maracay"},{"@type":"Place","name":"El Bosque, Maracay"},{"@type":"Place","name":"Las Delicias, Maracay"},{"@type":"Place","name":"Base Aragua, Maracay"},{"@type":"Place","name":"San Jacinto, Maracay"}],"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Sunday","Monday","Tuesday","Wednesday"],"opens":"12:00","closes":"00:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":["Thursday","Friday","Saturday"],"opens":"12:00","closes":"01:00"}],"priceRange":"$3.50–$19.50","currenciesAccepted":"USD, VES","acceptsReservations":"https://wa.me/message/VXIVBTNU3I5AC1","hasMenu":{"@id":"https://zhuba-maracay.vercel.app/pedir#carta-cafe"},"sameAs":["https://www.instagram.com/zhubarestaurant/","https://www.facebook.com/zhubarestaurant/","https://www.zhubarestaurant.com"],"potentialAction":{"@type":"OrderAction","name":"Pedir en línea","target":{"@type":"EntryPoint","urlTemplate":"https://zhuba-maracay.vercel.app/pedir?sede=cafe","actionPlatform":["https://schema.org/DesktopWebPlatform","https://schema.org/MobileWebPlatform"]},"deliveryMethod":["https://schema.org/OnSitePickup","https://schema.org/ParcelService"]},"servesCuisine":["Italiana","Pastelería","Cafetería"]},{"@type":"WebSite","@id":"https://zhuba-maracay.vercel.app/#web","url":"https://zhuba-maracay.vercel.app","name":"ZHUBA Restaurant & Café","description":"Un complejo gastronómico en La Floresta: barra fría con salmón noruego y atún saku, fuego vivo en el wok, y al lado un café con pastelería fina y gelato artesanal.","inLanguage":"es-VE","publisher":{"@id":"https://zhuba-maracay.vercel.app/#restaurante"}}]}</script>
+<!-- ficha:fin -->
 </head>
 <body>
 <!-- La cortina de entrada. Se retira sola en cuanto están las fuentes y las
@@ -140,7 +119,7 @@
 
       <div class="hero__meta">
         <span class="hero__live" id="heroLive"><i></i><b>Consultando horario…</b></span>
-        <span><b class="stars">★★★★★</b> 4,8 · 768 reseñas</span>
+        <span><a class="nota" href="https://www.google.com/maps/search/?api=1&query=Zhuba+Restaurant+17+Calle+Los+Clubes+Maracay+Aragua" target="_blank" rel="noopener"><b class="stars">★★★★★</b> 4,8 · 768 reseñas en Google</a></span>
         <span>Delivery · Pick-up · Mesa</span>
       </div>
     </div>
@@ -249,7 +228,7 @@
 
     <div class="rating-strip reveal">
       <span class="big display">4,8</span>
-      <span>768 reseñas en Google</span>
+      <span><a class="nota" href="https://www.google.com/maps/search/?api=1&query=Zhuba+Restaurant+17+Calle+Los+Clubes+Maracay+Aragua" target="_blank" rel="noopener">768 reseñas en Google</a></span>
       <span>Permanencia media 1,5 – 4 h</span>
       <span>Extractos textuales del perfil público</span>
     </div>

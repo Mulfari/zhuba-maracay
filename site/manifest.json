@@ -1,0 +1,33 @@
+{
+  "name": "ZHUBA Restaurant & Café",
+  "short_name": "ZHUBA",
+  "description": "Cocina asiática, nikkei y thai en La Floresta, Maracay. Arma tu pedido y envíalo por WhatsApp.",
+  "lang": "es-VE",
+  "dir": "ltr",
+  "start_url": "/pedir",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B0908",
+  "theme_color": "#0B0908",
+  "categories": ["food", "shopping"],
+  "icons": [
+    { "src": "/assets/icono-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Pedir del restaurante",
+      "short_name": "Restaurante",
+      "url": "/pedir?sede=restaurante",
+      "icons": [{ "src": "/assets/icono-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Pedir del café",
+      "short_name": "Café",
+      "url": "/pedir?sede=cafe",
+      "icons": [{ "src": "/assets/icono-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}

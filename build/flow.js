@@ -838,6 +838,88 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await send('Emulation.setDeviceMetricsOverride',
     { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
 
+  /* ================================================ ficha y encontrabilidad
+     Lo que lee un robot no se ve en pantalla, así que si se rompe nadie se
+     entera hasta que la carta desaparece de Google. Se comprueba aquí. */
+  const ficha = async (ruta) => {
+    await ir(ruta);
+    return ev(`(() => {
+      const t = document.querySelector('script[type="application/ld+json"]');
+      if (!t) return { hay: false };
+      let g; try { g = JSON.parse(t.textContent); } catch (e) { return { hay: true, roto: e.message }; }
+      const nodos = g['@graph'] || [g];
+      const conCarta = nodos.filter((n) => n.hasMenu && n.hasMenu.hasMenuSection);
+      return {
+        hay: true,
+        tipos: nodos.map((n) => n['@type']),
+        conGeo: nodos.filter((n) => n.geo).length,
+        conPrecio: nodos.filter((n) => n.priceRange).length,
+        conPedir: nodos.filter((n) => n.potentialAction).length,
+        nota: JSON.stringify(g).includes('aggregateRating'),
+        platos: conCarta.reduce((n, c) => n + c.hasMenu.hasMenuSection
+          .reduce((m, s) => m + s.hasMenuItem.length, 0), 0),
+        conPrecioEnPlatos: conCarta.flatMap((c) => c.hasMenu.hasMenuSection
+          .flatMap((s) => s.hasMenuItem)).filter((i) => i.offers).length,
+        manifiesto: document.querySelector('link[rel=manifest]')?.getAttribute('href') || null,
+        canonica: document.querySelector('link[rel=canonical]')?.getAttribute('href') || null
+      };
+    })()`);
+  };
+
+  const fPortada = await ficha('/');
+  check('la portada lleva ficha de las dos casas, con sitio, precio y bot\u00f3n de pedir',
+    fPortada.hay && !fPortada.roto &&
+    fPortada.tipos.includes('Restaurant') && fPortada.tipos.includes('CafeOrCoffeeShop') &&
+    fPortada.conGeo === 2 && fPortada.conPrecio === 2 && fPortada.conPedir === 2,
+    JSON.stringify(fPortada));
+
+  const fPedir = await ficha('/pedir');
+  check('la carta entera va marcada, y cada plato con precio va con su precio',
+    fPedir.platos === 103 && fPedir.conPrecioEnPlatos === 101,
+    JSON.stringify({ platos: fPedir.platos, conPrecio: fPedir.conPrecioEnPlatos }));
+
+  // Marcar una nota sobre uno mismo tomada de otro sitio lo proh\u00edbe la
+  // pol\u00edtica de Google, y se la juega todo el marcado, no solo la nota.
+  check('la nota de Google se ense\u00f1a enlazada, pero no se marca como dato propio',
+    !fPortada.nota && !fPedir.nota,
+    JSON.stringify({ portada: fPortada.nota, pedir: fPedir.nota }));
+
+  check('las dos p\u00e1ginas declaran su direcci\u00f3n can\u00f3nica y su manifiesto',
+    fPortada.canonica && fPedir.canonica && fPortada.canonica !== fPedir.canonica &&
+    fPortada.manifiesto === '/manifest.json' && fPedir.manifiesto === '/manifest.json',
+    JSON.stringify({ portada: fPortada.canonica, pedir: fPedir.canonica }));
+
+  // El navegador pregunta \u00abpermitir ubicaci\u00f3n\u00bb sin decir a d\u00f3nde va. La p\u00e1gina
+  // lo dice antes, y eso tiene que seguir ah\u00ed.
+  await ir('/pedir');
+  const avisoGeo = await ev(`(async () => {
+    const m = await import(new URL('js/store.js', location.href).href);
+    const plato = m.store.items.find((i) => i.id === 'r-fukkatsu');
+    m.store.add({ itemId: plato.id, name: plato.name, variant: '', unit: plato.price,
+                  qty: 1, adjustments: [], note: '' });
+    document.getElementById('cartPill').click();
+    await new Promise((r) => setTimeout(r, 700));
+    document.querySelector('[data-siguiente]').click();
+    await new Promise((r) => setTimeout(r, 500));
+    document.querySelector('[data-mode="delivery"]').click();
+    await new Promise((r) => setTimeout(r, 500));
+    const t = document.querySelector('.geo__privacidad')?.textContent || '';
+    return { hay: !!t, dice: /whatsapp/i.test(t) && /registro/i.test(t),
+             antes: !!document.querySelector('.geo__privacidad') &&
+                    !!document.querySelector('[data-geo]') };
+  })()`);
+  check('antes de pedir la ubicaci\u00f3n se dice a d\u00f3nde va',
+    avisoGeo.hay && avisoGeo.dice && avisoGeo.antes, JSON.stringify(avisoGeo));
+
+  await ir('/404');
+  const p404 = await ev(`({
+    propia: !!document.querySelector('.perdida'),
+    fuera: (document.querySelector('meta[name=robots]')?.content || '').includes('noindex'),
+    salidas: [...document.querySelectorAll('.perdida a[href="/pedir"], .perdida a[href="/"]')].length
+  })`);
+  check('un enlace roto cae en una p\u00e1gina de la casa, fuera de Google y con salida',
+    p404.propia && p404.fuera && p404.salidas === 2, JSON.stringify(p404));
+
   console.log('\n=== RECORRIDO FUNCIONAL ===');
   out.forEach((r) => console.log(`${r.ok ? 'OK  ' : 'FALLA'} ${r.name}${r.ok ? '' : '  → ' + r.detail}`));
   const bad = out.filter((r) => !r.ok).length;
