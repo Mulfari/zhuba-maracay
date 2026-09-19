@@ -15,6 +15,7 @@ import { hayRegistro } from '../data/remoto.js';
 import { entrar, token, salir } from './sesion.js';
 import { PEDIDOS_DEMO } from '../data/demo.js';
 import { SERVICE_MODES } from '../data/modifiers.js';
+import { montar as montarPuesta } from './puesta.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -260,7 +261,39 @@ async function pintar() {
 }
 
 /* -------------------------------------------------------------------- boot */
+/* ------------------------------------------------------------------ vistas */
+/* El informe es lo de todos los días. La puesta en marcha se abre dos veces
+   y se cierra para siempre, pero mientras queden datos de prueba publicados
+   tiene que verse al entrar: de ahí la cifra roja en la pestaña. */
+function vistas() {
+  const nav = $('#vistas');
+  const badge = $('#pmBadge');
+
+  const refrescarBadge = ({ faltan }) => {
+    badge.hidden = faltan.length <= 0;
+    badge.textContent = String(faltan.length);
+    badge.title = `${faltan.length} datos por confirmar con el local`;
+  };
+
+  const ver = (cual) => {
+    $('#vistaInforme').hidden = cual !== 'informe';
+    $('#vistaPuesta').hidden = cual !== 'puesta';
+    // El periodo solo manda sobre el informe: en la otra vista estorba.
+    $('#periodo').hidden = cual !== 'informe';
+    $$('#vistas button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.vista === cual)));
+  };
+
+  nav.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-vista]');
+    if (b) ver(b.dataset.vista);
+  });
+
+  montarPuesta($('#puesta'), refrescarBadge);
+  ver('informe');
+}
+
 function boot() {
+  vistas();
   $('#sede').innerHTML = `<option value="todas">Las dos casas</option>`
     + BRANCHES.map((b) => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
   $('#sede').addEventListener('change', (e) => { sede = e.target.value; pintar(); });

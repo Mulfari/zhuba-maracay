@@ -14,6 +14,103 @@
 <style>
   body { padding-bottom: 4rem; }
 
+  /* --- las dos vistas del panel ----------------------------------------- */
+  /* El informe es lo de todos los días; la puesta en marcha se abre dos veces
+     y se cierra para siempre. Por eso una pestaña y no una sección más
+     abajo: enterrada al final del informe no la vería nadie. */
+  .adm-vistas { display: flex; gap: 0; border-top: var(--hair-soft); }
+  .adm-vistas button {
+    flex: 1; padding: .8rem .4rem; background: none; border: 0; cursor: pointer;
+    font-family: var(--mono); font-size: .62rem; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--travertine-3); border-bottom: 2px solid transparent; min-height: 44px;
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  }
+  .adm-vistas button[aria-selected="true"] { color: var(--travertine); border-bottom-color: var(--ember); }
+  .pm-badge { display: inline-grid; place-items: center; min-width: 20px; height: 20px;
+    padding: 0 .3rem; border-radius: 10px; background: var(--vermillion); color: #fff;
+    font-size: .6rem; letter-spacing: 0; }
+  .pm-badge[hidden] { display: none; }
+
+  /* --- puesta en marcha -------------------------------------------------- */
+  .pm-barra { border: var(--hair); background: var(--stone-900); padding: 1.1rem 1.2rem; margin-bottom: 2rem; }
+  .pm-barra__cifra { display: flex; align-items: baseline; gap: .5rem; }
+  .pm-barra__cifra b { font-family: var(--display); font-size: 2rem; font-weight: 600; letter-spacing: -.02em; }
+  .pm-barra__cifra span { font-family: var(--mono); font-size: .62rem; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--travertine-3); }
+  .pm-progreso { height: 3px; background: rgba(239,230,214,.12); margin: .8rem 0 .9rem; }
+  .pm-progreso i { display: block; height: 100%; background: var(--ember); transition: width .4s var(--ease); }
+  .pm-aviso { margin: 0; font-size: .82rem; color: var(--travertine-2); }
+  .pm-aviso b { color: var(--vermillion); }
+  .pm-nube { display: flex; align-items: center; gap: .5rem; margin: .8rem 0 0;
+    font-family: var(--mono); font-size: .58rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--travertine-3); }
+  .pm-nube i { width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--travertine-3); }
+  .pm-nube.is-compartido i { background: var(--jade); }
+  .pm-nube.is-error i { background: var(--vermillion); }
+  .pm-nube.is-cargando i { background: var(--ember); }
+
+  .pm-grupo { margin-bottom: 2.4rem; }
+  .pm-grupo h3 { margin: 0; font-family: var(--mono); font-size: .62rem; letter-spacing: .22em;
+    text-transform: uppercase; color: var(--travertine-3); font-weight: 400;
+    display: flex; justify-content: space-between; gap: 1rem; }
+  .pm-grupo h3 span { color: var(--travertine-2); }
+  .pm-grupo__pie { margin: .35rem 0 1rem; font-size: .78rem; color: var(--travertine-3); }
+
+  .pm-ficha { border: var(--hair); border-bottom: 0; background: var(--void); }
+  .pm-grupo .pm-ficha:last-of-type { border-bottom: var(--hair); }
+  .pm-ficha.is-lista { background: rgba(110,139,114,.05); }
+
+  .pm-cab { width: 100%; display: flex; align-items: flex-start; gap: .75rem; text-align: left;
+    padding: .9rem 1rem; background: none; border: 0; cursor: pointer; color: inherit;
+    font: inherit; min-height: 44px; }
+  .pm-cab:hover { background: rgba(239,230,214,.03); }
+  .pm-punto { width: 7px; height: 7px; border-radius: 50%; flex: none; margin-top: .45rem;
+    background: var(--travertine-3); }
+  .is-lista .pm-punto { background: var(--jade); }
+  .pm-cab__txt { flex: 1; min-width: 0; display: grid; gap: .2rem; }
+  .pm-cab__txt b { font-size: .92rem; font-weight: 600; }
+  .pm-cab__txt em { font-style: normal; font-size: .76rem; line-height: 1.5; color: var(--travertine-3);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .is-lista .pm-cab__txt em { color: var(--travertine-2); }
+
+  .pm-listo, .pm-u { flex: none; align-self: flex-start; padding: .2rem .5rem; border-radius: 2px;
+    font-family: var(--mono); font-size: .54rem; letter-spacing: .14em; text-transform: uppercase; }
+  .pm-listo { color: var(--jade); border: 1px solid color-mix(in srgb, var(--jade) 45%, transparent); }
+  .pm-u--alta { color: var(--vermillion); border: 1px solid color-mix(in srgb, var(--vermillion) 45%, transparent); }
+  .pm-u--media { color: var(--ember); border: 1px solid color-mix(in srgb, var(--ember) 40%, transparent); }
+  .pm-u--baja { color: var(--travertine-3); border: var(--hair); }
+
+  .pm-cuerpo { padding: .2rem 1rem 1.2rem; border-top: var(--hair-soft); }
+  .pm-porque--abierto { margin: .9rem 0 0; }
+  .pm-porque { font-size: .8rem; line-height: 1.6; color: var(--travertine-3); }
+  .pm-pregunta { margin: .9rem 0 0; font-size: .92rem; line-height: 1.55; color: var(--travertine); }
+  .pm-nota { margin: .5rem 0 0; font-size: .76rem; line-height: 1.55; color: var(--ember); }
+  .pm-campos { display: grid; gap: .7rem; margin-top: 1rem; }
+  @media (min-width: 720px) { .pm-campos { grid-template-columns: repeat(2, 1fr); } }
+  .pm-campo { display: grid; gap: .25rem; }
+  .pm-campo span { font-family: var(--mono); font-size: .56rem; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--travertine-3); }
+  .pm-campo input, .pm-campo textarea {
+    /* 16 px o iOS hace zoom al tocar el campo y descoloca el panel entero. */
+    width: 100%; padding: .6rem .7rem; font: inherit; font-size: 16px; min-height: 44px;
+    background: var(--stone-900); border: var(--hair); border-radius: 2px; color: var(--travertine);
+  }
+  .pm-campo textarea { min-height: 72px; resize: vertical; line-height: 1.5; }
+  .pm-campo input:focus, .pm-campo textarea:focus { outline: none; border-color: var(--ember); }
+  .pm-ops { grid-column: 1 / -1; border: var(--hair); border-radius: 2px; padding: .7rem .8rem; margin: 0; }
+  .pm-ops legend { font-family: var(--mono); font-size: .56rem; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--travertine-3); padding: 0 .3rem; }
+  .pm-ops label { display: flex; align-items: center; gap: .5rem; padding: .35rem 0;
+    font-size: .88rem; min-height: 36px; cursor: pointer; }
+  .pm-destino { margin: 1rem 0 0; font-family: var(--mono); font-size: .58rem;
+    letter-spacing: .06em; color: var(--travertine-3); }
+  .pm-destino code { color: var(--travertine-2); }
+  .pm-botones { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+
+  .pm-salidas { border-top: var(--hair); padding-top: 1.4rem; display: flex; flex-wrap: wrap; gap: .6rem; }
+  .pm-copiado { flex-basis: 100%; margin: .3rem 0 0; font-family: var(--mono);
+    font-size: .6rem; letter-spacing: .08em; color: var(--jade); white-space: pre-wrap; }
+
   /* --- cabecera --------------------------------------------------------- */
   .adm-head {
     position: sticky; top: 0; z-index: 20;
@@ -189,6 +286,12 @@
       <select id="sede" class="adm-sede"></select>
       <button class="btn btn--sm btn--ghost" id="logout">Salir</button>
     </div>
+    <nav class="wrap adm-vistas" id="vistas" role="tablist" aria-label="Vista">
+      <button role="tab" data-vista="informe" aria-selected="true">Informe</button>
+      <button role="tab" data-vista="puesta" aria-selected="false">
+        Puesta en marcha <span class="pm-badge" id="pmBadge" hidden></span>
+      </button>
+    </nav>
     <nav class="wrap seg" id="periodo" role="tablist" aria-label="Periodo">
       <button role="tab" data-dias="1" aria-selected="true">Hoy</button>
       <button role="tab" data-dias="7" aria-selected="false">7 días</button>
@@ -198,6 +301,7 @@
   </header>
 
   <main class="wrap adm-main">
+  <div id="vistaInforme">
     <p class="origen" id="origen"><i></i><span>Cargando…</span></p>
 
     <div class="stats" id="metrics"></div>
@@ -252,6 +356,19 @@
       El pedido en sí no pasa por este panel — llega al WhatsApp del local y se trabaja allí.
       <a href="../" style="color:var(--ember)">Volver a la web</a>
     </p>
+  </div>
+
+  <!-- ------------------------------------------------- puesta en marcha -->
+  <div id="vistaPuesta" hidden>
+    <h2 class="adm"><span>Lo que falta por preguntarle al local</span></h2>
+    <p class="pm-grupo__pie" style="margin-bottom:1.4rem;max-width:62ch">
+      Mientras un dato no llega, la web lleva uno provisional o de prueba. Esta lista es para
+      que no se quede puesto: contestando aquí queda apuntado, y el botón de abajo saca el
+      recado listo para mandar. <strong style="color:var(--travertine-2)">Rellenar esto no
+      cambia la web</strong>: los datos van al código y se despliegan.
+    </p>
+    <div id="puesta"></div>
+  </div>
   </main>
 </div>
 

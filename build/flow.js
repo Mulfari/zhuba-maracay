@@ -920,6 +920,74 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   check('un enlace roto cae en una p\u00e1gina de la casa, fuera de Google y con salida',
     p404.propia && p404.fuera && p404.salidas === 2, JSON.stringify(p404));
 
+  /* ============================================== puesta en marcha (panel)
+     La lista de lo que falta preguntarle al local es la memoria del
+     proyecto: si deja de guardar, los datos de prueba se quedan publicados
+     y nadie se entera. Se entra con una sesi\u00f3n de mentira \u2014las llamadas a
+     Supabase fallar\u00e1n con 401, que es justo el caso que hay que ver
+     funcionando: sin tabla creada, la lista se guarda igual en local. */
+  const { identifier: sesionFalsa } = await send('Page.addScriptToEvaluateOnNewDocument', {
+    source: `sessionStorage.setItem('zhuba.admin.sesion', JSON.stringify({
+      access_token: 'de-mentira-para-la-prueba', expira: Date.now() + 3600000 }));
+      localStorage.removeItem('zhuba.puesta.v1');`
+  });
+  await ir('/admin/');
+
+  const pm0 = await ev(`(() => {
+    const b = document.getElementById('pmBadge');
+    return {
+      entro: !document.getElementById('panel').hidden,
+      pesta\u00f1a: !!document.querySelector('[data-vista="puesta"]'),
+      faltan: Number(b.textContent),
+      fichas: document.querySelectorAll('#puesta .pm-ficha').length,
+      periodoVisible: !document.getElementById('periodo').hidden
+    };
+  })()`);
+  check('el panel abre con la lista de lo que falta y la cuenta puesta',
+    pm0.entro && pm0.pestaña && pm0.fichas > 0 && pm0.faltan === pm0.fichas && pm0.periodoVisible,
+    JSON.stringify(pm0));
+
+  const pm1 = await ev(`(async () => {
+    document.querySelector('[data-vista="puesta"]').click();
+    document.querySelector('[data-abrir="pago-movil"]').click();
+    await new Promise((r) => setTimeout(r, 200));
+    const f = document.querySelector('[data-form="pago-movil"]');
+    f.querySelector('[name="pago-movil.banco"]').value = 'Banesco (0134)';
+    f.querySelector('[name="pago-movil.telefono"]').value = '0412-1234567';
+    f.querySelector('[name="pago-movil.documento"]').value = 'J-401234567';
+    f.requestSubmit();
+    await new Promise((r) => setTimeout(r, 300));
+    document.querySelector('[data-abrir="horario"]').click();
+    await new Promise((r) => setTimeout(r, 200));
+    document.querySelector('[data-confirmar="horario"]').click();
+    await new Promise((r) => setTimeout(r, 400));
+    const g = JSON.parse(localStorage.getItem('zhuba.puesta.v1') || 'null');
+    const m = await import(new URL('../js/puesta.js', location.href).href);
+    return {
+      guardado: !!g,
+      listas: Object.values(g?.fichas || {}).filter((x) => x.estado === 'listo').length,
+      badge: Number(document.getElementById('pmBadge').textContent),
+      marcadas: document.querySelectorAll('#puesta .pm-ficha.is-lista').length,
+      periodoOculto: document.getElementById('periodo').hidden,
+      falta: m.textoPendiente(g),
+      hecho: m.textoHecho(g)
+    };
+  })()`);
+  check('contestar una ficha la deja marcada, la guarda y baja la cuenta',
+    pm1.guardado && pm1.listas === 2 && pm1.marcadas === 2 &&
+    pm1.badge === pm0.fichas - 2 && pm1.periodoOculto,
+    JSON.stringify({ ...pm1, falta: undefined, hecho: undefined }));
+
+  // El recado es el producto: si sale mal, la lista no sirve de nada.
+  check('los dos recados salen con lo suyo y sin lo del otro',
+    pm1.hecho.includes('0412-1234567') &&
+    pm1.hecho.includes("PAGOS_PUBLICADOS['pago-movil']") &&
+    !pm1.falta.includes('Datos del pago m\u00f3vil') &&
+    pm1.falta.includes('Usuario de Binance Pay'),
+    JSON.stringify({ hecho: pm1.hecho.slice(0, 160), falta: pm1.falta.slice(0, 160) }));
+
+  await send('Page.removeScriptToEvaluateOnNewDocument', { identifier: sesionFalsa });
+
   console.log('\n=== RECORRIDO FUNCIONAL ===');
   out.forEach((r) => console.log(`${r.ok ? 'OK  ' : 'FALLA'} ${r.name}${r.ok ? '' : '  → ' + r.detail}`));
   const bad = out.filter((r) => !r.ok).length;
