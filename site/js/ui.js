@@ -3,6 +3,9 @@
  * Ninguna dato de negocio vive aquí: todo viene de /data.
  */
 import { store, BRANCHES, COMPLEJO, CONTACT } from './store.js';
+import { DESTACADOS } from '../data/branches.js';
+import { ITEMS as PLATOS_REST } from '../data/menu-restaurante.js';
+import { ITEMS as PLATOS_CAFE } from '../data/menu-cafe.js';
 import { revealAll, addParallax, addExitProgress } from './motion.js';
 import { cortina, fotosSuaves } from './carga.js';
 
@@ -139,6 +142,39 @@ function casa(b, i) {
   </article>`;
 }
 
+/* ==================================================== tres platos de la casa */
+/* La portada enseñaba fotos de comida en el mosaico del héroe y en las
+   fichas de las casas, pero en ninguna parte decía cómo se llama un plato.
+   Aquí se nombran tres, uno por oficio, y se enlazan a su ficha en la carta.
+   Sin precio: la portada es escaparate y el precio vive en /pedir. */
+function renderDestacados() {
+  const lista = $('#firmasLista');
+  if (!lista) return;
+  const todos = [...PLATOS_REST, ...PLATOS_CAFE];
+
+  lista.innerHTML = DESTACADOS.map(({ id, de }) => {
+    const plato = todos.find((p) => p.id === id);
+    // Si algún día se quita ese plato de la carta, la portada se salta el
+    // hueco en vez de enseñar una tarjeta vacía.
+    if (!plato || !plato.img) return '';
+    // La primera frase de su descripción: en una tarjeta no cabe el párrafo,
+    // y la ficha del plato lo tiene entero.
+    const linea = String(plato.desc || '').split(/(?<=\.)\s+/)[0];
+    return `
+    <article class="firma reveal">
+      <a class="firma__foto" href="pedir?plato=${esc(plato.id)}"
+         aria-label="Ver ${esc(plato.name)} en la carta">
+        <img src="img/${esc(plato.img)}" alt="${esc(plato.name)}"
+             width="520" height="520" loading="lazy" decoding="async">
+      </a>
+      <p class="firma__de">${esc(de)}</p>
+      <h3><a href="pedir?plato=${esc(plato.id)}">${esc(plato.name)}</a></h3>
+      <p class="firma__linea">${esc(linea)}</p>
+    </article>`;
+  }).join('');
+  fotosSuaves(lista);
+}
+
 function renderCasas() {
   const lista = $('#casasLista');
   if (!lista) return;
@@ -153,6 +189,7 @@ export function mountApp() {
   pintarEstado();
   setInterval(pintarEstado, 60000);
   renderCasas();
+  renderDestacados();
 
   // el héroe se cierra al bajar; cada sección publica su propio progreso
   addExitProgress($('.hero'), '--p');

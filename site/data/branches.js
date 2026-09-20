@@ -34,6 +34,24 @@ export const COMPLEJO = {
   ]
 };
 
+/**
+ * Los tres platos que enseña la portada.
+ *
+ * Aquí solo se elige **cuáles**: el nombre, la foto y la descripción se leen
+ * de `menu-restaurante.js` y `menu-cafe.js`, así que no hay una segunda copia
+ * que se quede vieja cuando cambie la carta.
+ *
+ * Uno de cada oficio, y en ese orden: la barra fría, el fuego del wok y la
+ * vitrina del café. Es lo mismo que contaban los tres pilares de texto que
+ * había antes, pero enseñado en vez de enumerado —y era la única parte de la
+ * portada donde no se veía un solo plato con nombre.
+ */
+export const DESTACADOS = [
+  { id: 'r-sashimi-especial', de: 'De la barra fría' },
+  { id: 'r-unadon', de: 'Del wok' },
+  { id: 'c-bubblegelato', de: 'De la vitrina del café' }
+];
+
 export const BRANCHES = [
   {
     id: 'restaurante',

@@ -310,30 +310,54 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     chef.retrato.includes('alta-pasteleria') && chef.alt.includes('Ali Makki') &&
     !chef.enMosaico && !chef.comoPlato, JSON.stringify(chef));
 
-  /* La portada tenía cinco caminos a /pedir y ninguno explicaba qué pasa al
-     llegar. Y donde estaban los tres pilares —«pescado de barra», «fuego y
+  /* Donde estaban los tres pilares de texto —«pescado de barra», «fuego y
      wok», «café y vitrina»— se repetía, treinta líneas antes, lo que ya dice
-     la sección de las dos casas. */
-  const comoPide = await ev(`(() => {
-    const sec = document.getElementById('como');
+     la sección de las dos casas. Ahora hay tres platos con nombre: la portada
+     enseñaba comida en el mosaico y en las fichas de las casas, pero no
+     nombraba ni uno. */
+  const firmas = await ev(`(() => {
+    const sec = document.getElementById('firma');
     const casas = document.getElementById('casas');
     const res = document.getElementById('resenas');
     const pos = (e) => e ? e.getBoundingClientRect().top + scrollY : -1;
+    const tarjetas = sec ? [...sec.querySelectorAll('.firma')] : [];
     return {
       hay: !!sec,
       entreCasasYRese\u00f1as: !!sec && pos(casas) < pos(sec) && pos(sec) < pos(res),
-      pasos: sec ? sec.querySelectorAll('.pillar').length : 0,
-      cta: sec?.querySelector('.pasos-cta a')?.getAttribute('href') || null,
-      // el chef vuelve a terminar en el chef
+      cuantos: tarjetas.length,
+      nombres: tarjetas.map((t) => t.querySelector('h3')?.textContent.trim()),
+      // uno de cada casa: dos del restaurante y uno del caf\u00e9
+      enlaces: tarjetas.map((t) => t.querySelector('.firma__foto')?.getAttribute('href')),
+      conFoto: tarjetas.filter((t) => t.querySelector('img[src^="img/"]')).length,
+      cta: sec?.querySelector('.seccion-cta a')?.getAttribute('href') || null,
+      // la portada sigue sin vender: aqu\u00ed no hay precios
+      sinPrecios: sec ? !/\\$\\d/.test(sec.textContent) : false,
       chefSinPilares: !document.querySelector('#chef .pillar'),
       sinRepetirLaBarra: !/Pescado de barra/.test(document.body.textContent)
     };
   })()`);
-  check('la portada explica c\u00f3mo se pide, entre las casas y las rese\u00f1as',
-    comoPide.hay && comoPide.entreCasasYReseñas && comoPide.pasos === 3 && comoPide.cta === 'pedir',
-    JSON.stringify(comoPide));
+  check('la portada nombra tres platos, cada uno con su foto y su enlace a la carta',
+    firmas.hay && firmas.entreCasasYReseñas && firmas.cuantos === 3 && firmas.conFoto === 3 &&
+    firmas.enlaces.every((h) => /^pedir\?plato=/.test(h || '')) && firmas.cta === 'pedir',
+    JSON.stringify(firmas));
+  check('los tres son uno por casa y la portada sigue sin precios',
+    firmas.enlaces.filter((h) => /plato=c-/.test(h || '')).length === 1 &&
+    firmas.enlaces.filter((h) => /plato=r-/.test(h || '')).length === 2 &&
+    firmas.sinPrecios, JSON.stringify(firmas));
   check('la secci\u00f3n del chef ya no repite lo que dicen las dos casas',
-    comoPide.chefSinPilares && comoPide.sinRepetirLaBarra, JSON.stringify(comoPide));
+    firmas.chefSinPilares && firmas.sinRepetirLaBarra, JSON.stringify(firmas));
+
+  // El enlace del caf\u00e9 tiene que cambiar de casa solo: el plato vive en la
+  // otra carta y sin eso abrir\u00eda una ficha vac\u00eda.
+  await ir('/pedir.html?plato=c-bubblegelato');
+  const salto = await ev(`({
+    abierto: !!document.querySelector('.modal.is-open, #modal:not([hidden])'),
+    sede: document.documentElement.dataset.sede,
+    // La ficha no lleva h2: se mira lo que dice entero, que es lo que importa.
+    dice: (document.querySelector('.modal.is-open, #modal')?.textContent || '').includes('Bubble Waffle')
+  })`);
+  check('tocar un plato de la portada abre su ficha, aunque sea de la otra casa',
+    salto.abierto && salto.sede === 'cafe' && salto.dice, JSON.stringify(salto));
 
   /* =============================================== la entrada de la página */
   await ir('/');
