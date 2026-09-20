@@ -41,15 +41,22 @@ export const COMPLEJO = {
  * de `menu-restaurante.js` y `menu-cafe.js`, así que no hay una segunda copia
  * que se quede vieja cuando cambie la carta.
  *
- * Uno de cada oficio, y en ese orden: la barra fría, el fuego del wok y la
- * vitrina del café. Es lo mismo que contaban los tres pilares de texto que
- * había antes, pero enseñado en vez de enumerado —y era la única parte de la
- * portada donde no se veía un solo plato con nombre.
+ * Dos reglas al elegir:
+ *
+ *  1. **Que no se vean ya en la portada.** El mosaico del héroe y las fichas
+ *     de las dos casas gastan diecisiete fotos entre las dos; enseñar aquí
+ *     una de esas es enseñar lo mismo dos veces en la misma página. El
+ *     primer intento eligió los platos marcados `hero: true`, que son
+ *     justamente los que usan los héroes: las tres fotos estaban repetidas.
+ *     `renderDestacados()` en `js/ui.js` se salta el que esté repetido, y el
+ *     recorrido de pruebas falla si alguno lo está.
+ *  2. **Uno de cada oficio**, y en ese orden: la barra fría, el fuego del wok
+ *     y la vitrina del café.
  */
 export const DESTACADOS = [
-  { id: 'r-sashimi-especial', de: 'De la barra fría' },
-  { id: 'r-unadon', de: 'Del wok' },
-  { id: 'c-bubblegelato', de: 'De la vitrina del café' }
+  { id: 'r-tiradito-atun', de: 'De la barra fría' },
+  { id: 'r-yorokobi', de: 'Del wok' },
+  { id: 'c-croissantgelato', de: 'De la vitrina del café' }
 ];
 
 export const BRANCHES = [

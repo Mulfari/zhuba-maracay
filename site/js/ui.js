@@ -147,16 +147,28 @@ function casa(b, i) {
    fichas de las casas, pero en ninguna parte decía cómo se llama un plato.
    Aquí se nombran tres, uno por oficio, y se enlazan a su ficha en la carta.
    Sin precio: la portada es escaparate y el precio vive en /pedir. */
+/** Las fotos que ya gastan el mosaico del héroe, las fichas de las casas y
+ *  el retrato del chef. Se calculan de los datos y no se escriben a mano: si
+ *  mañana cambia una foto del héroe, esta lista cambia con ella. */
+function fotosYaEnLaPortada() {
+  const usadas = new Set(COMPLEJO.collage.map((f) => `${f}.webp`));
+  BRANCHES.forEach((b) => b.heroPhotos.flat().forEach((f) => usadas.add(`${f}.webp`)));
+  usadas.add('alta-pasteleria.webp');            // el retrato del chef
+  return usadas;
+}
+
 function renderDestacados() {
   const lista = $('#firmasLista');
   if (!lista) return;
   const todos = [...PLATOS_REST, ...PLATOS_CAFE];
+  const yaEstan = fotosYaEnLaPortada();
 
   lista.innerHTML = DESTACADOS.map(({ id, de }) => {
     const plato = todos.find((p) => p.id === id);
     // Si algún día se quita ese plato de la carta, la portada se salta el
-    // hueco en vez de enseñar una tarjeta vacía.
-    if (!plato || !plato.img) return '';
+    // hueco en vez de enseñar una tarjeta vacía. Y si su foto ya sale más
+    // arriba, también: repetirla es enseñar lo mismo dos veces.
+    if (!plato || !plato.img || yaEstan.has(plato.img)) return '';
     // La primera frase de su descripción: en una tarjeta no cabe el párrafo,
     // y la ficha del plato lo tiene entero.
     const linea = String(plato.desc || '').split(/(?<=\.)\s+/)[0];

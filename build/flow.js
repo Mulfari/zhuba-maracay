@@ -329,6 +329,14 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       // uno de cada casa: dos del restaurante y uno del caf\u00e9
       enlaces: tarjetas.map((t) => t.querySelector('.firma__foto')?.getAttribute('href')),
       conFoto: tarjetas.filter((t) => t.querySelector('img[src^="img/"]')).length,
+      // Enseñar aquí una foto que ya gasta el mosaico del heroe o una ficha
+      // de casa es enseñar lo mismo dos veces en la misma pagina.
+      repetidas: (() => {
+        const todas = [...document.querySelectorAll('img')].map((i) => i.getAttribute('src'));
+        return tarjetas
+          .map((t) => t.querySelector('img')?.getAttribute('src'))
+          .filter((src) => todas.filter((x) => x === src).length > 1);
+      })(),
       cta: sec?.querySelector('.seccion-cta a')?.getAttribute('href') || null,
       // la portada sigue sin vender: aqu\u00ed no hay precios
       sinPrecios: sec ? !/\\$\\d/.test(sec.textContent) : false,
@@ -344,6 +352,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     firmas.enlaces.filter((h) => /plato=c-/.test(h || '')).length === 1 &&
     firmas.enlaces.filter((h) => /plato=r-/.test(h || '')).length === 2 &&
     firmas.sinPrecios, JSON.stringify(firmas));
+  check('los tres platos no repiten ninguna foto que ya salga en la portada',
+    firmas.repetidas.length === 0, JSON.stringify(firmas.repetidas));
   check('la secci\u00f3n del chef ya no repite lo que dicen las dos casas',
     firmas.chefSinPilares && firmas.sinRepetirLaBarra, JSON.stringify(firmas));
 
