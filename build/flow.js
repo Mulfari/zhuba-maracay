@@ -310,6 +310,31 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     chef.retrato.includes('alta-pasteleria') && chef.alt.includes('Ali Makki') &&
     !chef.enMosaico && !chef.comoPlato, JSON.stringify(chef));
 
+  /* La portada tenía cinco caminos a /pedir y ninguno explicaba qué pasa al
+     llegar. Y donde estaban los tres pilares —«pescado de barra», «fuego y
+     wok», «café y vitrina»— se repetía, treinta líneas antes, lo que ya dice
+     la sección de las dos casas. */
+  const comoPide = await ev(`(() => {
+    const sec = document.getElementById('como');
+    const casas = document.getElementById('casas');
+    const res = document.getElementById('resenas');
+    const pos = (e) => e ? e.getBoundingClientRect().top + scrollY : -1;
+    return {
+      hay: !!sec,
+      entreCasasYRese\u00f1as: !!sec && pos(casas) < pos(sec) && pos(sec) < pos(res),
+      pasos: sec ? sec.querySelectorAll('.pillar').length : 0,
+      cta: sec?.querySelector('.pasos-cta a')?.getAttribute('href') || null,
+      // el chef vuelve a terminar en el chef
+      chefSinPilares: !document.querySelector('#chef .pillar'),
+      sinRepetirLaBarra: !/Pescado de barra/.test(document.body.textContent)
+    };
+  })()`);
+  check('la portada explica c\u00f3mo se pide, entre las casas y las rese\u00f1as',
+    comoPide.hay && comoPide.entreCasasYReseñas && comoPide.pasos === 3 && comoPide.cta === 'pedir',
+    JSON.stringify(comoPide));
+  check('la secci\u00f3n del chef ya no repite lo que dicen las dos casas',
+    comoPide.chefSinPilares && comoPide.sinRepetirLaBarra, JSON.stringify(comoPide));
+
   /* =============================================== la entrada de la página */
   await ir('/');
   const entrada = await ev(`({
