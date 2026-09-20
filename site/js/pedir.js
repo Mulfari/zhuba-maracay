@@ -20,6 +20,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) =>
 const ICON = {
   plus: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>',
   close: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>',
+  expandir: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 2H2v4.5M9.5 2H14v4.5M6.5 14H2V9.5M9.5 14H14V9.5"/></svg>',
   table: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5v5a1.7 1.7 0 003.4 0v-5M7.7 7.5V17.5"/><path d="M14.3 2.5c-1.3 0-2.1 1.5-2.1 3.6s.8 3.4 2.1 3.4v8"/></svg>',
   bag: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12l-1 11H5L4 6zM7.5 6V4.6a2.5 2.5 0 015 0V6"/></svg>',
   moped: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="14.5" r="2.2"/><circle cx="15.5" cy="14.5" r="2.2"/><path d="M7.2 14.5h6.1M4.5 12V8.2a2 2 0 012-2H9l3.2 5.3h2.6"/></svg>',
@@ -142,7 +143,12 @@ function openModal(itemId) {
 
   panel.innerHTML = `
     <div class="modal__hero${item.img ? '' : ' modal__hero--empty'}">
-      ${item.img ? `<img src="img/${esc(item.img)}" alt="${esc(item.name)}" width="520" height="520">` : '<span aria-hidden="true">乙</span>'}
+      ${item.img ? `
+        <button class="modal__zoom" data-zoom="${esc(item.img)}" data-zoom-nombre="${esc(item.name)}"
+                aria-label="Ver la foto de ${esc(item.name)} entera">
+          <img src="img/${esc(item.img)}" alt="${esc(item.name)}" width="520" height="520">
+          <span class="modal__lupa" aria-hidden="true">${ICON.expandir}</span>
+        </button>` : '<span aria-hidden="true">乙</span>'}
       <button class="icon-btn modal__close" data-close aria-label="Cerrar">${ICON.close}</button>
       <div class="modal__title">
         <p class="eyebrow eyebrow--plain">${esc(store.categories.find((c) => c.id === item.cat)?.name || '')}</p>
@@ -316,8 +322,45 @@ function confirmAdd() {
   bumpPill();
 }
 
+/* ==================================================================== lupa */
+/* La ficha enseña la foto recortada a 21:9 porque ahí lo que manda es el
+   texto: el nombre, la descripción y los ajustes. Pero de un plato se compra
+   con los ojos, y en esa banda no se ve ni la mitad. Al tocarla se abre
+   entera, sin recortar y tan grande como dé la pantalla.
+   Las fotos son de 520 px: no se estiran más allá de su tamaño, que
+   ampliada de más se ve peor que recortada. */
+let volverA = null;
+
+function abrirLupa(img, nombre) {
+  const lupa = $('#lupa');
+  $('#lupaImg').src = `img/${img}`;
+  $('#lupaImg').alt = nombre;
+  $('#lupaTitulo').textContent = nombre;
+  lupa.classList.add('is-open');
+  lupa.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('is-locked');
+  volverA = document.activeElement;
+  $('#lupaCerrar').focus();
+}
+
+function cerrarLupa() {
+  const lupa = $('#lupa');
+  if (!lupa.classList.contains('is-open')) return;
+  lupa.classList.remove('is-open');
+  lupa.setAttribute('aria-hidden', 'true');
+  // La ficha sigue abierta debajo y ella también bloquea el scroll: solo se
+  // suelta si no queda nada abierto.
+  if (!$('#modal').classList.contains('is-open') && !$('#drawer').classList.contains('is-open')) {
+    document.body.classList.remove('is-locked');
+  }
+  // El foco vuelve a la foto que se tocó, no al principio de la ficha.
+  if (volverA && document.contains(volverA)) volverA.focus();
+  volverA = null;
+}
+
 function closeModal() {
   const modal = $('#modal');
+  cerrarLupa();                    // si no, la foto se queda flotando sola
   modal.classList.remove('is-open');
   modal.setAttribute('aria-hidden', 'true');
   if (!$('#drawer').classList.contains('is-open')) {
@@ -1343,9 +1386,18 @@ export function mountPedidos() {
   $('#cartPill').addEventListener('click', openDrawer);
   $('#drawerClose').addEventListener('click', closeDrawer);
   $('#scrim').addEventListener('click', () => { closeModal(); closeDrawer(); });
+
+  // Tocar la foto de la ficha la abre entera; tocar la foto abierta la cierra.
+  $('#modalPanel').addEventListener('click', (e) => {
+    const z = e.target.closest('[data-zoom]');
+    if (z) abrirLupa(z.dataset.zoom, z.dataset.zoomNombre);
+  });
+  $('#lupa').addEventListener('click', cerrarLupa);
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
-    if ($('#modal').classList.contains('is-open')) closeModal();
+    // De fuera hacia dentro: la foto está encima de la ficha.
+    if ($('#lupa').classList.contains('is-open')) cerrarLupa();
+    else if ($('#modal').classList.contains('is-open')) closeModal();
     else if ($('#drawer').classList.contains('is-open')) closeDrawer();
   });
 

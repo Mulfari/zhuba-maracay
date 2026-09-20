@@ -979,6 +979,50 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   check('un enlace roto cae en una p\u00e1gina de la casa, fuera de Google y con salida',
     p404.propia && p404.fuera && p404.salidas === 2, JSON.stringify(p404));
 
+  /* ============================================== la foto del plato, entera
+     En la ficha la foto va recortada a 21:9 porque ah\u00ed manda el texto, y de
+     un plato se ve menos de la mitad. Tocarla la abre entera. */
+  await ir('/pedir.html?plato=r-fukkatsu');
+  const lupa = await ev(`(async () => {
+    const z = document.querySelector('[data-zoom]');
+    if (!z) return { boton: false };
+    z.click();
+    await new Promise((r) => setTimeout(r, 450));
+    const l = document.getElementById('lupa');
+    const img = document.getElementById('lupaImg');
+    const caja = img.getBoundingClientRect();
+    const abierta = {
+      boton: true,
+      abre: l.classList.contains('is-open'),
+      aria: l.getAttribute('aria-hidden'),
+      esLaSuya: (img.getAttribute('src') || '').includes('fukkatsu'),
+      pie: document.getElementById('lupaTitulo').textContent,
+      foco: document.activeElement?.id,
+      // entera y sin recortar: la foto es cuadrada y se ve cuadrada
+      cuadrada: Math.abs(caja.width - caja.height) < 2,
+      // y no estirada mas alla de sus 520 px, que ampliada se ve peor
+      sinEstirar: caja.width <= img.naturalWidth + 1
+    };
+    // Escape cierra la foto y deja la ficha abierta debajo
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await new Promise((r) => setTimeout(r, 350));
+    return { ...abierta, trasEscape: {
+      cerrada: !l.classList.contains('is-open'),
+      fichaSigue: document.getElementById('modal').classList.contains('is-open'),
+      sigueBloqueado: document.body.classList.contains('is-locked')
+    } };
+  })()`);
+  check('tocar la foto del plato la abre entera, sin recortar y sin estirar',
+    lupa.boton && lupa.abre && lupa.aria === 'false' && lupa.esLaSuya &&
+    lupa.pie === 'Fukkatsu ZHUBA Roll' && lupa.cuadrada && lupa.sinEstirar &&
+    lupa.foco === 'lupaCerrar',
+    JSON.stringify(lupa));
+  // Escape tiene que cerrar de fuera hacia dentro: primero la foto, y la
+  // ficha se queda donde estaba con todo lo que llevara elegido.
+  check('Escape cierra la foto y deja la ficha abierta debajo',
+    lupa.trasEscape.cerrada && lupa.trasEscape.fichaSigue && lupa.trasEscape.sigueBloqueado,
+    JSON.stringify(lupa.trasEscape));
+
   /* ============================================== puesta en marcha (panel)
      La lista de lo que falta preguntarle al local es la memoria del
      proyecto: si deja de guardar, los datos de prueba se quedan publicados
