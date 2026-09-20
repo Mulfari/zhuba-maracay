@@ -807,6 +807,26 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     movilPedir.chicos.length === 0 && movilPedir.campos.length === 0,
     JSON.stringify(movilPedir));
 
+  /* La medida de arriba se toma con la p\u00e1gina quieta, y as\u00ed lo que vive
+     dentro de la ficha del plato y del caj\u00f3n del pedido no se medi\u00eda nunca.
+     Ah\u00ed estaban los dos botones que deciden cu\u00e1nto se compra \u2014el menos y el
+     m\u00e1s de la cantidad\u2014 a 26 px, que con el dedo se fallan. */
+  await ir('/pedir.html?plato=r-fukkatsu');
+  const movilFicha = await ev(MEDIDA);
+  check('con la ficha del plato abierta, tampoco hay botones por debajo de 40 px',
+    movilFicha.chicos.length === 0 && movilFicha.campos.length === 0,
+    JSON.stringify(movilFicha));
+
+  await ev(`(async () => {
+    const w = (ms) => new Promise((r) => setTimeout(r, ms));
+    document.querySelector('[data-add]').click(); await w(700);
+    document.getElementById('cartPill').click(); await w(700);
+  })()`);
+  const movilCarro = await ev(MEDIDA);
+  check('con el pedido abierto, tampoco hay botones por debajo de 40 px',
+    movilCarro.chicos.length === 0 && movilCarro.campos.length === 0,
+    JSON.stringify(movilCarro));
+
   // El buscador y el índice dicen ser fijos. `position: sticky` sólo sujeta
   // mientras el padre está en pantalla: dentro de la cabecera se soltaban al
   // primer deslizamiento y había que volver arriba para cambiar de sección.

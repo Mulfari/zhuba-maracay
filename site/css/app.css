@@ -847,6 +847,14 @@ h1, h2, h3 { margin: 0; }
    entrever. Opaco y sin desenfoque — el desenfoque de fondo es caro en un
    Android modesto, y donde no se aplica deja leer la carta por detrás del
    total, un 7 % de opacidad que ensucia justo la cifra que importa. */
+/* Con el dedo el pie del cajon crece: «Volver» pasa de catorce pixeles a
+   cuarenta. En una pantalla de 640 ese pie ya ocupa la mitad, y el mapa de la
+   entrega se queda debajo. Se recupera apretando las separaciones, que hay
+   cuatro. */
+@media (pointer: coarse) {
+  .drawer__foot { gap: .45rem; }
+}
+
 @media (max-width: 520px) {
   .drawer { background: #131010; backdrop-filter: none; -webkit-backdrop-filter: none; }
   .drawer__foot { background: #0F0C0B; }
@@ -881,10 +889,33 @@ h1, h2, h3 { margin: 0; }
   transition: background .2s var(--ease), color .2s var(--ease); }
 .stepper button:hover { background: rgba(239,230,214,.1); color: var(--travertine); }
 .stepper span { min-width: 24px; text-align: center; font-family: var(--mono); font-size: .8rem; }
+/* Con el dedo, 26 px es un objetivo que se falla, y estos dos deciden cuanto
+   se compra. En puntero grueso pasan a 44, que es lo que usa el resto del
+   sitio; con raton se quedan compactos, que ahi la punteria sobra.
+   No vale agrandar solo el area de toque con un ::after: entre los dos hay
+   1,6 px de separacion y las areas se solaparian, asi que el mas le robaria
+   la mitad de los toques al menos. */
+@media (pointer: coarse) {
+  .stepper { gap: 0; padding: 0; }
+  .stepper button { width: 44px; height: 44px; font-size: 1.05rem; }
+  .stepper span { min-width: 30px; font-size: .88rem; }
+}
 .link-x { background: none; border: 0; cursor: pointer; font-family: var(--mono); font-size: .6rem;
   letter-spacing: .14em; text-transform: uppercase; color: var(--travertine-3);
   border-bottom: 1px solid transparent; transition: color .2s var(--ease), border-color .2s var(--ease); }
 .link-x:hover { color: var(--vermillion); border-bottom-color: currentColor; }
+/* «Quitar» borra una linea del pedido y «Volver» retrocede un paso: son
+   botones de verdad, y median catorce pixeles de alto. Con el dedo se les da
+   caja de 40 y solo hacia arriba y abajo, que ensanchandolos se moverian de
+   sitio. El subrayado no estorba porque solo aparece al pasar el raton, y con
+   el dedo no hay raton que pase.
+   Fuera queda el «Buscar ahi» de la busqueda vacia, que va dentro de una
+   frase: ahi una caja de 40 px partiria el parrafo. */
+@media (pointer: coarse) {
+  .line__foot .link-x, .drawer__foot .link-x {
+    display: inline-flex; align-items: center; min-height: 40px;
+  }
+}
 
 /* --- upsell -------------------------------------------------------------- */
 .upsell { margin-top: 1.6rem; }
