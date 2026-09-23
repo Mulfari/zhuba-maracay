@@ -1,6 +1,6 @@
 # ZHUBA Restaurant & Café — carta digital y pedidos
 
-Sitio de **ZHUBA**, complejo gastronómico asiático-nikkei en La Floresta, Maracay. Enseña la carta real, arma el pedido y lo manda por WhatsApp. Hecho por MulfAI para un cliente.
+Sitio de **ZHUBA**, complejo gastronómico asiático-nikkei en La Floresta, Maracay. Enseña la carta real, arma el pedido y lo manda por WhatsApp. Hecho por MulfAI Studio.
 
 - **Producción:** https://zhuba-maracay.vercel.app · **Espejo:** https://mulfari.github.io/zhuba-maracay/
 - **Repo:** https://github.com/Mulfari/zhuba-maracay
@@ -63,6 +63,6 @@ En español y **describiendo lo que ve el cliente**, no el cambio técnico. El h
 - ✅ "Los botones de dentro del pedido, al tamaño de un dedo"
 - ❌ "fix: update modal handler"
 
-## Es de un cliente
+## Todavía no es de un cliente
 
-Está en producción y ZHUBA lo usa para vender. **Avisa a José antes de tocar nada que afecte a la versión en vivo.**
+Es una **demo en desarrollo**: José se la ofrecerá al dueño de ZHUBA, como MulfAI Studio y no como particular, cuando esté terminada la web del estudio. ZHUBA no la usa para vender. La URL de producción es la que se enseña, así que cada push a `main` cambia lo que vería el dueño. Nada de datos de pago reales hasta que el dueño la acepte.

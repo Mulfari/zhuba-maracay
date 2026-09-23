@@ -107,7 +107,7 @@ function pintarEstado() {
 /* Cada casa se presenta entera: su carácter, su triptico de fotos, su
    horario y su puerta al pedido. Sin precios ni fichas de plato — eso es la
    carta, y la carta vive en /pedir. */
-function casa(b, i) {
+function casa(b, i, horarioComun) {
   const fotos = b.heroPhotos.flat().slice(0, 3);
   return `
   <article class="casa" style="--acento:${b.accent}" data-branch="${b.id}">
@@ -124,10 +124,10 @@ function casa(b, i) {
       <p class="casa__lede">${esc(b.heroSub)}</p>
 
       <dl class="casa__datos">
-        <div>
+        ${horarioComun ? '' : `<div>
           <dt>Horario</dt>
           <dd>${b.hours.map((h) => `${esc(h.label)} · <b>${esc(h.value)}</b>`).join('<br>')}</dd>
-        </div>
+        </div>`}
         <div>
           <dt>Servicios</dt>
           <dd>${b.services.join(' · ')}</dd>
@@ -187,10 +187,21 @@ function renderDestacados() {
   fotosSuaves(lista);
 }
 
+/* Las dos casas abren a la misma hora. Si el horario es el mismo, se dice una
+   vez arriba en vez de repetirlo en cada bloque; el día que difieran, cada
+   casa vuelve a llevar el suyo sin tocar nada. */
 function renderCasas() {
   const lista = $('#casasLista');
   if (!lista) return;
-  lista.innerHTML = BRANCHES.map(casa).join('');
+  const firma = (b) => JSON.stringify(b.hours);
+  const horarioComun = BRANCHES.every((b) => firma(b) === firma(BRANCHES[0]));
+  const horario = $('#casasHorario');
+  if (horario) {
+    horario.hidden = !horarioComun;
+    if (horarioComun) horario.innerHTML = BRANCHES[0].hours
+      .map((h) => `<span>${esc(h.label)} · <b>${esc(h.value)}</b></span>`).join('');
+  }
+  lista.innerHTML = BRANCHES.map((b, i) => casa(b, i, horarioComun)).join('');
   fotosSuaves(lista);
 }
 

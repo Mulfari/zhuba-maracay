@@ -30,7 +30,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=DM+Mono:wght@400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="preload" as="image" href="img/degustacion-de-nigiris.webp" fetchpriority="high">
+<link rel="preload" as="image" href="img/osaka-roll.webp" fetchpriority="high">
 <link rel="stylesheet" href="css/app.css">
 <style>
   :root {
@@ -90,8 +90,9 @@
 
     <nav class="header__nav" aria-label="Principal">
       <a href="#chef">Chef</a>
-      <a href="#casas">Las casas</a>
+      <a href="#casas">Restaurante y café</a>
       <a href="#resenas">Reseñas</a>
+      <a href="#reservar">Reservar</a>
     </nav>
 
     <div class="header__actions">
@@ -114,7 +115,7 @@
 
       <div class="hero__cta">
         <a class="btn btn--solid" href="pedir">Pedir en línea</a>
-        <a class="btn" href="#casas">Conoce las dos casas</a>
+        <a class="btn" href="#casas">Conoce el complejo</a>
       </div>
 
       <div class="hero__meta">
@@ -167,13 +168,13 @@
   <span class="kanji-mark" aria-hidden="true">場</span>
   <div class="wrap">
     <div class="section-head section-head--spine reveal">
-      <p class="eyebrow">Casas</p>
-      <h2 class="display">Dos casas,<br>una dirección</h2>
+      <p class="eyebrow">El complejo</p>
+      <h2 class="display">El restaurante<br>y el café</h2>
       <p class="lede">
-        El restaurante y el café comparten el complejo del 17 de Calle Los Clubes, en La Floresta.
-        Se entra por la misma puerta y cada uno tiene lo suyo: uno es barra fría y wok, el otro
-        café, vitrina y gelato.
+        Comparten el complejo del 17 de Calle Los Clubes, en La Floresta. Se entra por la misma
+        puerta y cada uno tiene su carta: uno es barra fría y wok; el otro, café, vitrina y gelato.
       </p>
+      <p class="casas__horario" id="casasHorario"></p>
     </div>
     <div class="casas reveal" id="casasLista"></div>
   </div>
@@ -226,17 +227,36 @@
         <blockquote>Muy buena experiencia en Zhuba. La comida es excelente, bien presentada y con sabores cuidados.</blockquote>
         <p class="review__by"><b>Carlos Leon</b><span>★★★★★ · Google · Hace un año</span></p>
       </article>
-      <article class="review">
-        <blockquote>La comida es normal a buena. Solo que muy caro; en ningún lado especifican que los precios del menú no incluyen el 10 % e IVA.</blockquote>
-        <p class="review__by"><b>Dora Luciche</b><span>★★★☆☆ · Google · Hace un año</span></p>
-      </article>
+      <a class="review review--ig" href="https://www.instagram.com/zhubarestaurant/" target="_blank" rel="noopener">
+        <span class="review__cifra display">+100 mil</span>
+        <span class="review__texto">personas siguen a ZHUBA en Instagram</span>
+        <span class="review__by"><b>@zhubarestaurant</b><span>Ver el perfil ↗</span></span>
+      </a>
     </div>
 
     <div class="rating-strip reveal">
       <span class="big display">4,8</span>
       <span><a class="nota" href="https://www.google.com/maps/search/?api=1&query=Zhuba+Restaurant+17+Calle+Los+Clubes+Maracay+Aragua" target="_blank" rel="noopener">768 reseñas en Google</a></span>
-      <span>Permanencia media 1,5 – 4 h</span>
       <span>Extractos textuales del perfil público</span>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ============================================================ reservar -->
+<!-- El local reserva por WhatsApp (lo dice su propia lista de servicios). La
+     página acababa en las reseñas, sin decir qué hacer después. -->
+<section class="section section--cierre" id="reservar">
+  <div class="wrap">
+    <div class="section-head section-head--spine reveal">
+      <p class="eyebrow">Reservar</p>
+      <h2 class="display">Tu mesa, por WhatsApp</h2>
+      <p class="lede">Escríbenos el día, la hora y cuántos vienen, y te confirmamos por el mismo chat.</p>
+    </div>
+    <div class="seccion-cta reveal" data-d="1">
+      <a class="btn btn--solid" href="https://wa.me/584124554207?text=Hola%20ZHUBA%2C%20quiero%20reservar%20una%20mesa." target="_blank" rel="noopener">Reservar por WhatsApp</a>
+      <a class="btn" href="pedir">Pedir en línea</a>
     </div>
   </div>
 </section>
@@ -298,7 +318,7 @@
         <span id="year">2026</span> · ZHUBA Restaurant &amp; Café, Maracay · Aragua
       </p>
       <p>
-        Hecho por <a href="https://mulfai.vercel.app" target="_blank" rel="noopener">MulfAI</a>
+        Hecho por <a href="https://mulfai.vercel.app" target="_blank" rel="noopener">MulfAI Studio</a>
       </p>
     </div>
   </div>

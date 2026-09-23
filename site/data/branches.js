@@ -20,17 +20,22 @@ export const COMPLEJO = {
   direccion: '17 Calle Los Clubes, casa nro 10, Urb. La Floresta, Maracay 2101, Aragua',
   // Fotos del collage del héroe, de las dos casas. Ninguna se repite en el
   // bloque de las casas, que ya enseña las suyas más abajo.
+  // El orden importa: las dos casillas grandes (1.ª y 9.ª) llevan las fotos
+  // más nítidas, porque son las que más se amplían. Las fotos vienen de su
+  // carta digital a 520 px y no todas aguantan igual (medido con un filtro
+  // laplaciano, 23/09/2026): la degustación de nigiris era la más blanda y
+  // estaba en la casilla grande.
   collage: [
-    'degustacion-de-nigiris',
+    'osaka-roll',
     'brownie-con-gelato',
     'coquitos-de-salmon',
     'cafes-frios',
     'unadon-kabayaki',
-    'croissants-rellenos',
+    'degustacion-de-nigiris',
     'tartar-zhuba',
+    'croissants-rellenos',
     'roast-beef-schiacciata',
-    'crispy-al-caesar',
-    'osaka-roll'
+    'crispy-al-caesar'
   ]
 };
 

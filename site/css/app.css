@@ -54,7 +54,9 @@ html {
 
   /* --- ritmo --- */
   --pad: clamp(1.15rem, 4vw, 3.5rem);
-  --section: clamp(4.5rem, 10vw, 9rem);
+  /* Antes 9rem por lado: entre sección y sección quedaban casi 300 px vacíos
+     y parecía que algo no había cargado. */
+  --section: clamp(4rem, 7vw, 6.5rem);
   --maxw: 1240px;
   --radius: 3px;
   --hair: 1px solid rgba(239, 230, 214, .12);
@@ -727,6 +729,12 @@ h1, h2, h3 { margin: 0; }
 .review__by { font-family: var(--mono); font-size: .62rem; letter-spacing: .13em;
   text-transform: uppercase; color: var(--travertine-3); display: grid; gap: .25rem; }
 .review__by b { color: var(--travertine-2); font-weight: 500; letter-spacing: .08em; }
+
+/* La tercera tarjeta: sus seguidores de Instagram, con enlace al perfil. */
+.review--ig { color: inherit; text-decoration: none; transition: background-color .4s var(--ease-out); }
+.review--ig:hover { background: #15110e; }
+.review__cifra { font-size: clamp(2.4rem, 4vw, 3.2rem); line-height: 1; color: var(--ember); letter-spacing: -.02em; }
+.review__texto { font-family: var(--display); font-size: clamp(1.08rem, 1.6vw, 1.3rem); line-height: 1.42; }
 
 .rating-strip { display: flex; flex-wrap: wrap; align-items: baseline; gap: .7rem 1.4rem; margin-top: 1.6rem;
   font-family: var(--mono); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--travertine-3); }
@@ -1741,8 +1749,14 @@ img[data-suave].is-cargada { opacity: 1; transition: opacity .45s var(--ease-out
 .casa__datos b { color: var(--travertine); font-weight: 500; }
 
 .casa__cta { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.7rem; }
-/* El botón sólido toma el color de su casa. */
-.casa__cta .btn--solid { background: var(--acento); border-color: var(--acento); }
+/* Los botones se quedan en el dorado de la portada: un botón azul suelto en
+   una página dorada parecía un error. El acento de cada casa vive en su
+   etiqueta. */
+
+/* El horario común de las dos casas, una sola vez bajo la entradilla. */
+.casas__horario { display: flex; flex-wrap: wrap; gap: .4rem 1.6rem; margin: 0;
+  font-size: .9rem; color: var(--travertine-2); }
+.casas__horario b { color: var(--travertine); font-weight: 500; }
 
 /* ==================================================== el teléfono, aparte ===
    Tres cosas que no se ven con un ratón y una pantalla grande:
